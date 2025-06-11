@@ -1,0 +1,18 @@
+{
+    "default": {
+        "WrappedWITDeployer": "0xff1cCAb31acbBAF3e3c25300429D0d6ED6A60b2e"
+    },
+    "base:sepolia": {
+        "WrappedWITSuperchain": ""
+    },
+    "celo:alfajores": {
+        "WrappedWITSuperchain": ""
+    },
+    "ethereum:sepolia": {
+        "WrappedWIT": "0xFABadaC908009F46C0C83bBbAe84cD3c61Efc207",
+        "WrappedWITLib": "0x76A256b2a9CF191714B77dD7Dcf52a41B30F6235"
+    },
+    "optimism:sepolia": {
+        "WrappedWITSuperchain": ""
+    }
+}
