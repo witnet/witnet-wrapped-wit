@@ -1,0 +1,25 @@
+{
+  "name": "witnet-wrapped-wit",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@witnet/sdk": "link:..\\witnet-toolkit",
+    "@witnet/solidity": "link:..\\witnet-solidity",
+    "cross-env": "^7.0.3",
+    "ethrpc-gateway": "link:..\\web3-jsonrpc-gateway",
+    "hardhat": "^2.24.1",
+    "witnet-solidity-bridge": "link:..\\witnet-solidity-bridge"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.3.0"
+  }
+}
