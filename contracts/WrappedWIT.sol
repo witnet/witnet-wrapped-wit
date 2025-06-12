@@ -88,8 +88,11 @@ contract WrappedWIT
     // mapping (Witnet.Address => address) internal __evmAddressOf;
     // mapping (address => Witnet.Address) internal __witAddressOf;
     // mapping (address => WitBurnRequest[]) internal __witBurnsFrom;
-    mapping (Witnet.TransactionHash => uint256) internal __witOracleWrapTxQueryId;
-    mapping (uint256 => WrapTxQueryInfo) internal __witOracleWrapTxQueryInfo;
+
+    mapping (Witnet.TransactionHash => uint256) internal __witOracleWrappingTxQueryId;
+    mapping (uint256 => Witnet.TransactionHash) internal __witOracleWrappingQueryTxHash;
+    // mapping (Witnet.TransactionHash => uint256) internal __witOracleWrapTxQueryId;
+    // mapping (uint256 => WrapTxQueryInfo) internal __witOracleWrapTxQueryInfo;
     
     struct WrapTxQueryInfo {
         address evmAccount;
@@ -234,7 +237,7 @@ contract WrappedWIT
         return __witCustodian.toBech32(block.chainid == 1);
     }
 
-    function witOracleEstimateVerifyMintTransactionFee(uint256 _evmGasPrice) external view returns (uint256) {
+    function witOracleEstimateWrappingFee(uint256 _evmGasPrice) external view returns (uint256) {
         return (
             (100 + evmSettings.witOracleQueriesBaseFeeOverhead)
                 * witOracle.estimateBaseFeeWithCallback(
@@ -346,36 +349,11 @@ contract WrappedWIT
         emit Unwrapped(_msgSender(), witAddrBech32, value, block.timestamp);
     }
 
-    function wrap(
-            string calldata witWrapperBech32,
-            bytes calldata witWrapperSignature,
-            Witnet.TransactionHash witWrapTxHash
-        )
+    function wrap(Witnet.TransactionHash witWrapTxHash)
         virtual public payable
         returns (uint256 _witQueryId)
     {
-        return wrapFrom(_msgSender(), witWrapperBech32, witWrapperSignature, witWrapTxHash);
-    }
-
-    function wrapFrom(
-            address evmAccount,
-            string calldata witWrapper,
-            bytes calldata witWrapperSignature,
-            Witnet.TransactionHash witWrapTxHash
-        )
-        virtual public payable 
-        returns (uint256 _witQueryId)
-    {
-        Witnet.Address _witWrapper = Witnet.fromBech32(witWrapper, block.chainid == 1);
-        _require(
-            Witnet.verifyWitAddressAuthorization(
-                evmAccount,
-                _witWrapper,
-                witWrapperSignature
-            ), 
-            "invalid signature"
-        );
-        _witQueryId = __witOracleWrapTxQueryId[witWrapTxHash];
+        _witQueryId = __witOracleWrappingTxQueryId[witWrapTxHash];
         Witnet.QueryStatus _queryStatus = (
             _witQueryId > 0 ? (
                 _witQueryId != _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED 
@@ -411,12 +389,8 @@ contract WrappedWIT
                     gasLimit: _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_GAS_LIMIT
                 })
             );
-            __witOracleWrapTxQueryId[witWrapTxHash] = _witQueryId;
-            __witOracleWrapTxQueryInfo[_witQueryId] = WrapTxQueryInfo({
-                evmAccount: _msgSender(),
-                witWrapper: _witWrapper,
-                witWrapTxHash: witWrapTxHash
-            });
+            __witOracleWrappingTxQueryId[witWrapTxHash] = _witQueryId;
+            __witOracleWrappingQueryTxHash[_witQueryId] = witWrapTxHash;
         }
     }
 
@@ -440,10 +414,10 @@ contract WrappedWIT
     {
         _require(reportableFrom(_msgSender()), "invalid oracle");
 
-        WrapTxQueryInfo memory _queryInfo = __witOracleWrapTxQueryInfo[queryId];
-        _require(!_queryInfo.witWrapper.isZero(), "invalid query");
+        Witnet.TransactionHash _witWrapTxHash = __witOracleWrappingQueryTxHash[queryId];
+        _require(Witnet.TransactionHash.unwrap(_witWrapTxHash) != bytes32(0), "invalid query");
         _require(
-            __witOracleWrapTxQueryId[_queryInfo.witWrapTxHash] != _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED, 
+            __witOracleWrappingTxQueryId[_witWrapTxHash] != _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED, 
             "already processed"
         );
         
@@ -451,31 +425,34 @@ contract WrappedWIT
         Witnet.DataResult memory _witnetResult = abi.decode(queryResult, (Witnet.DataResult));
         WitnetCBOR.CBOR[] memory _fields = _witnetResult.fetchCborArray();
             // [
-            //      confirmed: uint8,
-            //      from: string,
-            //      into: string,
-            //      value: uint64
+            //      evmAccount: string
+            //      finalized: uint8,
+            //      witRecipient: string,
+            //      witSender: string,
+            //      value: uint64,
             // ]
         
         Witnet.Address _witCustodian = Witnet.fromBech32(_fields[2].readString(), block.chainid == 1);
         _require(_witCustodian.eq(__witCustodian), "invalid custodian");
 
-        string memory _witWrapperBech32 = _fields[1].readString();
-        Witnet.Address _witWrapper = Witnet.fromBech32(_witWrapperBech32, block.chainid == 1);
-        _require(_witWrapper.eq(_queryInfo.witWrapper), "invalid wrapper");
-
-        uint64 _confirmed = _fields[0].readUint();
-        _require(_confirmed > 0, "unconfirmed transaction");
+        uint64 _finalized = _fields[1].readUint();
+        _require(_finalized > 0, "unconfirmed transaction");
             
+        address _account = Witnet.toAddress(
+            Witnet.parseHexString(
+                _fields[0].readString()
+            )
+        );
         uint64 _value = _fields[2].readUint();
+        string memory _witWrapperBech32 = _fields[3].readString();
+
+        // Mark wrap tx hash as already processed:
+        __witOracleWrappingTxQueryId[_witWrapTxHash] = _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED;        
         
         // Mint wrapped tokens:
-        _mint(_queryInfo.evmAccount, _value);
-        emit Transfer(address(0), _queryInfo.evmAccount, _value);
-        emit Wrapped(_witWrapperBech32, _queryInfo.evmAccount, _value, _queryInfo.witWrapTxHash);
-        
-        // Mark wrap tx hash as already processed:
-        __witOracleWrapTxQueryId[_queryInfo.witWrapTxHash] = _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED;
+        _mint(_account, _value);
+        emit Transfer(address(0), _account, _value);
+        emit Wrapped(_witWrapperBech32, _account, _value, _witWrapTxHash);
     }
 
 
