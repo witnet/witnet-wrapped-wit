@@ -8,9 +8,15 @@ importers:
 
   .:
     dependencies:
+      '@openzeppelin/community-contracts':
+        specifier: git+https://github.com/OpenZeppelin/openzeppelin-community-contracts.git#master
+        version: https://codeload.github.com/OpenZeppelin/openzeppelin-community-contracts/tar.gz/075587479556632d3dd9e9e3b37417cabf3e26a3
       '@openzeppelin/contracts':
         specifier: ^5.3.0
         version: 5.3.0
+      '@openzeppelin/contracts-upgradeable':
+        specifier: ^5.3.0
+        version: 5.3.0(@openzeppelin/contracts@5.3.0)
     devDependencies:
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
@@ -24,6 +30,9 @@ importers:
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
+      dotenv:
+        specifier: ^16.4.7
+        version: 16.5.0
       ethrpc-gateway:
         specifier: link:..\web3-jsonrpc-gateway
         version: link:../web3-jsonrpc-gateway
@@ -342,6 +351,15 @@ packages:
   '@nomicfoundation/solidity-analyzer@0.1.2':
     resolution: {integrity: sha512-q4n32/FNKIhQ3zQGGw5CvPF6GTvDCpYwIf7bEY/dZTZbgfDsHyjJwURxUJf3VQuuJj+fDIFl4+KkBVbw4Ef6jA==}
     engines: {node: '>= 12'}
+
+  '@openzeppelin/community-contracts@https://codeload.github.com/OpenZeppelin/openzeppelin-community-contracts/tar.gz/075587479556632d3dd9e9e3b37417cabf3e26a3':
+    resolution: {tarball: https://codeload.github.com/OpenZeppelin/openzeppelin-community-contracts/tar.gz/075587479556632d3dd9e9e3b37417cabf3e26a3}
+    version: 0.0.1
+
+  '@openzeppelin/contracts-upgradeable@5.3.0':
+    resolution: {integrity: sha512-yVzSSyTMWO6rapGI5tuqkcLpcGGXA0UA1vScyV5EhE5yw8By3Ewex9rDUw8lfVw0iTkvR/egjfcW5vpk03lqZg==}
+    peerDependencies:
+      '@openzeppelin/contracts': 5.3.0
 
   '@openzeppelin/contracts@5.3.0':
     resolution: {integrity: sha512-zj/KGoW7zxWUE8qOI++rUM18v+VeLTTzKs/DJFkSzHpQFPD/jKKF0TrMxBfGLl3kpdELCNccvB3zmofSzm4nlA==}
@@ -855,6 +873,10 @@ packages:
   dir-glob@3.0.1:
     resolution: {integrity: sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA==}
     engines: {node: '>=8'}
+
+  dotenv@16.5.0:
+    resolution: {integrity: sha512-m/C+AwOAr9/W1UOIZUo232ejMNnJAJtYQjUbHoNTBNTJSvqzzDh7vnrei3o3r3m9blf6ZoDkvcw0VmozNRFJxg==}
+    engines: {node: '>=12'}
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -2579,6 +2601,12 @@ snapshots:
       '@nomicfoundation/solidity-analyzer-linux-x64-musl': 0.1.2
       '@nomicfoundation/solidity-analyzer-win32-x64-msvc': 0.1.2
 
+  '@openzeppelin/community-contracts@https://codeload.github.com/OpenZeppelin/openzeppelin-community-contracts/tar.gz/075587479556632d3dd9e9e3b37417cabf3e26a3': {}
+
+  '@openzeppelin/contracts-upgradeable@5.3.0(@openzeppelin/contracts@5.3.0)':
+    dependencies:
+      '@openzeppelin/contracts': 5.3.0
+
   '@openzeppelin/contracts@5.3.0': {}
 
   '@scure/base@1.1.9': {}
@@ -3117,6 +3145,8 @@ snapshots:
   dir-glob@3.0.1:
     dependencies:
       path-type: 4.0.0
+
+  dotenv@16.5.0: {}
 
   dunder-proto@1.0.1:
     dependencies:

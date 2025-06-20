@@ -3,8 +3,9 @@
 pragma solidity ^0.8.27;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-// import {ERC20Burnable} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+import {ERC20Bridgeable} from "@openzeppelin/community-contracts/contracts/token/ERC20/extensions/ERC20Bridgeable.sol";
 import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 import "witnet-solidity-bridge/contracts/WitOracle.sol";
 
@@ -17,138 +18,62 @@ import {
 import {IWitOracleConsumer} from "witnet-solidity-bridge/contracts/interfaces/IWitOracleConsumer.sol";
 import {IWitOracleQueriableConsumer} from "witnet-solidity-bridge/contracts/interfaces/IWitOracleQueriableConsumer.sol";
 
+import {IWrappedWIT, WrappedWITLib} from "./WrappedWITLib.sol";
+
 /// @custom:security-contact info@witnet.foundation
 contract WrappedWIT
     is 
         ERC20,
-        // ERC20Burnable, 
+        ERC20Bridgeable,
         ERC20Permit,
+        Initializable,
         IWitOracleConsumer,
-        IWitOracleQueriableConsumer
+        IWitOracleQueriableConsumer,
+        IWrappedWIT
 {
     using Witnet for Witnet.Address;
-    using Witnet for Witnet.DataResult;
     using Witnet for Witnet.RadonHash;
-    using Witnet for Witnet.Timestamp;
-    using WitnetCBOR for WitnetCBOR.CBOR;
 
-    event AuthorityTransferred  (address from, address to);
-    event Unwrapped (address indexed from, string  indexed into, uint256 value, uint256 timestamp);
-    event Wrapped   (string  indexed from, address indexed into, uint256 value, Witnet.TransactionHash witWrapTxHash);    
+    uint256 internal constant _CANONICAL_CHAIN_ID = 1; // Ethereum Mainnet
+    address internal constant _SUPERCHAIN_TOKEN_BRIDGE = 0x4200000000000000000000000000000000000028; // Superchain bridge
     
-    // event CuratorshipTransferred(address from, address to);
-    // event WitAddressOwnership   (address indexed evmAddress, string indexed witAddress);
-
-    uint24  internal constant _WIT_BURNING_MAX_TIMEOUT = 7 days;
-    uint56  internal constant _WIT_BURNING_MIN_MIN_WITS = 10000;
     uint16  internal constant _WIT_ORACLE_REPORTS_MIN_MIN_WITNESSES = 3;
-    uint24  internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_GAS_LIMIT = 1000000; // EVM gas units
-    uint256 internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED = type(uint256).max;
     uint16  internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_BASE_FEE_OVERHEAD = 50;
-    uint16  internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_RESULT_SIZE = 64;
     uint64  internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_UNITARY_REWARD = 200_000_000; // 0.2 $WIT
-
-    struct EvmSettings {
-        uint56 burningMinNanowits;
-        uint24 burningProofTimeout;
-        uint16 witOracleMinWitnesses;
-        uint16 witOracleQueriesBaseFeeOverhead;
-        uint64 witOracleQueriesUnitaryReward;
-    }
-
-    struct WitBalance {
-        uint64 witLocked;
-        uint64 witStaked;
-        uint64 witUnlocked;
-        Witnet.Timestamp witTimestamp;
-    }
-
-    // struct WitBurnRequest {
-    //     uint56 nanowits;
-    //     uint40 evmDeadline;
-    //     Witnet.Address witAddress;
-    //     bytes32 witUnwrapTxHash;
-    // }
     
-    address public evmAuthority;
-    // address public evmCurator;
-    EvmSettings public evmSettings;
-    
-    WitBalance  public witCustodianBalance;
+    uint56  internal constant _WRAPPED_WIT_BURNABLE_MIN_MIN_WITS = 10000;
     
     WitOracle public immutable witOracle;
     IWitOracleRadonRequestModal public immutable witOracleCrossChainProofOfReserve;
     IWitOracleRadonRequestModal public immutable witOracleCrossChainProofOfInclusion;
     
-    string[] public witOracleCrossChainRpcProviders;
-    Witnet.RadonHash public witOracleProofOfReserveRadonHash;
-    
     Witnet.Address internal immutable __witCustodian;
-    
-    // mapping (Witnet.Address => address) internal __evmAddressOf;
-    // mapping (address => Witnet.Address) internal __witAddressOf;
-    // mapping (address => WitBurnRequest[]) internal __witBurnsFrom;
 
-    mapping (Witnet.TransactionHash => uint256) internal __witOracleWrappingTxQueryId;
-    mapping (uint256 => Witnet.TransactionHash) internal __witOracleWrappingQueryTxHash;
-    // mapping (Witnet.TransactionHash => uint256) internal __witOracleWrapTxQueryId;
-    // mapping (uint256 => WrapTxQueryInfo) internal __witOracleWrapTxQueryInfo;
-    
-    struct WrapTxQueryInfo {
-        address evmAccount;
-        Witnet.Address witWrapper;
-        Witnet.TransactionHash witWrapTxHash;
-    }
-
-    modifier checkUnwrapValue(uint256 value) {
+    modifier checkUnwrapValue(uint64 value) {
         _require(
-            value >= evmSettings.burningMinNanowits
-                && value < type(uint56).max
-                && value <= witCustodianBalance.witUnlocked,
+            value >= __storage().evmSettings.burnableMinNanowits
+                && value <= __storage().witCustodianBalance.witUnlocked,
             "cannot unwrap that much"
         ); _;
     }
 
     modifier onlyAuthority {
-        _require(
-            _msgSender() == evmAuthority, 
-            "unauthorized"
+        require(
+            _msgSender() == __storage().evmAuthority, 
+            Unauthorized()
         ); _;
     }
 
-    // modifier onlyCurator {
-    //     _require(
-    //         _msgSender() == evmCurator,
-    //         "only curator"
-    //     ); _;
-    // }
-
     constructor(
-            address _evmAuthority,
-            // address _evmCurator,
-            Witnet.Address _witCustodian,
+            string memory _witCustodian,
             IWitOracleRadonRequestFactory _witOracleRadonRequestFactory
         )
         ERC20("Wrapped WIT", "WIT")
         ERC20Permit("Wrapped/WIT")
     {
-        // Validate constructor parameters:
-        _require(
-            _evmAuthority != address(0) && (
-                block.chainid != 1 || _evmAuthority.code.length > 0
-            ),
-            "invalid EVM authority"
-        );
-        // _require(
-        //     _evmCurator != address(0) && _evmCurator.code.length == 0,
-        //     "invalid EVM curator"
-        // );
-        _require(
-            !_witCustodian.isZero(), 
-            "invalid WIT custodian"
-        );
+        // Settle immutable parameters --------------------------------------------------------------------------------
+        __witCustodian = Witnet.fromBech32(_witCustodian, block.chainid == _CANONICAL_CHAIN_ID);
 
-        // Settle immutable parameters:
         witOracle = WitOracle(IWitOracleAppliance(address(_witOracleRadonRequestFactory)).witOracle());
         string[2][] memory _httpRequestHeaders = new string[2][](1);
         _httpRequestHeaders[0] = [ "Content-Type", "application/json;charset=UTF-8" ];
@@ -157,11 +82,10 @@ contract WrappedWIT
                 method: Witnet.RadonRetrievalMethods.HttpPost,
                 body: '{"jsonrpc":"2.0","method":"getBalance2","params":{"pkh":"\\1\\"},"id":1}',
                 headers: _httpRequestHeaders,
-                script: hex"83187782186666726573756c741869" 
-                    // RadonScript(Radon.String)
-                    //   .parseJSONMap()
-                    //   .getMap("result")
-                    //   .values()
+                script: // [RadonString] parseJSONMap()
+                        // [RadonMap]    getMap("result")
+                        // [RadonArray]  values()
+                        hex"83187782186666726573756c741869" 
             }),
             Witnet.RadonReducer({
                 opcode: Witnet.RadonReduceOpcodes.Mode,
@@ -171,41 +95,42 @@ contract WrappedWIT
         witOracleCrossChainProofOfInclusion = _witOracleRadonRequestFactory.buildRadonRequestModal(
             IWitOracleRadonRequestFactory.DataSourceRequest({
                 method: Witnet.RadonRetrievalMethods.HttpPost,
-                body: '{"jsonrpc":"2.0","method":"getValueTransfer","params":{"hash":"\\1\\","mode":"simple"},"id":1}',
+                body: '{"jsonrpc":"2.0","method":"getValueTransfer","params":{"hash":"\\1\\","mode":"ethereal"},"id":1}',
                 headers: _httpRequestHeaders,            
-                script: hex"84187782186666726573756c748218666653696d706c651869" 
-                    // RadonScript(Radon.String)
-                    //   .parseJSONMap()
-                    //   .getMap("result")
-                    //   .getMap("Simple")
-                    //   .values()
+                script: // [RadonString] parseJSONMap()
+                        // [RadonMap]    getMap("result")
+                        // [RadonMap]    getMap("ethereal")
+                        // [RadonArray]  values()
+                        hex"84187782186666726573756C7482186668657468657265616C1869"
             }),
             Witnet.RadonReducer({
                 opcode: Witnet.RadonReduceOpcodes.Mode,
                 filters: new Witnet.RadonFilter[](0)
             })
         );
-        __witCustodian = _witCustodian;
+    }
+
+    function initialize(address _evmAuthority) external initializer {
+        // Validate constructor parameters -----------------------------
+        _require(_evmAuthority != address(0), "invalid EVM authority");        
         
-        // Initialize authoritative parameters:
-        // transferCuratorship(_evmCurator);
-        evmAuthority = _evmAuthority;
-        evmSettings = EvmSettings({
-            burningMinNanowits: uint56(_WIT_BURNING_MIN_MIN_WITS * 10 ** decimals()),
-            burningProofTimeout: _WIT_BURNING_MAX_TIMEOUT,
-            witOracleMinWitnesses: block.chainid == 1 ? 12 : _WIT_ORACLE_REPORTS_MIN_MIN_WITNESSES,
+        // Initialize authoritative parameters ----------------------------------------------------------------------
+        __storage().evmAuthority = _evmAuthority;
+        __storage().evmSettings = EvmSettings({
+            burnableMinNanowits: uint56(_WRAPPED_WIT_BURNABLE_MIN_MIN_WITS * 10 ** decimals()),
+            witOracleMinWitnesses: block.chainid == _CANONICAL_CHAIN_ID ? 12 : _WIT_ORACLE_REPORTS_MIN_MIN_WITNESSES,
             witOracleQueriesBaseFeeOverhead: _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_BASE_FEE_OVERHEAD / 5, 
             witOracleQueriesUnitaryReward: _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_UNITARY_REWARD
         });
         string[] memory _witOracleRpcProviders = new string[](1);
         _witOracleRpcProviders[0] = (
-            block.chainid == 1 
+            block.chainid == _CANONICAL_CHAIN_ID 
                 ? "https://rpc-01.witnet.io" 
                 : "https://rpc-testnet.witnet.io"
         );
-        witOracleCrossChainRpcProviders = _witOracleRpcProviders;
+        __storage().witOracleCrossChainRpcProviders = _witOracleRpcProviders;
 
-        // Formally verify parameterized Radon assets:
+        // Formally verify parameterized Radon assets ------
         __formallyVerifyRadonAssets(_witOracleRpcProviders);
     }
 
@@ -219,62 +144,74 @@ contract WrappedWIT
 
 
     /// ===============================================================================================================
-    /// --- Wrapped/WIT read-only methods -----------------------------------------------------------------------------
+    /// --- ERC20Burnable ---------------------------------------------------------------------------------------------
 
-    function burnableSupply() external view returns (uint256) {
-        return witCustodianBalance.witUnlocked;
+    function _checkTokenBridge(address caller) override internal pure {
+        if (caller != _SUPERCHAIN_TOKEN_BRIDGE) revert Unauthorized();
     }
 
-    function totalReserve() external view returns (uint256) {
+
+    /// ===============================================================================================================
+    /// --- Wrapped/WIT read-only methods -----------------------------------------------------------------------------
+
+    function burnableSupply() override external view returns (uint256) {
+        return __storage().witCustodianBalance.witUnlocked;
+    }
+    
+    function evmAuthority() override external view returns (address) {
+        return __storage().evmAuthority;
+    }
+
+    function evmSettings() override external view returns (EvmSettings memory) {
+        return __storage().evmSettings;
+    }
+
+    function totalReserve() override external view returns (uint256) {
         return (
-            witCustodianBalance.witUnlocked
-                + witCustodianBalance.witStaked
-                + witCustodianBalance.witLocked
+            __storage().witCustodianBalance.witUnlocked
+                + __storage().witCustodianBalance.witStaked
+                + __storage().witCustodianBalance.witLocked
         );
     }
 
-    function witCustodian() public view returns (string memory) {
-        return __witCustodian.toBech32(block.chainid == 1);
+    function witCustodian() override public view returns (string memory) {
+        return __witCustodian.toBech32(block.chainid == _CANONICAL_CHAIN_ID);
     }
 
-    function witOracleEstimateWrappingFee(uint256 _evmGasPrice) external view returns (uint256) {
-        return (
-            (100 + evmSettings.witOracleQueriesBaseFeeOverhead)
-                * witOracle.estimateBaseFeeWithCallback(
-                    _evmGasPrice, 
-                    _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_GAS_LIMIT
-                )
-        ) / 100;
+    function witCustodianBalance() override public view returns (WitBalance memory) {
+        return __storage().witCustodianBalance;
     }
 
-    function witOracleProofOfReserveRadonBytecode() external view returns (bytes memory) {
-        return witOracle.registry().lookupRadonRequestBytecode(witOracleProofOfReserveRadonHash);
+    function witOracleEstimateWrappingFee(uint256 evmGasPrice) override external view returns (uint256) {
+        return WrappedWITLib.witOracleEstimateWrappingFee(
+            witOracle, 
+            evmGasPrice
+        );
+    }
+
+    function witOracleProofOfReserveRadonBytecode() override external view returns (bytes memory) {
+        return witOracle
+            .registry()
+            .lookupRadonRequestBytecode(
+                __storage().witOracleProofOfReserveRadonHash
+            );
     }
 
 
     /// ===============================================================================================================
     /// --- Wrapped/WIT authoritative methods -------------------------------------------------------------------------
 
-    // function settleEvmCurator(address _curator)
-    //     external
-    //     onlyAuthority
-    // {
-    //     assert(_curator != address(0));
-    //     evmCurator = _curator;
-    // }
-
     function settleEvmSettings(EvmSettings calldata _settings)
         external
         onlyAuthority
     {
         assert(
-            _settings.burningMinNanowits >= _WIT_BURNING_MIN_MIN_WITS * 10 ** decimals()
-                && _settings.burningProofTimeout <= _WIT_BURNING_MAX_TIMEOUT
+            _settings.burnableMinNanowits >= _WRAPPED_WIT_BURNABLE_MIN_MIN_WITS * 10 ** decimals()
                 && _settings.witOracleMinWitnesses >= _WIT_ORACLE_REPORTS_MIN_MIN_WITNESSES
                 && _settings.witOracleQueriesBaseFeeOverhead <= _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_BASE_FEE_OVERHEAD
                 && _settings.witOracleQueriesUnitaryReward >= _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_UNITARY_REWARD
         );
-        evmSettings = _settings;
+        __storage().evmSettings = _settings;
     }
 
     function settleWitRpcProviders(string[] memory _witRpcProviders)
@@ -283,118 +220,51 @@ contract WrappedWIT
     {
         assert(_witRpcProviders.length > 0);
         __formallyVerifyRadonAssets(_witRpcProviders);
-        witOracleCrossChainRpcProviders = _witRpcProviders;
+        __storage().witOracleCrossChainRpcProviders = _witRpcProviders;
     }
 
     function transferAuthority(address _newAuthority)
         external 
         onlyAuthority
     {
-        assert(
-            _newAuthority != address(0)
-                && _newAuthority != evmAuthority
-                && (block.chainid != 1 || _newAuthority.code.length > 0)
-        );
-        emit AuthorityTransferred(evmAuthority, _newAuthority);
-        evmAuthority = _newAuthority;
+        assert(_newAuthority != address(0));
+        emit AuthorityTransferred(__storage().evmAuthority, _newAuthority);
+        __storage().evmAuthority = _newAuthority;
     }
-
-    // function transferCuratorship(address _newCurator)
-    //     public
-    //     onlyCurator
-    // {
-    //     assert(_newCurator != address(0));
-    //     emit CuratorshipTransferred(evmCurator, _newCurator);
-    //     evmCurator = _newCurator;
-    // }
-
-    // function verifyBurnTransaction(
-    //         address evmHolder, 
-    //         uint256 requestIndex, 
-    //         bytes32 witUnwrapTxHash
-    //     )
-    //     external
-    //     onlyCurator
-    // {
-    //     WitBurnRequest storage __request = __witBurnsFrom[evmHolder][requestIndex];
-    //     _require(
-    //         __request.nanowits > 0  && __request.witUnwrapTxHash == bytes32(0), 
-    //         "invalid burn request"
-    //     );
-    //     emit Unwrapped(
-    //         evmHolder,
-    //         __request.witAddress.toBech32(block.chainid == 1),
-    //         __request.nanowits, 
-    //         requestIndex, 
-    //         witUnwrapTxHash
-    //     );
-    //     __request.nanowits = 0;
-    //     __request.witUnwrapTxHash = witUnwrapTxHash;
-    // }
 
     
     /// ===============================================================================================================
     /// --- Wrapped/WIT permissionless wrap/unwrap operations ---------------------------------------------------------
 
-    function unwrap(uint256 value, string calldata witAddrBech32)
-        virtual external
+    function wrap(Witnet.TransactionHash witnetValueTransferHash)
+        override public payable
+        returns (uint256 _witQueryId)
+    {
+        return WrappedWITLib.witOracleQueryWitnetValueTransferProofOfInclusion(
+            witOracle,
+            witOracleCrossChainProofOfInclusion,
+            witnetValueTransferHash
+        );
+    }
+
+    function unwrap(uint64 value, string calldata witAddrBech32)
+        override external
         checkUnwrapValue(value)
     {
-        // validate correctness of wit address bech32 string
-        Witnet.fromBech32(witAddrBech32, block.chainid == 1);
-        // burn wrapped wit tokens
+        WrappedWITLib.parseWitnetAddress(witAddrBech32, block.chainid == _CANONICAL_CHAIN_ID);
+
+        // immediate reduction of burnable supply:
+        __storage().witCustodianBalance.witUnlocked -= uint64(value);
+
+        // immediate burning of wrapped wit tokens:
         _burn(_msgSender(), value);
+
         // emit events
         emit Transfer(_msgSender(), address(0), value);
         emit Unwrapped(_msgSender(), witAddrBech32, value, block.timestamp);
     }
 
-    function wrap(Witnet.TransactionHash witWrapTxHash)
-        virtual public payable
-        returns (uint256 _witQueryId)
-    {
-        _witQueryId = __witOracleWrappingTxQueryId[witWrapTxHash];
-        Witnet.QueryStatus _queryStatus = (
-            _witQueryId > 0 ? (
-                _witQueryId != _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED 
-                    ? witOracle.getQueryStatus(_witQueryId) 
-                    : Witnet.QueryStatus.Finalized 
-            ) : Witnet.QueryStatus.Unknown
-        );
-        if (
-            _witQueryId == 0
-                || (
-                    _witQueryId != _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED
-                        && _queryStatus != Witnet.QueryStatus.Posted
-                )
-        ) {
-            string[] memory _commonArgs = new string[](1);
-            _commonArgs[0] = Witnet.toString(Witnet.TransactionHash.unwrap(witWrapTxHash));
-            Witnet.RadonHash _radonHash = witOracleCrossChainProofOfInclusion
-                .verifyRadonRequest(
-                    _commonArgs,
-                    witOracleCrossChainRpcProviders
-                );
-            _witQueryId = IWitOracleQueriable(witOracle).queryDataWithCallback{
-                value: msg.value
-            }(
-                _radonHash,
-                Witnet.QuerySLA({
-                    witCommitteeSize: evmSettings.witOracleMinWitnesses,
-                    witInclusionFees: evmSettings.witOracleQueriesUnitaryReward,
-                    witResultMaxSize: _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_RESULT_SIZE
-                }),
-                Witnet.QueryCallback({
-                    consumer: address(this),
-                    gasLimit: _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_GAS_LIMIT
-                })
-            );
-            __witOracleWrappingTxQueryId[witWrapTxHash] = _witQueryId;
-            __witOracleWrappingQueryTxHash[_witQueryId] = witWrapTxHash;
-        }
-    }
-
-
+    
     /// ===============================================================================================================
     /// --- Implementation of IWitOracleQueriableConsumer -------------------------------------------------------------
 
@@ -412,47 +282,39 @@ contract WrappedWIT
         ) 
         override external 
     {
-        _require(reportableFrom(_msgSender()), "invalid oracle");
+        _require(reportableFrom(msg.sender), "invalid oracle");
 
-        Witnet.TransactionHash _witWrapTxHash = __witOracleWrappingQueryTxHash[queryId];
-        _require(Witnet.TransactionHash.unwrap(_witWrapTxHash) != bytes32(0), "invalid query");
-        _require(
-            __witOracleWrappingTxQueryId[_witWrapTxHash] != _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED, 
-            "already processed"
-        );
+        try WrappedWITLib.processWitOracleQueryResult(
+            queryId, 
+            queryResult,
+            block.chainid == _CANONICAL_CHAIN_ID
         
-        // Parse and validate query result:
-        Witnet.DataResult memory _witnetResult = abi.decode(queryResult, (Witnet.DataResult));
-        WitnetCBOR.CBOR[] memory _fields = _witnetResult.fetchCborArray();
-            // [
-            //      evmAccount: string
-            //      finalized: uint8,
-            //      witRecipient: string,
-            //      witSender: string,
-            //      value: uint64,
-            // ]
+        ) returns (
+            Witnet.TransactionHash _witnetValueTransferHash,
+            Witnet.Address _witnetValueTransferRecipient,
+            string memory _witnetValueTransferSenderBech32,
+            address _account,
+            uint64 _value
         
-        Witnet.Address _witCustodian = Witnet.fromBech32(_fields[2].readString(), block.chainid == 1);
-        _require(_witCustodian.eq(__witCustodian), "invalid custodian");
+        ) {
+            _require(
+                __witCustodian.eq(_witnetValueTransferRecipient),
+                "invalid custodian"
+            );
 
-        uint64 _finalized = _fields[1].readUint();
-        _require(_finalized > 0, "unconfirmed transaction");
-            
-        address _account = Witnet.toAddress(
-            Witnet.parseHexString(
-                _fields[0].readString()
-            )
-        );
-        uint64 _value = _fields[2].readUint();
-        string memory _witWrapperBech32 = _fields[3].readString();
+            // mint newly wrapped tokens:
+            _mint(_account, _value);
 
-        // Mark wrap tx hash as already processed:
-        __witOracleWrappingTxQueryId[_witWrapTxHash] = _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED;        
+            // emit events:
+            emit Transfer(address(0), _account, _value);
+            emit Wrapped(_witnetValueTransferSenderBech32, _account, _value, _witnetValueTransferHash);
+
+        } catch Error(string memory _reason) {
+            _revert(_reason);
         
-        // Mint wrapped tokens:
-        _mint(_account, _value);
-        emit Transfer(address(0), _account, _value);
-        emit Wrapped(_witWrapperBech32, _account, _value, _witWrapTxHash);
+        } catch (bytes memory) {
+            _revertUnhandled();
+        }
     }
 
 
@@ -467,42 +329,47 @@ contract WrappedWIT
         override external
     {
         _require(
-            report.witDrSLA.witCommitteeSize >= evmSettings.witOracleMinWitnesses,
+            report.witDrSLA.witCommitteeSize >= __storage().evmSettings.witOracleMinWitnesses,
             "insufficient witnesses"
         );
+        
         _require(
-            report.witRadonHash.eq(witOracleProofOfReserveRadonHash),
-            "invalid proof-of-reserve format"
+            report.witRadonHash.eq(__storage().witOracleProofOfReserveRadonHash),
+            "invalid radon hash"
         );
-        Witnet.DataResult memory _witDataResult = witOracle.pushDataReport(
-            report,
-            proof
-        );
-        uint64[] memory _witBalance;
-        if (_witDataResult.status == Witnet.ResultStatus.NoErrors) {
-            _witBalance = _witDataResult.fetchUint64Array();
+
+        Witnet.DataResult memory _witOracleProofOfReserve = witOracle
+            .pushDataReport(
+                report,
+                proof
+            );
+
+        try WrappedWITLib.parseWitOracleProofOfReserve(
+            _witOracleProofOfReserve
+        
+        ) returns (
+            WitBalance memory _witCustodianBalance
+        
+        ) {
+            __storage().witCustodianBalance = _witCustodianBalance;
+
+        } catch Error(string memory _reason) {
+            _revert(_reason);
+        
+        } catch (bytes memory) {
+            _revertUnhandled();
         }
-        _require(
-            _witDataResult.status == Witnet.ResultStatus.NoErrors
-                && _witDataResult.timestamp.gt(witCustodianBalance.witTimestamp)
-                && _witBalance.length == 3,
-            "invalid proof-of-reserve data"
-        );
-        // Update Wit/Custodian balance:
-        witCustodianBalance.witLocked = _witBalance[0] + _witBalance[1];
-        witCustodianBalance.witUnlocked = _witBalance[2];
-        witCustodianBalance.witTimestamp = _witDataResult.timestamp;
     }
 
 
     /// ===============================================================================================================
     /// --- Internal methods ------------------------------------------------------------------------------------------
 
-    function __formallyVerifyRadonAssets(string[] memory _witRpcProviders) internal {
-        // Formally verify cross-chain Radon request for notarizing custodian's proofs of reserve:
+    /// @dev Formally verify cross-chain Radon request for notarizing custodian's proofs of reserve.
+    function __formallyVerifyRadonAssets(string[] memory _witRpcProviders) internal {    
         string[] memory _commonArgs = new string[](1);
         _commonArgs[0] = witCustodian();
-        witOracleProofOfReserveRadonHash = witOracleCrossChainProofOfReserve
+        __storage().witOracleProofOfReserveRadonHash = witOracleCrossChainProofOfReserve
             .verifyRadonRequest(
                 _commonArgs,
                 _witRpcProviders
@@ -510,12 +377,25 @@ contract WrappedWIT
     }
 
     function _require(bool condition, string memory reason) internal pure {
-        require(
-            condition,
+        if (!condition) {
+            _revert(reason);
+        }
+    }
+
+    function _revert(string memory reason) internal pure {
+        revert(
             string(abi.encodePacked(
                 "WrappedWIT: ",
                 reason
             ))
         );
+    }
+
+    function _revertUnhandled() internal pure {
+        _revert("unhandled exception");
+    }
+
+    function __storage() internal pure returns (WrappedWITLib.Storage storage) {
+        return WrappedWITLib.data();
     }
 }
