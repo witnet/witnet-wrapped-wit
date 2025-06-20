@@ -1,0 +1,12 @@
+{
+    "default": {
+        "WrappedWITDeployer": "0x311A731420ED29Ba26daAfb7B29675944bae29f1"
+    },
+    "base:sepolia": {
+        "WrappedWITSuperchain": ""
+    },
+    "optimism:sepolia": {
+        "WrappedWIT": "0x0e47b02a9e08dB92ebECbEACf94387fBdBb9661f",
+        "WrappedWITLib": "0x5A92a97f734250b3F715990bEADE5d009733e2C7"
+    }
+}
