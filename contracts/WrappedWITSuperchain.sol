@@ -21,4 +21,12 @@ contract WrappedWITSuperchain is ERC20, ERC20Bridgeable, ERC20Permit {
     function _checkTokenBridge(address caller) internal pure override {
         if (caller != SUPERCHAIN_TOKEN_BRIDGE) revert Unauthorized();
     }
+
+    
+    /// ===============================================================================================================
+    /// --- ERC20 -----------------------------------------------------------------------------------------------------
+
+    function decimals() override public pure returns (uint8) {
+        return 9;
+    }
 }
