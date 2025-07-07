@@ -26,17 +26,26 @@ interface IWrappedWIT {
         Witnet.Timestamp witTimestamp;
     }
 
-    /// --- Read-only methods ---------------------------------------------------------
+    enum WrappingStatus {
+        Unknown,
+        Confirming,
+        Done,
+        Retry
+    }
+
+    /// --- Read-only methods -----------------------------------------------------------------------
     function burnableSupply() external view returns (uint256);
     function evmAuthority() external view returns (address);
     function evmSettings() external view returns (EvmSettings memory);
+    function getWrapTransactionQueryId(Witnet.TransactionHash) external view returns (uint256);
+    function getWrapTransactionStatus(Witnet.TransactionHash) external view returns (WrappingStatus);
     function totalReserve() external view returns (uint256);
     function witCustodian() external view returns (string memory);
     function witCustodianBalance() external view returns (WitBalance memory);
     function witOracleEstimateWrappingFee(uint256) external view returns (uint256);
     function witOracleProofOfReserveRadonBytecode() external view returns (bytes memory);
 
-    /// --- Authoritative methods -----------------------------------------------------
+    /// --- Authoritative methods -----------------------------
     function settleEvmSettings(EvmSettings calldata) external;
     function settleWitRpcProviders(string[] calldata) external;
     function transferAuthority(address) external;

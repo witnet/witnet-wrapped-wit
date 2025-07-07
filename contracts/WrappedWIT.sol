@@ -148,7 +148,7 @@ contract WrappedWIT
 
 
     /// ===============================================================================================================
-    /// --- ERC20Burnable ---------------------------------------------------------------------------------------------
+    /// --- ERC20Bridgeable -------------------------------------------------------------------------------------------
 
     function _checkTokenBridge(address caller) override internal pure {
         if (caller != _SUPERCHAIN_TOKEN_BRIDGE) revert Unauthorized();
@@ -169,6 +169,36 @@ contract WrappedWIT
     function evmSettings() override external view returns (EvmSettings memory) {
         return __storage().evmSettings;
     }
+
+    function getWrapTransactionQueryId(Witnet.TransactionHash _witnetValueTransferTransactionHash)
+        override external view 
+        returns (uint256)
+    {
+        return __storage().witOracleWrappingTransactionQueryId[_witnetValueTransferTransactionHash];
+    }
+
+    function getWrapTransactionStatus(Witnet.TransactionHash _witnetValueTransferTransactionHash) 
+        override external view 
+        returns (WrappingStatus)
+    {
+        uint256 _witOracleQueryId = __storage().witOracleWrappingTransactionQueryId[
+            _witnetValueTransferTransactionHash
+        ];
+        if (_witOracleQueryId == 0) {
+            return WrappingStatus.Unknown;
+        
+        } else if (_witOracleQueryId == WrappedWITLib._WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED) {
+            return WrappingStatus.Done;
+        
+        } else {
+            return (
+                witOracle.getQueryStatus(_witOracleQueryId) == Witnet.QueryStatus.Posted
+                ? WrappingStatus.Confirming
+                : WrappingStatus.Retry
+            );
+        }
+    }
+
 
     function totalReserve() override external view returns (uint256) {
         return (
