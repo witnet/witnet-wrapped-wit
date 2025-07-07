@@ -115,7 +115,7 @@ library WrappedWITLib {
          **/
 
         // Revert if the referred Witnet transaction is reported to not be finalized, just yet:
-        require(_metadata[0].readUint() == 1, "unconfirmed transaction");
+        require(_metadata[0].readUint() == 1, "not finalized transaction");
         
         _witnetValueTransferRecipient = Witnet.fromBech32(_metadata[2].readString(), isMainnet);
         _witnetValueTransferSenderBech32 = _metadata[3].readString();

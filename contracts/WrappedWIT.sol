@@ -53,7 +53,7 @@ contract WrappedWIT
         _require(
             value >= __storage().evmSettings.burnableMinNanowits
                 && value <= __storage().witCustodianBalance.witUnlocked,
-            "cannot unwrap that much"
+            "invalid unwrap value"
         ); _;
     }
 
@@ -240,14 +240,14 @@ contract WrappedWIT
     /// ===============================================================================================================
     /// --- Wrapped/WIT permissionless wrap/unwrap operations ---------------------------------------------------------
 
-    function wrap(Witnet.TransactionHash witnetValueTransferHash)
+    function wrap(Witnet.TransactionHash _witnetValueTransferTransactionHash)
         override public payable
         returns (uint256 _witQueryId)
     {
         return WrappedWITLib.witOracleQueryWitnetValueTransferProofOfInclusion(
             witOracle,
             witOracleCrossChainProofOfInclusion,
-            witnetValueTransferHash
+            _witnetValueTransferTransactionHash
         );
     }
 
