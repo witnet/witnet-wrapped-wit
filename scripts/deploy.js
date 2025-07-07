@@ -17,26 +17,24 @@ async function main() {
         !addresses.default.WrappedWITDeployer
             || (await ethers.provider.getCode(addresses.default.WrappedWITDeployer)).length < 3
     ) {
-        console.info("> EVM curator address:     ", curator.address)
+        console.info("> EVM curator address:      ", curator.address)
         deployer = await Deployer.connect(curator).deploy()
         addresses.default.WrappedWITDeployer = await deployer.getAddress()
     } else {
         deployer = Deployer.attach(addresses.default.WrappedWITDeployer)    
     }
-    console.info("> Wrapped/WIT deployer:    ", await deployer.getAddress())
+    console.info("> Wrapped/WIT deployer:     ", `${await deployer.getAddress()} [WrappedWITDeployer]`)
     
-
     const tokenCustodianBech32 = settings[network.name]?.custodian
-    if (tokenCustodianBech32) {
-        
-        const tokenSalt = settings[network.name]?.salt || settings?.default.salt
+    const tokenSalt = settings[network.name]?.salt || settings?.default.salt
+    
+    if (tokenCustodianBech32) {    
         const witOracleRadonRequestFactoryAddr = witnet.getNetworkAddresses(network.name).core.WitOracleRadonRequestFactory
-        
         if (
             addresses[network.name][tokenContract]
                 && (await ethers.provider.getCode(addresses[network.name][tokenContract])).length > 2
         ) {
-            console.info("> Wrapped/WIT contract:     ", addresses[network.name][tokenContract])
+            console.info("> Wrapped/WIT contract:     ", `${addresses[network.name][tokenContract]} [${tokenContract}]`)
             process.exit(0)
         }
         const tokenAddr = await deployer.determineAddr.staticCall(tokenSalt)
@@ -56,9 +54,9 @@ async function main() {
         const evmAuthority = settings[network.name]?.authority || settings.default?.authority || curator.address
         // console.info("> Wrapped/WIT bytecode:    ", Token.bytecode)
         console.info("> Wrapped/WIT authority:    ", evmAuthority)
-        console.info("> Wrapped/WIT library:      ", addresses[network.name][tokenLibrary])
+        console.info("> Wrapped/WIT library:      ", `${addresses[network.name][tokenLibrary]} [${tokenLibrary}]`)
         console.info("> Wrapped/WIT custodian:    ", tokenCustodianBech32)
-        console.info("> Wrapped/WIT Radon factory:",witOracleRadonRequestFactoryAddr)
+        console.info("> Wrapped/WIT Radon factory:", `${witOracleRadonRequestFactoryAddr} [WitOracleRadonRequestFactory]`)
         console.info("> Wrapped/WIT deploy salt:  ", tokenSalt)
         
         const Token = await ethers.getContractFactory(tokenContract, { libraries })
@@ -71,10 +69,26 @@ async function main() {
         ).then(response => {
             console.info("> Wrapped/WIT deploy tx:    ", response.hash)  
         })
-        console.info("> Wrapped/WIT contract:     ", tokenAddr)
+        console.info("> Wrapped/WIT contract:     ", `${tokenAddr} [${tokenContract}]`)
         
     } else {
-        console.log("\nTODO: deploy bridged token ...", tokenContract)
+        if (
+            addresses[network.name][tokenContract]
+                && (await ethers.provider.getCode(addresses[network.name][tokenContract])).length > 2
+        ) {
+            console.info("> Wrapped/WIT contract:     ", `${addresses[network.name][tokenContract]} [${tokenContract}]`)
+            process.exit(0)
+        }
+        console.info("> Wrapped/WIT deploy salt:  ", tokenSalt)
+        const tokenAddr = await deployer.determineAddr.staticCall(tokenSalt)
+        const Token = await ethers.getContractFactory(tokenContract)
+        await deployer.connect(curator).deployBridged.send(
+            tokenSalt,
+            Token.bytecode
+        ).then(response => {
+            console.info("> Wrapped/WIT deploy tx:    ", response.hash)  
+        })
+        console.info("> Wrapped/WIT contract:     ", `${tokenAddr} [${tokenContract}]`)
     }
 }
 
