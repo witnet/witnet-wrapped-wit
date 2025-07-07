@@ -95,13 +95,17 @@ contract WrappedWIT
         witOracleCrossChainProofOfInclusion = _witOracleRadonRequestFactory.buildRadonRequestModal(
             IWitOracleRadonRequestFactory.DataSourceRequest({
                 method: Witnet.RadonRetrievalMethods.HttpPost,
-                body: '{"jsonrpc":"2.0","method":"getValueTransfer","params":{"hash":"\\1\\","mode":"ethereal"},"id":1}',
-                headers: _httpRequestHeaders,            
+                body: '{"jsonrpc":"2.0","method":"getValueTransfer","params":{"hash":"\\1\\","mode":"ethereal","force":true},"id":1}',
+                headers: _httpRequestHeaders,         
                 script: // [RadonString] parseJSONMap()
                         // [RadonMap]    getMap("result")
-                        // [RadonMap]    getMap("ethereal")
                         // [RadonArray]  values()
-                        hex"84187782186666726573756C7482186668657468657265616C1869"
+                        hex"83187782186666726573756c741869"                    
+                // script: // [RadonString] parseJSONMap()
+                //         // [RadonMap]    getMap("result")
+                //         // [RadonMap]    getMap("ethereal")
+                //         // [RadonArray]  values()
+                //         hex"84187782186666726573756C7482186668657468657265616C1869"
             }),
             Witnet.RadonReducer({
                 opcode: Witnet.RadonReduceOpcodes.Mode,
