@@ -130,11 +130,11 @@ library WrappedWITLib {
         // Avoid double-spends by marking the Witnet transaction hash as already parsed and processed:
         data().witOracleWrappingTransactionQueryId[_witnetValueTransferHash] = _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED;
 
-        // TODO?: Increase burnable supply, only if the PoI's timestamp is greater than PoR's timestamp:
-        //        => requires getValueTransfer to return Value Transfer transaction's block timestamp
-        // if (_witOracleQueryResult.timestamp.gt(data().witCustodianBalance.witTimestamp)) {
-        //     data().witCustodianBalance.witUnlocked += _value;
-        // }
+        // Increase burnable supply, only if the PoI's timestamp is greater than PoR's timestamp:
+        // TODO: requires getValueTransfer to return Value Transfer transaction's block timestamp
+        if (_witOracleQueryResult.timestamp.gt(data().witCustodianBalance.witTimestamp)) {
+            data().witCustodianBalance.witUnlocked += _value;
+        }
     }
 
     function witOracleQueryWitnetValueTransferProofOfInclusion(
