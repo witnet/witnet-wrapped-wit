@@ -89,7 +89,7 @@ library WrappedWITLib {
         require(
             data().witOracleWrappingTransactionQueryId[_witnetValueTransferHash]
                 != _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED, 
-            "query already processed"
+            "wrap tx already minted"
         );
 
         // Deserialize query result:

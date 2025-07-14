@@ -44,7 +44,7 @@ interface IWrappedWIT {
     function witCustodianBalance() external view returns (WitBalance memory);
     function witOracleEstimateWrappingFee(uint256) external view returns (uint256);
     function witOracleProofOfReserveRadonBytecode() external view returns (bytes memory);
-
+    
     /// --- Authoritative methods -----------------------------
     function settleEvmSettings(EvmSettings calldata) external;
     function settleWitRpcProviders(string[] calldata) external;

@@ -274,10 +274,14 @@ contract WrappedWIT
         override public payable
         returns (uint256 _witQueryId)
     {
-        return WrappedWITLib.witOracleQueryWitnetValueTransferProofOfInclusion(
+        _witQueryId = WrappedWITLib.witOracleQueryWitnetValueTransferProofOfInclusion(
             witOracle,
             witOracleCrossChainProofOfInclusion,
             _witnetValueTransferTransactionHash
+        );
+        require(
+            _witQueryId != WrappedWITLib._WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED, 
+            "already minted"
         );
     }
 
@@ -363,12 +367,12 @@ contract WrappedWIT
         override external
     {
         _require(
-            report.witDrSLA.witCommitteeSize >= __storage().evmSettings.witOracleMinWitnesses,
+            report.queryParams.witCommitteeSize >= __storage().evmSettings.witOracleMinWitnesses,
             "insufficient witnesses"
         );
         
         _require(
-            report.witRadonHash.eq(__storage().witOracleProofOfReserveRadonHash),
+            report.queryRadHash.eq(__storage().witOracleProofOfReserveRadonHash),
             "invalid radon hash"
         );
 
