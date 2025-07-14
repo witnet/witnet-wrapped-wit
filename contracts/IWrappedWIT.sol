@@ -9,8 +9,8 @@ interface IWrappedWIT {
     error Unauthorized();
 
     event AuthorityTransferred(address from, address to);    
-    event Wrapped(string indexed from, address indexed into, uint256 value, Witnet.TransactionHash witTxHash);
-    event Unwrapped(address indexed from, string indexed into, uint256 value, uint256 timestamp);
+    event Wrapped(string from, address into, uint256 value, Witnet.TransactionHash witnetValueTransferHash);
+    event Unwrapped(address from, string into, uint256 value, uint256 timestamp);
 
     struct EvmSettings {
         uint56 burnableMinNanowits;
