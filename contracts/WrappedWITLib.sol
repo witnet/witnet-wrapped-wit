@@ -146,19 +146,8 @@ library WrappedWITLib {
         returns (uint256 _witQueryId)
     {
         _witQueryId = data().witOracleWrappingTransactionQueryId[witnetValueTransferHash];
-        Witnet.QueryStatus _queryStatus = (
-            _witQueryId > 0 ? (
-                _witQueryId != _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED 
-                    ? witOracle.getQueryStatus(_witQueryId) 
-                    : Witnet.QueryStatus.Finalized 
-            ) : Witnet.QueryStatus.Unknown
-        );
         if (
-            _witQueryId == 0
-                || (
-                    _witQueryId != _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED
-                        && _queryStatus != Witnet.QueryStatus.Posted
-                )
+            _witQueryId != _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED
         ) {
             string[] memory _commonArgs = new string[](1);
             _commonArgs[0] = Witnet.toString(Witnet.TransactionHash.unwrap(witnetValueTransferHash));
