@@ -150,7 +150,7 @@ library WrappedWITLib {
             _witQueryId != _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED
         ) {
             string[] memory _commonArgs = new string[](1);
-            _commonArgs[0] = Witnet.toString(Witnet.TransactionHash.unwrap(witnetValueTransferHash));
+            _commonArgs[0] = Witnet.toHexString(Witnet.TransactionHash.unwrap(witnetValueTransferHash));
             Witnet.RadonHash _radonHash = witOracleCrossChainProofOfInclusion
                 .verifyRadonRequest(
                     _commonArgs,
