@@ -28,16 +28,16 @@ interface IWrappedWIT {
 
     enum WrappingStatus {
         Unknown,
-        Confirming,
-        Done,
-        Retry
+        Awaiting,
+        Retry,
+        Done
     }
 
     /// --- Read-only methods -----------------------------------------------------------------------
     function burnableSupply() external view returns (uint256);
     function evmAuthority() external view returns (address);
     function evmSettings() external view returns (EvmSettings memory);
-    function getWrapTransactionQueryId(Witnet.TransactionHash) external view returns (uint256);
+    function getWrapTransactionLastQueryId(Witnet.TransactionHash) external view returns (uint256);
     function getWrapTransactionStatus(Witnet.TransactionHash) external view returns (WrappingStatus);
     function totalReserve() external view returns (uint256);
     function witCustodian() external view returns (string memory);

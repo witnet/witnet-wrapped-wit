@@ -27,7 +27,7 @@ library WrappedWITLib {
         IWrappedWIT.WitBalance witCustodianBalance;
         string[] witOracleCrossChainRpcProviders;
         Witnet.RadonHash witOracleProofOfReserveRadonHash;
-        mapping (Witnet.TransactionHash => uint256) witOracleWrappingTransactionQueryId;
+        mapping (Witnet.TransactionHash => uint256) witOracleWrappingTransactionLastQueryId;
         mapping (uint256 => Witnet.TransactionHash) witOracleWrappingQueryTransactionHash;
     }
 
@@ -79,29 +79,39 @@ library WrappedWITLib {
             uint64 _value
         )
     {
-        // Check that (a) the query is actually expected:
         _witnetValueTransferHash = data().witOracleWrappingQueryTransactionHash[witOracleQueryId];
+
+        // Check that the query id actually refers to a wit/wrap tx that's being validated:
         require(
             Witnet.TransactionHash.unwrap(_witnetValueTransferHash) != bytes32(0), 
             "invalid query id"
         );
-        // and (b), the Witnet transaction being queried has not yet been processed
+
+        // Check that the Wit/wrap tx being reported has not yet been validated:
         require(
-            data().witOracleWrappingTransactionQueryId[_witnetValueTransferHash]
+            data().witOracleWrappingTransactionLastQueryId[_witnetValueTransferHash]
                 != _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED, 
-            "wrap tx already minted"
+            "wit/wrap tx already minted"
         );
 
-        // Deserialize query result:
+        // Deserialize the query's result data:
         Witnet.DataResult memory _witOracleQueryResult = abi.decode(witOracleQueryResult, (Witnet.DataResult));
         
-        // Check that the query got solved successfully, containing an array of values:
+        // Check that the query was successfully solved:
         require(
-            _witOracleQueryResult.status == Witnet.ResultStatus.NoErrors
-                && _witOracleQueryResult.dataType == Witnet.RadonDataTypes.Array,
-            "invalid query result"
+            _witOracleQueryResult.status == Witnet.ResultStatus.NoErrors,
+            "query solved with errors"
         );
         
+        // Check taht the query result contains an heterogenous array of values:
+        require(
+            _witOracleQueryResult.dataType == Witnet.RadonDataTypes.Array, 
+            "invalid query result"
+        );
+            
+        // Avoid double-spending by marking the Witnet value transfer hash as already parsed and processed:
+        data().witOracleWrappingTransactionLastQueryId[_witnetValueTransferHash] = _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED;
+
         // Try to parse Witnet Value Transfer metadata being reported:
         WitnetCBOR.CBOR[] memory _metadata = _witOracleQueryResult.fetchCborArray();
         /**
@@ -114,8 +124,8 @@ library WrappedWITLib {
          * ]
          **/
 
-        // Revert if the referred Witnet transaction is reported to not be finalized, just yet:
-        require(_metadata[0].readUint() == 1, "not finalized transaction");
+        // Revert if the referred Witnet transaction is reported to not be finalized just yet:
+        require(_metadata[0].readUint() == 1, "unconfirmed query result");
         
         _witnetValueTransferRecipient = Witnet.fromBech32(_metadata[2].readString(), isMainnet);
         _witnetValueTransferSenderBech32 = _metadata[3].readString();
@@ -127,10 +137,7 @@ library WrappedWITLib {
         );
         _value = _metadata[4].readUint();
 
-        // Avoid double-spends by marking the Witnet transaction hash as already parsed and processed:
-        data().witOracleWrappingTransactionQueryId[_witnetValueTransferHash] = _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED;
-
-        // Increase burnable supply, only if the PoI's timestamp is greater than PoR's timestamp:
+        // Also increase the burnable supply, only if the PoI's timestamp is greater than PoR's timestamp:
         // TODO: requires getValueTransfer to return Value Transfer transaction's block timestamp
         if (_witOracleQueryResult.timestamp.gt(data().witCustodianBalance.witTimestamp)) {
             data().witCustodianBalance.witUnlocked += _value;
@@ -145,7 +152,7 @@ library WrappedWITLib {
         public 
         returns (uint256 _witQueryId)
     {
-        _witQueryId = data().witOracleWrappingTransactionQueryId[witnetValueTransferHash];
+        _witQueryId = data().witOracleWrappingTransactionLastQueryId[witnetValueTransferHash];
         if (
             _witQueryId != _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED
         ) {
@@ -170,7 +177,7 @@ library WrappedWITLib {
                     gasLimit: _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_GAS_LIMIT
                 })
             );
-            data().witOracleWrappingTransactionQueryId[witnetValueTransferHash] = _witQueryId;
+            data().witOracleWrappingTransactionLastQueryId[witnetValueTransferHash] = _witQueryId;
             data().witOracleWrappingQueryTransactionHash[_witQueryId] = witnetValueTransferHash;
         }
     }

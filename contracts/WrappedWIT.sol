@@ -170,30 +170,30 @@ contract WrappedWIT
         return __storage().evmSettings;
     }
 
-    function getWrapTransactionQueryId(Witnet.TransactionHash _witnetValueTransferTransactionHash)
+    function getWrapTransactionLastQueryId(Witnet.TransactionHash _witnetValueTransferTransactionHash)
         override external view 
         returns (uint256)
     {
-        return __storage().witOracleWrappingTransactionQueryId[_witnetValueTransferTransactionHash];
+        return __storage().witOracleWrappingTransactionLastQueryId[_witnetValueTransferTransactionHash];
     }
 
     function getWrapTransactionStatus(Witnet.TransactionHash _witnetValueTransferTransactionHash) 
         override external view 
         returns (WrappingStatus)
     {
-        uint256 _witOracleQueryId = __storage().witOracleWrappingTransactionQueryId[
+        uint256 _witOracleLastQueryId = __storage().witOracleWrappingTransactionLastQueryId[
             _witnetValueTransferTransactionHash
         ];
-        if (_witOracleQueryId == 0) {
+        if (_witOracleLastQueryId == 0) {
             return WrappingStatus.Unknown;
         
-        } else if (_witOracleQueryId == WrappedWITLib._WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED) {
+        } else if (_witOracleLastQueryId == WrappedWITLib._WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED) {
             return WrappingStatus.Done;
         
         } else {
             return (
-                witOracle.getQueryStatus(_witOracleQueryId) == Witnet.QueryStatus.Posted
-                ? WrappingStatus.Confirming
+                witOracle.getQueryStatus(_witOracleLastQueryId) == Witnet.QueryStatus.Posted
+                ? WrappingStatus.Awaiting
                 : WrappingStatus.Retry
             );
         }
