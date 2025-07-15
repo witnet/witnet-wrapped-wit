@@ -344,7 +344,6 @@ contract WrappedWIT
             _mint(_account, _value);
 
             // emit events:
-            emit Transfer(address(0), _account, _value);
             emit Wrapped(_witnetValueTransferSenderBech32, _account, _value, _witnetValueTransferHash);
 
         } catch Error(string memory _reason) {
