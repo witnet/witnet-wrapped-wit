@@ -120,6 +120,7 @@ library WrappedWITLib {
          *   metadata: string,
          *   recipient: string,
          *   sender: string,
+         *   timestamp: uint64,
          *   value: uint64,
          * ]
          **/
@@ -135,11 +136,11 @@ library WrappedWITLib {
                 _metadata[1].readString()
             )
         );
-        _value = _metadata[4].readUint();
+        _value = _metadata[5].readUint();
+        Witnet.Timestamp _valueTimestamp = Witnet.Timestamp.wrap(_metadata[4].readUint());
 
         // Also increase the burnable supply, only if the PoI's timestamp is greater than PoR's timestamp:
-        // TODO: requires getValueTransfer to return Value Transfer transaction's block timestamp
-        if (_witOracleQueryResult.timestamp.gt(data().witCustodianBalance.witTimestamp)) {
+        if (_valueTimestamp.gt(data().witCustodianBalance.witTimestamp)) {
             data().witCustodianBalance.witUnlocked += _value;
         }
     }

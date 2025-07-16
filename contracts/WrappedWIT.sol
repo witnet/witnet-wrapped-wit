@@ -333,7 +333,6 @@ contract WrappedWIT
             string memory _witnetValueTransferSenderBech32,
             address _account,
             uint64 _value
-        
         ) {
             _require(
                 __witCustodian.eq(_witnetValueTransferRecipient),
