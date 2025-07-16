@@ -1,19 +1,25 @@
 module.exports = {
     default: {
-        curator: "0x65deCD9141ee487A390bb29f874672b910F50155",
-        salt: 1,
+        curator: "0x34d903c72fC5A73Ef50817841d98F0e4019AF6B4",
+        // salt: 22495054,
+        salt: 25,
     },
     "ethereum:mainnet": {
-        contract: "WrappedWIT",
-        custodian: "tbd...",
-    },
-    "optimism:sepolia": {
         // authority: "",
         contract: "WrappedWIT",
+        custodian: "wit1wrappedl0fth3lm6xjhyp6vjnwcfjv9nwc40pa",
+    },
+    "ethereum:sepolia": {
+        contract: "WrappedWIT",
         custodian: "twit1yyx8ll4ykyk0fugv3apefzlszlf8a9jxxr398l",
-        salt: 7,
     },
     "base:sepolia": {
         contract: "WrappedWITSuperchain",
-    }
+    },
+    "celo:alfajores": {
+        contract: "WrappedWITSuperchain",
+    },
+    "optimism:sepolia": {
+        contract: "WrappedWITSuperchain",
+    },
 }

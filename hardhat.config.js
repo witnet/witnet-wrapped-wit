@@ -13,6 +13,11 @@ module.exports = {
       confirmations: 2,
       url: "http://127.0.0.1:8502"
     },
+    "ethereum:sepolia": {
+      chainId: 11155111,
+      confirmations: 2,
+      url: "http://127.0.0.1:8506",
+    },
     "optimism:sepolia": {
       chainId: 11155420,
       confirmations: 2,
@@ -35,9 +40,18 @@ module.exports = {
   },
   etherscan: {
     apiKey: {
-      "optimism:sepolia": process.env.ETHERSCAN_OPTIMISM_API_KEY
+      "ethereum:sepolia": process.env.ETHERSCAN_V2_API_KEY,
+      "optimism:sepolia": process.env.ETHERSCAN_OPTIMISM_API_KEY,
     },
     customChains: [
+      {
+        network: "ethereum:sepolia",
+        chainId: 11155111,
+        urls: {
+          apiURL: "https://api.etherscan.io/v2/api?chainid=11155111",
+          browserURL: "https://sepolia.etherscan.io/",
+        },
+      },
       {
         network: "optimism:sepolia",
         chainId: 11155420,

@@ -50,7 +50,7 @@ async function main() {
             }
             libraries[tokenLibrary] = addresses[network.name][tokenLibrary]
         } catch {}
-        
+
         const evmAuthority = settings[network.name]?.authority || settings.default?.authority || curator.address
         // console.info("> Wrapped/WIT bytecode:    ", Token.bytecode)
         console.info("> Wrapped/WIT authority:    ", evmAuthority)
@@ -68,6 +68,8 @@ async function main() {
             witOracleRadonRequestFactoryAddr
         ).then(response => {
             console.info("> Wrapped/WIT deploy tx:    ", response.hash)  
+        }).catch(err => {
+            console.error(err.code)
         })
         console.info("> Wrapped/WIT contract:     ", `${tokenAddr} [${tokenContract}]`)
         

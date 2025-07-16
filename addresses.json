@@ -1,12 +1,18 @@
 {
     "default": {
-        "WrappedWITDeployer": "0x311A731420ED29Ba26daAfb7B29675944bae29f1"
+        "WrappedWITDeployer": "0x3375B5d2C5C07e278084aF3Cff9DDc7460639372"
     },
     "base:sepolia": {
         "WrappedWITSuperchain": ""
     },
+    "celo:alfajores": {
+        "WrappedWITSuperchain": ""
+    },
+    "ethereum:sepolia": {
+        "WrappedWIT": "0xAF2c6C9ee7Bf2bD15a632498f7C128C2F504FF52",
+        "WrappedWITLib": "0x0c132949119e4A76d2477558311A7a377d843F52"
+    },
     "optimism:sepolia": {
-        "WrappedWIT": "0x0e47b02a9e08dB92ebECbEACf94387fBdBb9661f",
-        "WrappedWITLib": "0x5A92a97f734250b3F715990bEADE5d009733e2C7"
+        "WrappedWITSuperchain": ""
     }
 }
