@@ -2,7 +2,7 @@ const { ethers, network } = require("hardhat");
 const witnet = require("@witnet/solidity")
 
 const addresses = require("../addresses.json")
-const settings = require("../settings")
+const settings = require("../src/settings")
 
 async function main() {
     const tokenContract = settings[network.name]?.contract
