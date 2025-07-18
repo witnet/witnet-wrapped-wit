@@ -103,7 +103,7 @@ library WrappedWITLib {
             "query solved with errors"
         );
         
-        // Check taht the query result contains an heterogenous array of values:
+        // Check that the query result contains an heterogenous array of values:
         require(
             _witOracleQueryResult.dataType == Witnet.RadonDataTypes.Array, 
             "invalid query result"
@@ -139,7 +139,7 @@ library WrappedWITLib {
         _value = _metadata[5].readUint();
         Witnet.Timestamp _valueTimestamp = Witnet.Timestamp.wrap(_metadata[4].readUint());
 
-        // Also increase the burnable supply, only if the PoI's timestamp is greater than PoR's timestamp:
+        // Also increase the burnable supply, only if the VTT's actual timestamp is greater than the last PoR's timestamp:
         if (_valueTimestamp.gt(data().witCustodianBalance.witTimestamp)) {
             data().witCustodianBalance.witUnlocked += _value;
         }
@@ -170,7 +170,7 @@ library WrappedWITLib {
                 _radonHash,
                 Witnet.QuerySLA({
                     witCommitteeSize: data().evmSettings.witOracleMinWitnesses,
-                    witInclusionFees: data().evmSettings.witOracleQueriesUnitaryReward,
+                    witUnitaryReward: data().evmSettings.witOracleQueriesUnitaryReward,
                     witResultMaxSize: _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_RESULT_SIZE
                 }),
                 Witnet.QueryCallback({
