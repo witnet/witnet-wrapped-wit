@@ -12,17 +12,17 @@ interface IWrappedWIT {
     event Wrapped(string from, address into, uint256 value, Witnet.TransactionHash witnetValueTransferHash);
     event Unwrapped(address from, string into, uint256 value, uint256 timestamp);
 
-    struct EvmSettings {
-        uint16 witOracleMinWitnesses;
-        uint16 witOracleQueriesBaseFeeOverhead;
-        uint64 witOracleQueriesUnitaryReward;
-    }
-
     struct WitBalance {
         uint64 witLocked;
         uint64 witStaked;
         uint64 witUnlocked;
         Witnet.Timestamp witTimestamp;
+    }
+
+    struct WitOracleSettings {
+        uint16 witOracleMinWitnesses;
+        uint16 witOracleQueriesBaseFeeOverhead;
+        uint64 witOracleQueriesUnitaryReward;
     }
 
     enum WrappingStatus {
@@ -35,17 +35,19 @@ interface IWrappedWIT {
     /// --- Read-only methods -----------------------------------------------------------------------
     function burnableSupply() external view returns (uint256);
     function evmAuthority() external view returns (address);
-    function evmSettings() external view returns (EvmSettings memory);
     function getWrapTransactionLastQueryId(Witnet.TransactionHash) external view returns (uint256);
     function getWrapTransactionStatus(Witnet.TransactionHash) external view returns (WrappingStatus);
     function totalReserve() external view returns (uint256);
+    
     function witCustodian() external view returns (string memory);
     function witCustodianBalance() external view returns (WitBalance memory);
+    
     function witOracleEstimateWrappingFee(uint256) external view returns (uint256);
     function witOracleProofOfReserveRadonBytecode() external view returns (bytes memory);
+    function witOracleSettings() external view returns (WitOracleSettings memory);
     
     /// --- Authoritative methods -----------------------------
-    function settleEvmSettings(EvmSettings calldata) external;
+    function settleWitOracleSettings(WitOracleSettings calldata) external;
     function settleWitRpcProviders(string[] calldata) external;
     function transferAuthority(address) external;
 

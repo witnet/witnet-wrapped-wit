@@ -23,7 +23,7 @@ library WrappedWITLib {
 
     struct Storage {
         address evmAuthority;
-        IWrappedWIT.EvmSettings evmSettings;
+        IWrappedWIT.WitOracleSettings witOracleSettings;
         IWrappedWIT.WitBalance witCustodianBalance;
         string[] witOracleCrossChainRpcProviders;
         Witnet.RadonHash witOracleProofOfReserveRadonHash;
@@ -167,8 +167,8 @@ library WrappedWITLib {
             }(
                 _radonHash,
                 Witnet.QuerySLA({
-                    witCommitteeSize: data().evmSettings.witOracleMinWitnesses,
-                    witUnitaryReward: data().evmSettings.witOracleQueriesUnitaryReward,
+                    witCommitteeSize: data().witOracleSettings.witOracleMinWitnesses,
+                    witUnitaryReward: data().witOracleSettings.witOracleQueriesUnitaryReward,
                     witResultMaxSize: _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_RESULT_SIZE
                 }),
                 Witnet.QueryCallback({
@@ -193,7 +193,7 @@ library WrappedWITLib {
 
     function witOracleEstimateWrappingFee(WitOracle witOracle, uint256 evmGasPrice) internal view returns (uint256) {
         return (
-            (100 + data().evmSettings.witOracleQueriesBaseFeeOverhead)
+            (100 + data().witOracleSettings.witOracleQueriesBaseFeeOverhead)
                 * witOracle.estimateBaseFeeWithCallback(
                     evmGasPrice, 
                     _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_GAS_LIMIT
