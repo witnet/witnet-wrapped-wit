@@ -17,7 +17,7 @@ library WrappedWITLib {
         /* keccak256("io.witnet.tokens.WIT") */
         0x6116473658e87b023e7f215d122c0048f3d7a669d8df94a5565f0c95871c58f9;
 
-    uint24  internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_GAS_LIMIT = 550_000; 
+    uint24  internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_GAS_LIMIT = 300_000; 
     uint256 internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED = type(uint256).max;
     uint16  internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_RESULT_SIZE = 256;
 
