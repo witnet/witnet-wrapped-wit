@@ -298,7 +298,6 @@ contract WrappedWIT
         _burn(_msgSender(), value);
 
         // emit events
-        emit Transfer(_msgSender(), address(0), value);
         emit Unwrapped(_msgSender(), witAddrBech32, value, block.timestamp);
     }
 
