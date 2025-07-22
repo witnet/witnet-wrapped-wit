@@ -56,7 +56,7 @@ contract WrappedWIT
 
     modifier onlyAuthority {
         require(
-            _msgSender() == __storage().evmAuthority, 
+            _msgSender() == __storage().curator, 
             Unauthorized()
         ); _;
     }
@@ -111,12 +111,12 @@ contract WrappedWIT
         );
     }
 
-    function initialize(address _evmAuthority) external initializer {
+    function initialize(address _curator) external initializer {
         // Validate constructor parameters -----------------------------
-        _require(_evmAuthority != address(0), "invalid EVM authority");        
+        _require(_curator != address(0), "invalid EVM curator address");
         
         // Initialize authoritative parameters ----------------------------------------------------------------------
-        __storage().evmAuthority = _evmAuthority;
+        __storage().curator = _curator;
         __storage().witOracleSettings = WitOracleSettings({
             witOracleMinWitnesses: block.chainid == _CANONICAL_CHAIN_ID ? 12 : _WIT_ORACLE_REPORTS_MIN_MIN_WITNESSES,
             witOracleQueriesBaseFeeOverhead: _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_BASE_FEE_OVERHEAD / 5, 
@@ -158,8 +158,8 @@ contract WrappedWIT
         return __storage().witCustodianBalance.witUnlocked;
     }
     
-    function evmAuthority() override external view returns (address) {
-        return __storage().evmAuthority;
+    function curator() override external view returns (address) {
+        return __storage().curator;
     }
 
     function witOracleSettings() override external view returns (WitOracleSettings memory) {
@@ -252,13 +252,13 @@ contract WrappedWIT
         __storage().witOracleCrossChainRpcProviders = _witRpcProviders;
     }
 
-    function transferAuthority(address _newAuthority)
+    function transferAuthority(address _newCurator)
         external 
         onlyAuthority
     {
-        assert(_newAuthority != address(0));
-        emit AuthorityTransferred(__storage().evmAuthority, _newAuthority);
-        __storage().evmAuthority = _newAuthority;
+        assert(_newCurator != address(0));
+        emit NewCurator(__storage().curator, _newCurator);
+        __storage().curator = _newCurator;
     }
 
     

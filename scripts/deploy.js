@@ -51,9 +51,9 @@ async function main() {
             libraries[tokenLibrary] = addresses[network.name][tokenLibrary]
         } catch {}
 
-        const evmAuthority = settings[network.name]?.authority || settings.default?.authority || curator.address
+        const evmCurator = settings[network.name]?.authority || settings.default?.authority || curator.address
         // console.info("> Wrapped/WIT bytecode:    ", Token.bytecode)
-        console.info("> Wrapped/WIT authority:    ", evmAuthority)
+        console.info("> Wrapped/WIT curator:      ", evmCurator)
         console.info("> Wrapped/WIT library:      ", `${addresses[network.name][tokenLibrary]} [${tokenLibrary}]`)
         console.info("> Wrapped/WIT custodian:    ", tokenCustodianBech32)
         console.info("> Wrapped/WIT Radon factory:", `${witOracleRadonRequestFactoryAddr} [WitOracleRadonRequestFactory]`)
@@ -63,7 +63,7 @@ async function main() {
         await deployer.connect(curator).deployCanonical.send(
             tokenSalt,
             Token.bytecode,
-            evmAuthority,
+            evmCurator,
             tokenCustodianBech32,
             witOracleRadonRequestFactoryAddr
         ).then(response => {

@@ -8,7 +8,7 @@ interface IWrappedWIT {
 
     error Unauthorized();
 
-    event AuthorityTransferred(address from, address to);    
+    event NewCurator(address from, address to);    
     event Wrapped(string from, address into, uint256 value, Witnet.TransactionHash witnetValueTransferHash);
     event Unwrapped(address from, string into, uint256 value, uint256 timestamp);
 
@@ -34,7 +34,7 @@ interface IWrappedWIT {
 
     /// --- Read-only methods -----------------------------------------------------------------------
     function burnableSupply() external view returns (uint256);
-    function evmAuthority() external view returns (address);
+    function curator() external view returns (address);
     function getWrapTransactionLastQueryId(Witnet.TransactionHash) external view returns (uint256);
     function getWrapTransactionStatus(Witnet.TransactionHash) external view returns (WrappingStatus);
     function totalReserve() external view returns (uint256);

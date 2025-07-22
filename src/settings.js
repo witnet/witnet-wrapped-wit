@@ -5,8 +5,8 @@ module.exports = {
         salt: 25,
     },
     "ethereum:mainnet": {
-        // authority: "",
         contract: "WrappedWIT",
+        // curator: "",
         custodian: "wit1wrappedl0fth3lm6xjhyp6vjnwcfjv9nwc40pa",
     },
     "ethereum:sepolia": {

@@ -22,7 +22,7 @@ library WrappedWITLib {
     uint16  internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_RESULT_SIZE = 256;
 
     struct Storage {
-        address evmAuthority;
+        address curator;
         IWrappedWIT.WitOracleSettings witOracleSettings;
         IWrappedWIT.WitBalance witCustodianBalance;
         string[] witOracleCrossChainRpcProviders;
