@@ -289,7 +289,14 @@ contract WrappedWIT
         override external
         checkUnwrapValue(value)
     {
-        WrappedWITLib.parseWitnetAddress(witAddrBech32, block.chainid == _CANONICAL_CHAIN_ID);
+        try WrappedWITLib.parseWitnetAddress(witAddrBech32, block.chainid == _CANONICAL_CHAIN_ID) 
+            returns (Witnet.Address) {}
+            catch (bytes memory) {
+                _revert(string(abi.encodePacked(
+                    "invalid address: ",
+                    witAddrBech32
+                )));
+            }
 
         // immediate reduction of burnable supply:
         __storage().witCustodianBalance.witUnlocked -= uint64(value);
