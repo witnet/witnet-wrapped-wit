@@ -117,10 +117,10 @@ contract WrappedWIT
         
         // Initialize authoritative parameters ----------------------------------------------------------------------
         __storage().curator = _curator;
-        __storage().witOracleSettings = WitOracleSettings({
-            witOracleMinWitnesses: block.chainid == _CANONICAL_CHAIN_ID ? 12 : _WIT_ORACLE_REPORTS_MIN_MIN_WITNESSES,
-            witOracleQueriesBaseFeeOverhead: _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_BASE_FEE_OVERHEAD / 5, 
-            witOracleQueriesUnitaryReward: _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_UNITARY_REWARD
+        __storage().witOracleQuerySettings = WitOracleSettings({
+            minWitnesses: block.chainid == _CANONICAL_CHAIN_ID ? 12 : _WIT_ORACLE_REPORTS_MIN_MIN_WITNESSES,
+            baseFeeOverhead100: _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_BASE_FEE_OVERHEAD / 5, 
+            unitaryRewardPedros: _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_UNITARY_REWARD
         });
         string[] memory _witOracleRpcProviders = new string[](1);
         _witOracleRpcProviders[0] = (
@@ -162,8 +162,8 @@ contract WrappedWIT
         return __storage().curator;
     }
 
-    function witOracleSettings() override external view returns (WitOracleSettings memory) {
-        return __storage().witOracleSettings;
+    function witOracleQuerySettings() override external view returns (WitOracleSettings memory) {
+        return __storage().witOracleQuerySettings;
     }
 
     function getWrapTransactionLastQueryId(Witnet.TransactionHash _witnetValueTransferTransactionHash)
@@ -236,11 +236,11 @@ contract WrappedWIT
         onlyAuthority
     {
         assert(
-            _settings.witOracleMinWitnesses >= _WIT_ORACLE_REPORTS_MIN_MIN_WITNESSES
-                && _settings.witOracleQueriesBaseFeeOverhead <= _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_BASE_FEE_OVERHEAD
-                && _settings.witOracleQueriesUnitaryReward >= _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_UNITARY_REWARD
+            _settings.minWitnesses >= _WIT_ORACLE_REPORTS_MIN_MIN_WITNESSES
+                && _settings.baseFeeOverhead100 <= _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_BASE_FEE_OVERHEAD
+                && _settings.unitaryRewardPedros >= _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_UNITARY_REWARD
         );
-        __storage().witOracleSettings = _settings;
+        __storage().witOracleQuerySettings = _settings;
     }
 
     function settleWitRpcProviders(string[] memory _witRpcProviders)
@@ -371,7 +371,7 @@ contract WrappedWIT
         override external
     {
         _require(
-            report.queryParams.witCommitteeSize >= __storage().witOracleSettings.witOracleMinWitnesses,
+            report.queryParams.witCommitteeSize >= __storage().witOracleQuerySettings.minWitnesses,
             "insufficient witnesses"
         );
         

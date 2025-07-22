@@ -17,14 +17,14 @@ library WrappedWITLib {
         /* keccak256("io.witnet.tokens.WIT") */
         0x6116473658e87b023e7f215d122c0048f3d7a669d8df94a5565f0c95871c58f9;
 
-    uint24  internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_GAS_LIMIT = 750_000; 
+    uint24  internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_GAS_LIMIT = 550_000; 
     uint256 internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED = type(uint256).max;
     uint16  internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_RESULT_SIZE = 256;
 
     struct Storage {
         address curator;
-        IWrappedWIT.WitOracleSettings witOracleSettings;
         IWrappedWIT.WitBalance witCustodianBalance;
+        IWrappedWIT.WitOracleSettings witOracleQuerySettings;
         string[] witOracleCrossChainRpcProviders;
         Witnet.RadonHash witOracleProofOfReserveRadonHash;
         mapping (Witnet.TransactionHash => uint256) witOracleWrappingTransactionLastQueryId;
@@ -167,8 +167,8 @@ library WrappedWITLib {
             }(
                 _radonHash,
                 Witnet.QuerySLA({
-                    witCommitteeSize: data().witOracleSettings.witOracleMinWitnesses,
-                    witUnitaryReward: data().witOracleSettings.witOracleQueriesUnitaryReward,
+                    witCommitteeSize: data().witOracleQuerySettings.minWitnesses,
+                    witUnitaryReward: data().witOracleQuerySettings.unitaryRewardPedros,
                     witResultMaxSize: _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_RESULT_SIZE
                 }),
                 Witnet.QueryCallback({
@@ -193,7 +193,7 @@ library WrappedWITLib {
 
     function witOracleEstimateWrappingFee(WitOracle witOracle, uint256 evmGasPrice) internal view returns (uint256) {
         return (
-            (100 + data().witOracleSettings.witOracleQueriesBaseFeeOverhead)
+            (100 + data().witOracleQuerySettings.baseFeeOverhead100)
                 * witOracle.estimateBaseFeeWithCallback(
                     evmGasPrice, 
                     _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_GAS_LIMIT

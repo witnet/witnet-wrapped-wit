@@ -20,9 +20,9 @@ interface IWrappedWIT {
     }
 
     struct WitOracleSettings {
-        uint16 witOracleMinWitnesses;
-        uint16 witOracleQueriesBaseFeeOverhead;
-        uint64 witOracleQueriesUnitaryReward;
+        uint16 minWitnesses;
+        uint16 baseFeeOverhead100;
+        uint64 unitaryRewardPedros;
     }
 
     enum WrappingStatus {
@@ -44,7 +44,7 @@ interface IWrappedWIT {
     
     function witOracleEstimateWrappingFee(uint256) external view returns (uint256);
     function witOracleProofOfReserveRadonBytecode() external view returns (bytes memory);
-    function witOracleSettings() external view returns (WitOracleSettings memory);
+    function witOracleQuerySettings() external view returns (WitOracleSettings memory);
     
     /// --- Authoritative methods -----------------------------
     function settleWitOracleSettings(WitOracleSettings calldata) external;
