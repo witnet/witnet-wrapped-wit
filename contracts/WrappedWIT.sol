@@ -298,6 +298,11 @@ contract WrappedWIT
                 )));
             }
 
+        require(
+            balanceOf(_msgSender()) >= value,
+            "not enough balance"
+        );
+
         // immediate reduction of burnable supply:
         __storage().witCustodianBalance.witUnlocked -= uint64(value);
 
