@@ -41,8 +41,6 @@ contract WrappedWIT
     uint16  internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_BASE_FEE_OVERHEAD = 50;
     uint64  internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_UNITARY_REWARD = 200_000_000; // 0.2 $WIT
     
-    uint56  internal constant _WRAPPED_WIT_BURNABLE_MIN_MIN_WITS = 10000;
-    
     WitOracle public immutable witOracle;
     IWitOracleRadonRequestModal public immutable witOracleCrossChainProofOfReserve;
     IWitOracleRadonRequestModal public immutable witOracleCrossChainProofOfInclusion;
@@ -51,9 +49,8 @@ contract WrappedWIT
 
     modifier checkUnwrapValue(uint64 value) {
         _require(
-            value >= __storage().evmSettings.burnableMinNanowits
-                && value <= __storage().witCustodianBalance.witUnlocked,
-            "invalid unwrap value"
+            value <= __storage().witCustodianBalance.witUnlocked, 
+            "cannot unwrap that much"
         ); _;
     }
 
@@ -121,7 +118,6 @@ contract WrappedWIT
         // Initialize authoritative parameters ----------------------------------------------------------------------
         __storage().evmAuthority = _evmAuthority;
         __storage().evmSettings = EvmSettings({
-            burnableMinNanowits: uint56(_WRAPPED_WIT_BURNABLE_MIN_MIN_WITS * 10 ** decimals()),
             witOracleMinWitnesses: block.chainid == _CANONICAL_CHAIN_ID ? 12 : _WIT_ORACLE_REPORTS_MIN_MIN_WITNESSES,
             witOracleQueriesBaseFeeOverhead: _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_BASE_FEE_OVERHEAD / 5, 
             witOracleQueriesUnitaryReward: _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_UNITARY_REWARD
@@ -240,8 +236,7 @@ contract WrappedWIT
         onlyAuthority
     {
         assert(
-            _settings.burnableMinNanowits >= _WRAPPED_WIT_BURNABLE_MIN_MIN_WITS * 10 ** decimals()
-                && _settings.witOracleMinWitnesses >= _WIT_ORACLE_REPORTS_MIN_MIN_WITNESSES
+            _settings.witOracleMinWitnesses >= _WIT_ORACLE_REPORTS_MIN_MIN_WITNESSES
                 && _settings.witOracleQueriesBaseFeeOverhead <= _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_BASE_FEE_OVERHEAD
                 && _settings.witOracleQueriesUnitaryReward >= _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_UNITARY_REWARD
         );

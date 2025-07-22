@@ -13,7 +13,6 @@ interface IWrappedWIT {
     event Unwrapped(address from, string into, uint256 value, uint256 timestamp);
 
     struct EvmSettings {
-        uint56 burnableMinNanowits;
         uint16 witOracleMinWitnesses;
         uint16 witOracleQueriesBaseFeeOverhead;
         uint64 witOracleQueriesUnitaryReward;
