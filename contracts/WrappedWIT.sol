@@ -42,8 +42,8 @@ contract WrappedWIT
     uint64  internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_UNITARY_REWARD = 200_000_000; // 0.2 $WIT
     
     WitOracle public immutable witOracle;
-    IWitOracleRadonRequestModal public immutable witOracleCrossChainProofOfReserve;
-    IWitOracleRadonRequestModal public immutable witOracleCrossChainProofOfInclusion;
+    IWitOracleRadonRequestModal public immutable witOracleCrossChainProofOfReserveTemplate;
+    IWitOracleRadonRequestModal public immutable witOracleCrossChainProofOfInclusionTemplate;
     
     Witnet.Address internal immutable __witCustodian;
 
@@ -74,7 +74,7 @@ contract WrappedWIT
         witOracle = WitOracle(IWitOracleAppliance(address(_witOracleRadonRequestFactory)).witOracle());
         string[2][] memory _httpRequestHeaders = new string[2][](1);
         _httpRequestHeaders[0] = [ "Content-Type", "application/json;charset=UTF-8" ];
-        witOracleCrossChainProofOfReserve = _witOracleRadonRequestFactory.buildRadonRequestModal(
+        witOracleCrossChainProofOfReserveTemplate = _witOracleRadonRequestFactory.buildRadonRequestModal(
             IWitOracleRadonRequestFactory.DataSourceRequest({
                 method: Witnet.RadonRetrievalMethods.HttpPost,
                 body: '{"jsonrpc":"2.0","method":"getBalance2","params":{"pkh":"\\1\\"},"id":1}',
@@ -89,7 +89,7 @@ contract WrappedWIT
                 filters: new Witnet.RadonFilter[](0)
             })
         );
-        witOracleCrossChainProofOfInclusion = _witOracleRadonRequestFactory.buildRadonRequestModal(
+        witOracleCrossChainProofOfInclusionTemplate = _witOracleRadonRequestFactory.buildRadonRequestModal(
             IWitOracleRadonRequestFactory.DataSourceRequest({
                 method: Witnet.RadonRetrievalMethods.HttpPost,
                 body: '{"jsonrpc":"2.0","method":"getValueTransfer","params":{"hash":"\\1\\","mode":"ethereal","force":true},"id":1}',
@@ -271,7 +271,7 @@ contract WrappedWIT
     {
         _witQueryId = WrappedWITLib.witOracleQueryWitnetValueTransferProofOfInclusion(
             witOracle,
-            witOracleCrossChainProofOfInclusion,
+            witOracleCrossChainProofOfInclusionTemplate,
             _witnetValueTransferTransactionHash
         );
         require(
@@ -411,7 +411,7 @@ contract WrappedWIT
     function __formallyVerifyRadonAssets(string[] memory _witRpcProviders) internal {    
         string[] memory _commonArgs = new string[](1);
         _commonArgs[0] = witCustodian();
-        __storage().witOracleProofOfReserveRadonHash = witOracleCrossChainProofOfReserve
+        __storage().witOracleProofOfReserveRadonHash = witOracleCrossChainProofOfReserveTemplate
             .verifyRadonRequest(
                 _commonArgs,
                 _witRpcProviders
