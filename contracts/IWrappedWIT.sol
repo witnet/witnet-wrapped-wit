@@ -8,21 +8,16 @@ interface IWrappedWIT {
 
     error Unauthorized();
 
-    event NewCurator(address from, address to);    
-    event Wrapped(string from, address into, uint256 value, Witnet.TransactionHash witnetValueTransferHash);
-    event Unwrapped(address from, string into, uint256 value, uint256 timestamp);
-
-    struct WitBalance {
-        uint64 witLocked;
-        uint64 witStaked;
-        uint64 witUnlocked;
-        Witnet.Timestamp witTimestamp;
-    }
+    event CuratorshipTransferred(address indexed evmPrevCurator, address indexed evmNewCurator);
+    event NewUnwrapper(string witUnwrapper, uint256 evmPrevBlock);
+    event ReserveUpdate(uint256 value, Witnet.Timestamp timestamp, Witnet.TransactionHash witDrtHash);
+    event Wrapped(string witSender, address evmRecipient, uint256 value, Witnet.TransactionHash witVttHash);
+    event Unwrapped(address evmSender, string  witRecipient, uint256 value, uint256 nonce);
 
     struct WitOracleSettings {
         uint16 minWitnesses;
         uint16 baseFeeOverhead100;
-        uint64 unitaryRewardPedros;
+        uint64 unitaryRewardNanowits;
     }
 
     enum WrappingStatus {
@@ -32,26 +27,28 @@ interface IWrappedWIT {
         Done
     }
 
-    /// --- Read-only methods -----------------------------------------------------------------------
-    function burnableSupply() external view returns (uint256);
-    function curator() external view returns (address);
+    /// --- Read-only methods -----------------------------------------------------------------------------------------
+    function evmCurator() external view returns (address);
     function getWrapTransactionLastQueryId(Witnet.TransactionHash) external view returns (uint256);
     function getWrapTransactionStatus(Witnet.TransactionHash) external view returns (WrappingStatus);
     function totalReserve() external view returns (uint256);
+    function totalUnwraps() external view returns (uint256);
     
     function witCustodian() external view returns (string memory);
-    function witCustodianBalance() external view returns (WitBalance memory);
+    function witUnwrapper() external view returns (string memory);
+    function witUnwrapperFromBlock() external view returns (uint256);
     
     function witOracleEstimateWrappingFee(uint256) external view returns (uint256);
     function witOracleProofOfReserveRadonBytecode() external view returns (bytes memory);
     function witOracleQuerySettings() external view returns (WitOracleSettings memory);
     
-    /// --- Authoritative methods -----------------------------
+    /// --- Authoritative methods -------------------------------------------------------------------------------------
     function settleWitOracleSettings(WitOracleSettings calldata) external;
     function settleWitRpcProviders(string[] calldata) external;
-    function transferAuthority(address) external;
+    function settleWitUnwrapper(string calldata) external;
+    function transferCuratorship(address) external;
 
-    // --- Permissionless state-modifying methods -------------------------------------
-    function wrap(Witnet.TransactionHash witTxHash) external payable returns (uint256);
-    function unwrap(uint64, string calldata) external;
+    // --- Permissionless state-modifying methods ---------------------------------------------------------------------
+    function wrap(Witnet.TransactionHash witTxHash) external payable returns (uint256 witOracleQueryId);
+    function unwrap(uint64, string calldata) external returns (uint256 evmUnwrapId);
 }

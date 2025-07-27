@@ -15,15 +15,17 @@ contract WrappedWITDeployer is Ownable2Step {
     /// @notice Deploy canonical version of the WrappedWIT token.
     /// @param salt Salt that determines the address of the new contract.
     /// @param creationCode Creation bytecode of the canonical implementation of the Wrapped/WIT token.
-    /// @param initialAuthority EVM address that will be granted permissions for altering authoritative settings.
-    /// @param witCustodianAddressBech32 Witnet Custodian address where wrapped tokens will be pegged to. 
-    /// @param witOracleRadonRequestFactory Radon Request Factory artifact address (bound to the Wit/Oracle bridge contract).
+    /// @param evmRadonRequestFactory Radon Request Factory artifact address (bound to the Wit/Oracle bridge contract).
+    /// @param evmAuthority EVM address that will be granted permissions for altering authoritative settings.
+    /// @param witCustodianBech32 Immutable WIT/ Custodian cold wallet address. 
+    /// @param witUnwrapperBech32 WIT/ Custodian hot wallet address. 
     function deployCanonical(
             uint256 salt, 
             bytes calldata creationCode,
-            address initialAuthority,
-            string memory witCustodianAddressBech32,
-            address witOracleRadonRequestFactory
+            address evmRadonRequestFactory,
+            address evmAuthority,
+            string memory witCustodianBech32,
+            string memory witUnwrapperBech32
         )
         virtual public
         onlyOwner
@@ -34,14 +36,15 @@ contract WrappedWITDeployer is Ownable2Step {
             abi.encodePacked(
                 creationCode,
                 abi.encode(
-                    witCustodianAddressBech32,
-                    witOracleRadonRequestFactory
+                    evmRadonRequestFactory,
+                    witCustodianBech32
                 )
             )
         );
         (bool _success,) = _deployed.call(abi.encodeWithSignature(
-            "initialize(address)",
-            initialAuthority
+            "initialize(address,string)",
+            evmAuthority,
+            witUnwrapperBech32
         ));
         require(_success, "initialization failed");
     }

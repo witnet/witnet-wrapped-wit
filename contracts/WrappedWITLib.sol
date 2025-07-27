@@ -22,11 +22,16 @@ library WrappedWITLib {
     uint16  internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_RESULT_SIZE = 256;
 
     struct Storage {
-        address curator;
-        IWrappedWIT.WitBalance witCustodianBalance;
+        address evmCurator; uint32 _0;
+        Witnet.Timestamp evmLastReserveTimestamp;
+        uint64  evmLastReserveNanowits;
+        uint64  evmUnwraps;
+        uint128 witUnwrapperFromBlock;
+        Witnet.Address witUnwrapper; uint96 _1;
         IWrappedWIT.WitOracleSettings witOracleQuerySettings;
         string[] witOracleCrossChainRpcProviders;
         Witnet.RadonHash witOracleProofOfReserveRadonHash;
+        
         mapping (Witnet.TransactionHash => uint256) witOracleWrappingTransactionLastQueryId;
         mapping (uint256 => Witnet.TransactionHash) witOracleWrappingQueryTransactionHash;
     }
@@ -35,61 +40,51 @@ library WrappedWITLib {
     // ================================================================================================================
     // --- Public functions -------------------------------------------------------------------------------------------
 
-    function parseWitnetAddress(string calldata witAddrBech32, bool isMainnet)
-        public pure 
-        returns (Witnet.Address)
-    {
-        return Witnet.fromBech32(witAddrBech32, isMainnet);
-    }
-
     function parseWitOracleProofOfReserve(Witnet.DataResult memory witOracleProofOfReserve)
         public view
-        returns (IWrappedWIT.WitBalance memory)
+        returns (uint64)
     {
-
         uint64[] memory _witBalance;
         if (witOracleProofOfReserve.status == Witnet.ResultStatus.NoErrors) {
             _witBalance = witOracleProofOfReserve.fetchUint64Array();
         }
         require(
             witOracleProofOfReserve.status == Witnet.ResultStatus.NoErrors
-                && witOracleProofOfReserve.timestamp.gt(data().witCustodianBalance.witTimestamp)
+                && witOracleProofOfReserve.timestamp.gt(data().evmLastReserveTimestamp)
                 && _witBalance.length == 3,
             "invalid report"
         );
-        return IWrappedWIT.WitBalance({
-            witLocked: _witBalance[0],
-            witStaked: _witBalance[1],
-            witUnlocked: _witBalance[2],
-            witTimestamp: witOracleProofOfReserve.timestamp
-        });
+        return (
+            _witBalance[0]
+                + _witBalance[1]
+                + _witBalance[2]
+        );
     }
 
     function processWitOracleQueryResult(
             uint256 witOracleQueryId,
-            bytes calldata witOracleQueryResult,
-            bool isMainnet
+            bytes calldata witOracleQueryResult
         )
         public
         returns (
-            Witnet.TransactionHash _witnetValueTransferHash,
-            Witnet.Address _witnetValueTransferRecipient,
-            string memory _witnetValueTransferSenderBech32,
-            address _account,
+            Witnet.TransactionHash _witValueTransferTransactionHash,
+            string memory _witRecipientBech32,
+            string memory _witWrapperBech32,
+            address _evmRecipient,
             uint64 _value
         )
     {
-        _witnetValueTransferHash = data().witOracleWrappingQueryTransactionHash[witOracleQueryId];
+        _witValueTransferTransactionHash = data().witOracleWrappingQueryTransactionHash[witOracleQueryId];
 
         // Check that the query id actually refers to a wit/wrap tx that's being validated:
         require(
-            Witnet.TransactionHash.unwrap(_witnetValueTransferHash) != bytes32(0), 
+            Witnet.TransactionHash.unwrap(_witValueTransferTransactionHash) != bytes32(0), 
             "invalid query id"
         );
 
         // Check that the Wit/wrap tx being reported has not yet been validated:
         require(
-            data().witOracleWrappingTransactionLastQueryId[_witnetValueTransferHash]
+            data().witOracleWrappingTransactionLastQueryId[_witValueTransferTransactionHash]
                 != _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED, 
             "wit/wrap tx already minted"
         );
@@ -110,54 +105,56 @@ library WrappedWITLib {
         );
             
         // Avoid double-spending by marking the Witnet value transfer hash as already parsed and processed:
-        data().witOracleWrappingTransactionLastQueryId[_witnetValueTransferHash] = _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED;
+        data().witOracleWrappingTransactionLastQueryId[_witValueTransferTransactionHash] = _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED;
 
         // Try to parse Witnet Value Transfer metadata being reported:
         WitnetCBOR.CBOR[] memory _metadata = _witOracleQueryResult.fetchCborArray();
         /**
          * [
-         *   finalized: uint8,
-         *   metadata: string,
-         *   recipient: string,
-         *   sender: string,
-         *   timestamp: uint64,
-         *   value: uint64,
+         *   0 -> finalized: uint8,
+         *   1 -> metadata: string,
+         *   2 -> recipient: string,
+         *   3 -> sender: string,
+         *   4 -> timestamp: uint64,
+         *   5 -> value: uint64,
          * ]
          **/
 
         // Revert if the referred Witnet transaction is reported to not be finalized just yet:
         require(_metadata[0].readUint() == 1, "unfinalized query result");
-        _witnetValueTransferRecipient = Witnet.fromBech32(_metadata[2].readString(), isMainnet);
-        _witnetValueTransferSenderBech32 = _metadata[3].readString();
-        _account = Witnet.toAddress(
+        
+        // Parse data result:
+        _witRecipientBech32 = _metadata[2].readString();
+        _witWrapperBech32 = _metadata[3].readString();
+        _evmRecipient = Witnet.toAddress(
             Witnet.parseHexString(
                 _metadata[1].readString()
             )
         );
-        _value = _metadata[5].readUint();
         Witnet.Timestamp _valueTimestamp = Witnet.Timestamp.wrap(_metadata[4].readUint());
-
+        _value = _metadata[5].readUint();
+        
         // Also increase the burnable supply, only if the VTT's actual timestamp is greater than the last PoR's timestamp:
-        if (_valueTimestamp.gt(data().witCustodianBalance.witTimestamp)) {
-            data().witCustodianBalance.witUnlocked += _value;
+        if (_valueTimestamp.gt(data().evmLastReserveTimestamp)) {
+            data().evmLastReserveNanowits += _value;
         }
     }
 
     function witOracleQueryWitnetValueTransferProofOfInclusion(
             WitOracle witOracle, 
-            IWitOracleRadonRequestModal witOracleCrossChainProofOfInclusion,
-            Witnet.TransactionHash witnetValueTransferHash
+            IWitOracleRadonRequestModal witOracleCrossChainProofOfInclusionTemplate,
+            Witnet.TransactionHash witValueTransferTransactionHash
         ) 
         public 
         returns (uint256 _witQueryId)
     {
-        _witQueryId = data().witOracleWrappingTransactionLastQueryId[witnetValueTransferHash];
+        _witQueryId = data().witOracleWrappingTransactionLastQueryId[witValueTransferTransactionHash];
         if (
             _witQueryId != _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED
         ) {
             string[] memory _commonArgs = new string[](1);
-            _commonArgs[0] = Witnet.toHexString(Witnet.TransactionHash.unwrap(witnetValueTransferHash));
-            Witnet.RadonHash _radonHash = witOracleCrossChainProofOfInclusion
+            _commonArgs[0] = Witnet.toHexString(Witnet.TransactionHash.unwrap(witValueTransferTransactionHash));
+            Witnet.RadonHash _radonHash = witOracleCrossChainProofOfInclusionTemplate
                 .verifyRadonRequest(
                     _commonArgs,
                     data().witOracleCrossChainRpcProviders
@@ -168,7 +165,7 @@ library WrappedWITLib {
                 _radonHash,
                 Witnet.QuerySLA({
                     witCommitteeSize: data().witOracleQuerySettings.minWitnesses,
-                    witUnitaryReward: data().witOracleQuerySettings.unitaryRewardPedros,
+                    witUnitaryReward: data().witOracleQuerySettings.unitaryRewardNanowits,
                     witResultMaxSize: _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_RESULT_SIZE
                 }),
                 Witnet.QueryCallback({
@@ -176,8 +173,8 @@ library WrappedWITLib {
                     gasLimit: _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_GAS_LIMIT
                 })
             );
-            data().witOracleWrappingTransactionLastQueryId[witnetValueTransferHash] = _witQueryId;
-            data().witOracleWrappingQueryTransactionHash[_witQueryId] = witnetValueTransferHash;
+            data().witOracleWrappingTransactionLastQueryId[witValueTransferTransactionHash] = _witQueryId;
+            data().witOracleWrappingQueryTransactionHash[_witQueryId] = witValueTransferTransactionHash;
         }
     }
 

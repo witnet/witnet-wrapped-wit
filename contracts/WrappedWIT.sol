@@ -46,30 +46,25 @@ contract WrappedWIT
     IWitOracleRadonRequestModal public immutable witOracleCrossChainProofOfInclusionTemplate;
     
     Witnet.Address internal immutable __witCustodian;
+    bytes32 internal immutable __witCustodianBech32Hash;
 
-    modifier checkUnwrapValue(uint64 value) {
-        _require(
-            value <= __storage().witCustodianBalance.witUnlocked, 
-            "cannot unwrap that much"
-        ); _;
-    }
-
-    modifier onlyAuthority {
+    modifier onlyCurator {
         require(
-            _msgSender() == __storage().curator, 
+            _msgSender() == __storage().evmCurator, 
             Unauthorized()
         ); _;
     }
 
     constructor(
-            string memory _witCustodian,
-            IWitOracleRadonRequestFactory _witOracleRadonRequestFactory
+            IWitOracleRadonRequestFactory _witOracleRadonRequestFactory,
+            string memory _witCustodianBech32
         )
         ERC20("Wrapped WIT", "WIT")
         ERC20Permit("Wrapped/WIT")
     {
         // Settle immutable parameters --------------------------------------------------------------------------------
-        __witCustodian = Witnet.fromBech32(_witCustodian, block.chainid == _CANONICAL_CHAIN_ID);
+        __witCustodian = Witnet.fromBech32(_witCustodianBech32, block.chainid == _CANONICAL_CHAIN_ID);
+        __witCustodianBech32Hash = keccak256(bytes(_witCustodianBech32));
 
         witOracle = WitOracle(IWitOracleAppliance(address(_witOracleRadonRequestFactory)).witOracle());
         string[2][] memory _httpRequestHeaders = new string[2][](1);
@@ -77,7 +72,7 @@ contract WrappedWIT
         witOracleCrossChainProofOfReserveTemplate = _witOracleRadonRequestFactory.buildRadonRequestModal(
             IWitOracleRadonRequestFactory.DataSourceRequest({
                 method: Witnet.RadonRetrievalMethods.HttpPost,
-                body: '{"jsonrpc":"2.0","method":"getBalance2","params":{"pkh":"\\1\\"},"id":1}',
+                body: '{"jsonrpc":"2.0","method":"getBalance2","params":{"pkh":"\\1\\;\\2\\"},"id":1}',
                 headers: _httpRequestHeaders,
                 script: // [RadonString] parseJSONMap()
                         // [RadonMap]    getMap("result")
@@ -97,12 +92,7 @@ contract WrappedWIT
                 script: // [RadonString] parseJSONMap()
                         // [RadonMap]    getMap("result")
                         // [RadonArray]  values()
-                        hex"83187782186666726573756c741869"                    
-                // script: // [RadonString] parseJSONMap()
-                //         // [RadonMap]    getMap("result")
-                //         // [RadonMap]    getMap("ethereal")
-                //         // [RadonArray]  values()
-                //         hex"84187782186666726573756C7482186668657468657265616C1869"
+                        hex"83187782186666726573756c741869"
             }),
             Witnet.RadonReducer({
                 opcode: Witnet.RadonReduceOpcodes.Mode,
@@ -111,16 +101,22 @@ contract WrappedWIT
         );
     }
 
-    function initialize(address _curator) external initializer {
-        // Validate constructor parameters -----------------------------
-        _require(_curator != address(0), "invalid EVM curator address");
+    function initialize(
+            address _evmCurator,
+            string calldata _witUnwrapperBech32
+        ) 
+        external 
+        initializer
+    {
+        // Initialize authority --------
+        __storage().evmCurator = _evmCurator;
+        emit CuratorshipTransferred(address(0), _evmCurator);
         
-        // Initialize authoritative parameters ----------------------------------------------------------------------
-        __storage().curator = _curator;
+        // Initialize authoritative parameters -------------------------------------------------------------
         __storage().witOracleQuerySettings = WitOracleSettings({
             minWitnesses: block.chainid == _CANONICAL_CHAIN_ID ? 12 : _WIT_ORACLE_REPORTS_MIN_MIN_WITNESSES,
             baseFeeOverhead100: _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_BASE_FEE_OVERHEAD / 5, 
-            unitaryRewardPedros: _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_UNITARY_REWARD
+            unitaryRewardNanowits: _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_UNITARY_REWARD
         });
         string[] memory _witOracleRpcProviders = new string[](1);
         _witOracleRpcProviders[0] = (
@@ -130,8 +126,8 @@ contract WrappedWIT
         );
         __storage().witOracleCrossChainRpcProviders = _witOracleRpcProviders;
 
-        // Formally verify parameterized Radon assets ------
-        __formallyVerifyRadonAssets(_witOracleRpcProviders);
+        // Settle Wit/ Unwrapper address and formally verify parameterized Radon assets:
+        __settleWitUnwrapper(_witUnwrapperBech32);
     }
 
  
@@ -153,17 +149,9 @@ contract WrappedWIT
 
     /// ===============================================================================================================
     /// --- Wrapped/WIT read-only methods -----------------------------------------------------------------------------
-
-    function burnableSupply() override external view returns (uint256) {
-        return __storage().witCustodianBalance.witUnlocked;
-    }
     
-    function curator() override external view returns (address) {
-        return __storage().curator;
-    }
-
-    function witOracleQuerySettings() override external view returns (WitOracleSettings memory) {
-        return __storage().witOracleQuerySettings;
+    function evmCurator() override external view returns (address) {
+        return __storage().evmCurator;
     }
 
     function getWrapTransactionLastQueryId(Witnet.TransactionHash _witnetValueTransferTransactionHash)
@@ -195,21 +183,24 @@ contract WrappedWIT
         }
     }
 
-
     function totalReserve() override external view returns (uint256) {
-        return (
-            __storage().witCustodianBalance.witUnlocked
-                + __storage().witCustodianBalance.witStaked
-                + __storage().witCustodianBalance.witLocked
-        );
+        return __storage().evmLastReserveNanowits;
+    }
+
+    function totalUnwraps() override external view returns (uint256) {
+        return __storage().evmUnwraps;
     }
 
     function witCustodian() override public view returns (string memory) {
         return __witCustodian.toBech32(block.chainid == _CANONICAL_CHAIN_ID);
     }
 
-    function witCustodianBalance() override public view returns (WitBalance memory) {
-        return __storage().witCustodianBalance;
+    function witUnwrapper() override public view returns (string memory) {
+        return __storage().witUnwrapper.toBech32(block.chainid == _CANONICAL_CHAIN_ID);
+    }
+
+    function witUnwrapperFromBlock() override public view returns (uint256) {
+        return __storage().witUnwrapperFromBlock;
     }
 
     function witOracleEstimateWrappingFee(uint256 evmGasPrice) override external view returns (uint256) {
@@ -227,38 +218,52 @@ contract WrappedWIT
             );
     }
 
+    function witOracleQuerySettings() override external view returns (WitOracleSettings memory) {
+        return __storage().witOracleQuerySettings;
+    }
+
 
     /// ===============================================================================================================
     /// --- Wrapped/WIT authoritative methods -------------------------------------------------------------------------
 
     function settleWitOracleSettings(WitOracleSettings calldata _settings)
         external
-        onlyAuthority
+        onlyCurator
     {
         assert(
             _settings.minWitnesses >= _WIT_ORACLE_REPORTS_MIN_MIN_WITNESSES
                 && _settings.baseFeeOverhead100 <= _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_BASE_FEE_OVERHEAD
-                && _settings.unitaryRewardPedros >= _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_UNITARY_REWARD
+                && _settings.unitaryRewardNanowits >= _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_UNITARY_REWARD
         );
         __storage().witOracleQuerySettings = _settings;
     }
 
     function settleWitRpcProviders(string[] memory _witRpcProviders)
         external
-        onlyAuthority
+        onlyCurator
     {
         assert(_witRpcProviders.length > 0);
-        __formallyVerifyRadonAssets(_witRpcProviders);
         __storage().witOracleCrossChainRpcProviders = _witRpcProviders;
+        __formallyVerifyRadonAssets(
+            _witRpcProviders, 
+            __storage().witUnwrapper.toBech32(block.chainid == _CANONICAL_CHAIN_ID)
+        );
     }
 
-    function transferAuthority(address _newCurator)
-        external 
-        onlyAuthority
+    function settleWitUnwrapper(string calldata _witUnwrapperBech32)
+        external
+        onlyCurator
+    {
+        __settleWitUnwrapper(_witUnwrapperBech32);
+    }
+
+    function transferCuratorship(address _newCurator)
+        public 
+        onlyCurator
     {
         assert(_newCurator != address(0));
-        emit NewCurator(__storage().curator, _newCurator);
-        __storage().curator = _newCurator;
+        emit CuratorshipTransferred(__storage().evmCurator, _newCurator);
+        __storage().evmCurator = _newCurator;
     }
 
     
@@ -267,45 +272,58 @@ contract WrappedWIT
 
     function wrap(Witnet.TransactionHash _witnetValueTransferTransactionHash)
         override public payable
-        returns (uint256 _witQueryId)
+        returns (uint256 _witOracleQueryId)
     {
-        _witQueryId = WrappedWITLib.witOracleQueryWitnetValueTransferProofOfInclusion(
+        _witOracleQueryId = WrappedWITLib.witOracleQueryWitnetValueTransferProofOfInclusion(
             witOracle,
             witOracleCrossChainProofOfInclusionTemplate,
             _witnetValueTransferTransactionHash
         );
         require(
-            _witQueryId != WrappedWITLib._WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED, 
+            _witOracleQueryId != WrappedWITLib._WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED, 
             "already minted"
         );
     }
 
-    function unwrap(uint64 value, string calldata witAddrBech32)
+    function unwrap(uint64 value, string calldata witRecipientBech32)
         override external
-        checkUnwrapValue(value)
+        returns (uint256 evmUnwrapId)
     {
-        try WrappedWITLib.parseWitnetAddress(witAddrBech32, block.chainid == _CANONICAL_CHAIN_ID) 
-            returns (Witnet.Address) {}
-            catch (bytes memory) {
-                _revert(string(abi.encodePacked(
-                    "invalid address: ",
-                    witAddrBech32
-                )));
-            }
-
+        uint64 _evmLastReserveNanowits = __storage().evmLastReserveNanowits;
         require(
             balanceOf(_msgSender()) >= value,
             "not enough balance"
         );
+        require(
+            value <= _evmLastReserveNanowits
+                && block.number >= __storage().witUnwrapperFromBlock,
+            "cannot unwrap atm"
+        );
+        Witnet.Address _recipient = Witnet.fromBech32(
+            witRecipientBech32, 
+            block.chainid == _CANONICAL_CHAIN_ID
+        );
+        require(
+            !_recipient.eq(__witCustodian),
+            "invalid recipient"
+        );
 
-        // immediate reduction of burnable supply:
-        __storage().witCustodianBalance.witUnlocked -= uint64(value);
+        // immediate reduction of reserve supply:
+        __storage().evmLastReserveNanowits = _evmLastReserveNanowits - value;
 
         // immediate burning of wrapped wit tokens:
         _burn(_msgSender(), value);
 
+        // increment unwrap id:
+        evmUnwrapId = ++ __storage().evmUnwraps;
+
         // emit events
-        emit Unwrapped(_msgSender(), witAddrBech32, value, block.timestamp);
+        emit Unwrapped(
+            _msgSender(), 
+            witRecipientBech32, 
+            value, 
+            evmUnwrapId
+        );
     }
 
     
@@ -330,26 +348,30 @@ contract WrappedWIT
 
         try WrappedWITLib.processWitOracleQueryResult(
             queryId, 
-            queryResult,
-            block.chainid == _CANONICAL_CHAIN_ID
+            queryResult
         
         ) returns (
-            Witnet.TransactionHash _witnetValueTransferHash,
-            Witnet.Address _witnetValueTransferRecipient,
-            string memory _witnetValueTransferSenderBech32,
-            address _account,
+            Witnet.TransactionHash _witValueTransferTransactionHash,
+            string memory _witRecipientBech32,
+            string memory _witWrapperBech32,
+            address _evmRecipient,
             uint64 _value
         ) {
             _require(
-                __witCustodian.eq(_witnetValueTransferRecipient),
+                keccak256(bytes(_witRecipientBech32)) == __witCustodianBech32Hash,
                 "invalid custodian"
             );
 
             // mint newly wrapped tokens:
-            _mint(_account, _value);
+            _mint(_evmRecipient, _value);
 
             // emit events:
-            emit Wrapped(_witnetValueTransferSenderBech32, _account, _value, _witnetValueTransferHash);
+            emit Wrapped(
+                _witWrapperBech32, 
+                _evmRecipient, 
+                _value, 
+                _witValueTransferTransactionHash
+            );
 
         } catch Error(string memory _reason) {
             _revert(_reason);
@@ -380,20 +402,28 @@ contract WrappedWIT
             "invalid radon hash"
         );
 
+        // Ask the Wit/Oracle to validate and parse the posted query's result: 
         Witnet.DataResult memory _witOracleProofOfReserve = witOracle
             .pushDataReport(
                 report,
                 proof
             );
 
+        // Parse expected integer from the posted query's result:
         try WrappedWITLib.parseWitOracleProofOfReserve(
             _witOracleProofOfReserve
         
         ) returns (
-            WitBalance memory _witCustodianBalance
+            uint64 _totalReserve
         
         ) {
-            __storage().witCustodianBalance = _witCustodianBalance;
+            __storage().evmLastReserveNanowits = _totalReserve;
+            __storage().evmLastReserveTimestamp = _witOracleProofOfReserve.timestamp;
+            emit ReserveUpdate(
+                _totalReserve, 
+                _witOracleProofOfReserve.timestamp,
+                _witOracleProofOfReserve.drTxHash 
+            );
 
         } catch Error(string memory _reason) {
             _revert(_reason);
@@ -408,9 +438,15 @@ contract WrappedWIT
     /// --- Internal methods ------------------------------------------------------------------------------------------
 
     /// @dev Formally verify cross-chain Radon request for notarizing custodian's proofs of reserve.
-    function __formallyVerifyRadonAssets(string[] memory _witRpcProviders) internal {    
-        string[] memory _commonArgs = new string[](1);
+    function __formallyVerifyRadonAssets(
+            string[] memory _witRpcProviders,
+            string memory _witUnwrapperBech32
+        )
+        internal
+    {    
+        string[] memory _commonArgs = new string[](2);
         _commonArgs[0] = witCustodian();
+        _commonArgs[1] = _witUnwrapperBech32;
         __storage().witOracleProofOfReserveRadonHash = witOracleCrossChainProofOfReserveTemplate
             .verifyRadonRequest(
                 _commonArgs,
@@ -435,6 +471,21 @@ contract WrappedWIT
 
     function _revertUnhandled() internal pure {
         _revert("unhandled exception");
+    }
+
+    function __settleWitUnwrapper(string memory _witUnwrapperBech32)
+        internal
+    {
+        __storage().witUnwrapper = Witnet.fromBech32(_witUnwrapperBech32, block.chainid == _CANONICAL_CHAIN_ID);
+        __formallyVerifyRadonAssets(
+            __storage().witOracleCrossChainRpcProviders,
+            _witUnwrapperBech32
+        );
+        emit NewUnwrapper(
+            _witUnwrapperBech32, 
+            __storage().witUnwrapperFromBlock
+        );
+        __storage().witUnwrapperFromBlock = uint96(block.number + 1);
     }
 
     function __storage() internal pure returns (WrappedWITLib.Storage storage) {

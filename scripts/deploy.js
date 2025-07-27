@@ -1,5 +1,5 @@
 const { ethers, network } = require("hardhat");
-const witnet = require("@witnet/solidity")
+const { getNetworkAddresses } = require("witnet-solidity-bridge")
 
 const addresses = require("../addresses.json")
 const settings = require("../src/settings")
@@ -17,24 +17,25 @@ async function main() {
         !addresses.default.WrappedWITDeployer
             || (await ethers.provider.getCode(addresses.default.WrappedWITDeployer)).length < 3
     ) {
-        console.info("> EVM curator address:      ", curator.address)
+        console.info("> Wrapped/WIT EVM curator:   ", curator.address)
         deployer = await Deployer.connect(curator).deploy()
         addresses.default.WrappedWITDeployer = await deployer.getAddress()
     } else {
         deployer = Deployer.attach(addresses.default.WrappedWITDeployer)    
     }
-    console.info("> Wrapped/WIT deployer:     ", `${await deployer.getAddress()} [WrappedWITDeployer]`)
+    console.info("> Wrapped/WIT EVM deployer:  ", `${await deployer.getAddress()} [WrappedWITDeployer]`)
     
     const tokenCustodianBech32 = settings[network.name]?.custodian
+    const tokenUnwrapperBech32 = settings[network.name]?.unwrapper || tokenCustodianBech32
     const tokenSalt = settings[network.name]?.salt || settings?.default.salt
     
     if (tokenCustodianBech32) {    
-        const witOracleRadonRequestFactoryAddr = witnet.getNetworkAddresses(network.name).core.WitOracleRadonRequestFactory
+        const witOracleRadonRequestFactoryAddr = getNetworkAddresses(network.name).core.WitOracleRadonRequestFactory
         if (
             addresses[network.name][tokenContract]
                 && (await ethers.provider.getCode(addresses[network.name][tokenContract])).length > 2
         ) {
-            console.info("> Wrapped/WIT contract:     ", `${addresses[network.name][tokenContract]} [${tokenContract}]`)
+            console.info("> Wrapped/WIT EVM contract:  ", `${addresses[network.name][tokenContract]} [${tokenContract}]`)
             process.exit(0)
         }
         const tokenAddr = await deployer.determineAddr.staticCall(tokenSalt)
@@ -52,33 +53,34 @@ async function main() {
         } catch {}
 
         const evmCurator = settings[network.name]?.authority || settings.default?.authority || curator.address
-        // console.info("> Wrapped/WIT bytecode:    ", Token.bytecode)
-        console.info("> Wrapped/WIT curator:      ", evmCurator)
-        console.info("> Wrapped/WIT library:      ", `${addresses[network.name][tokenLibrary]} [${tokenLibrary}]`)
-        console.info("> Wrapped/WIT custodian:    ", tokenCustodianBech32)
-        console.info("> Wrapped/WIT Radon factory:", `${witOracleRadonRequestFactoryAddr} [WitOracleRadonRequestFactory]`)
+        
+        console.info("> Wrapped/WIT EVM library:  ", `${addresses[network.name][tokenLibrary]} [${tokenLibrary}]`)
+        console.info("> Wrapped/WIT EVM curator:  ", evmCurator)
+        console.info("> Wrapped/WIT cold wallet:  ", tokenCustodianBech32)
+        console.info("> Wrapped/WIT hot wallet:   ", tokenUnwrapperBech32)
         console.info("> Wrapped/WIT deploy salt:  ", tokenSalt)
         
         const Token = await ethers.getContractFactory(tokenContract, { libraries })
         await deployer.connect(curator).deployCanonical.send(
             tokenSalt,
             Token.bytecode,
+            witOracleRadonRequestFactoryAddr,
             evmCurator,
             tokenCustodianBech32,
-            witOracleRadonRequestFactoryAddr
+            tokenUnwrapperBech32,
         ).then(response => {
             console.info("> Wrapped/WIT deploy tx:    ", response.hash)  
         }).catch(err => {
             console.error(err.code)
         })
-        console.info("> Wrapped/WIT contract:     ", `${tokenAddr} [${tokenContract}]`)
+        console.info("> Wrapped/WIT EVM contract: ", `${tokenAddr} [${tokenContract}]`)
         
     } else {
         if (
             addresses[network.name][tokenContract]
                 && (await ethers.provider.getCode(addresses[network.name][tokenContract])).length > 2
         ) {
-            console.info("> Wrapped/WIT contract:     ", `${addresses[network.name][tokenContract]} [${tokenContract}]`)
+            console.info("> Wrapped/WIT EVM contract: ", `${addresses[network.name][tokenContract]} [${tokenContract}]`)
             process.exit(0)
         }
         console.info("> Wrapped/WIT deploy salt:  ", tokenSalt)
@@ -90,7 +92,7 @@ async function main() {
         ).then(response => {
             console.info("> Wrapped/WIT deploy tx:    ", response.hash)  
         })
-        console.info("> Wrapped/WIT contract:     ", `${tokenAddr} [${tokenContract}]`)
+        console.info("> Wrapped/WIT EVM contract: ", `${tokenAddr} [${tokenContract}]`)
     }
 }
 
