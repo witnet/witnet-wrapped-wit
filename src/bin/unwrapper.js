@@ -52,8 +52,9 @@ async function main() {
 
     const minBalance = Witnet.Coins.fromWits(WIT_MIN_BALANCE)
 
-    let balance = await checkWitnetBalance()
-    console.info(`Initial balance:   ${balance.toString(2)}`)
+    let balance = 0n
+    balance = await checkWitnetBalance()
+    console.info(`Initial balance:   ${balance.toString(2)} (${wallet.coinbase.cacheInfo.size} UTXOs)`)
     if (balance.pedros < minBalance.pedros) {
         console.error(`❌ Fatal: hot wallet must be funded with at least ${minBalance.toString(2)}.`)
         process.exit(0)
@@ -280,24 +281,24 @@ async function main() {
     }
 
     async function checkWitnetBalance() {
-        let balance = Witnet.Coins.fromPedros((await wallet.coinbase.getBalance()).unlocked)
+        let newBalance = Witnet.Coins.fromPedros((await wallet.coinbase.getBalance()).unlocked)
         let now = Math.floor(Date.now() / 1000)
         let utxos = (await wallet.coinbase.getUtxos()).filter(utxo => utxo.timelock <= now)
-        if (utxos.length < WIT_MIN_UTXOS) {
+        if (newBalance.nanowits > balance.nanowits && utxos.length < WIT_MIN_UTXOS) {
             const splits = Math.min(WIT_MIN_UTXOS * 2, 50)
             let fees = 10000n
             const recipients = []
-            const value = Witnet.Coins.fromPedros((balance.pedros - fees) / BigInt(splits))
-            fees += (balance.pedros - fees) % BigInt(splits)
+            const value = Witnet.Coins.fromPedros((newBalance.pedros - fees) / BigInt(splits))
+            fees += (newBalance.pedros - fees) % BigInt(splits)
             recipients.push(...Array(splits).fill([ wallet.coinbase.pkh, value ]))
             const receipt = await VTTs.sendTransaction({ recipients, fees: Witnet.Coins.fromPedros(fees) })
             console.info(JSON.stringify(receipt.tx, utils.txJsonReplacer, 4))
             await VTTs.confirmTransaction(receipt.hash, {
                 onStatusChange: (receipt) => { console.info(`> Splitting UTXOs => ${receipt.hash} [${receipt.status}]`)},
             })
-            balance = Witnet.Coins.fromPedros((await wallet.coinbase.getBalance()).unlocked)
+            newBalance = Witnet.Coins.fromPedros((await wallet.coinbase.getBalance()).unlocked)
         }
-        return balance
+        return newBalance
     }
 
     connect()
