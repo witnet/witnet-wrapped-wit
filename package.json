@@ -24,22 +24,22 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
+    "ethereum",
     "witnet",
     "wit/oracle",
     "$WIT",
-    "crypto",
     "token",
     "ERC-20"
   ],
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/community-contracts": "git+https://github.com/OpenZeppelin/openzeppelin-community-contracts.git#master",
+    "@openzeppelin/contracts": "^5.3.0",
+    "@openzeppelin/contracts-upgradeable": "^5.3.0",
     "cross-env": "^7.0.3",
     "hardhat": "^2.24.1"
   },
   "dependencies": {
-    "@openzeppelin/community-contracts": "git+https://github.com/OpenZeppelin/openzeppelin-community-contracts.git#master",
-    "@openzeppelin/contracts": "^5.3.0",
-    "@openzeppelin/contracts-upgradeable": "^5.3.0",
     "@witnet/sdk": "^1.0.5",
     "witnet-solidity-bridge": "latest",
     "dotenv": "^16.4.1",

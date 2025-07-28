@@ -53,7 +53,7 @@ async function main() {
     const minBalance = Witnet.Coins.fromWits(WIT_MIN_BALANCE)
 
     let balance = await checkWitnetBalance()
-    console.info(`Witnet balance:    ${balance.toString(2)}`)
+    console.info(`Initial balance:   ${balance.toString(2)}`)
     if (balance.pedros < minBalance.pedros) {
         console.error(`❌ Fatal: hot wallet must be funded with at least ${minBalance.toString(2)}.`)
         process.exit(0)
@@ -72,6 +72,7 @@ async function main() {
     let provider;
     let contract;
 
+    let inbound = []
     let vttEthMempool = {}
     let vttBlockNumbers = {}
     
@@ -124,8 +125,13 @@ async function main() {
             console.info(`> EVM block number:  ${blockNumber}`)
             if (Number(blockNumber) % 10 === 0) {
                 balance = await checkWitnetBalance()
-                console.info(`> Witnet balance:    ${balance.toString(2)}`)
+                if (balance.nanowits < minBalance.nanowits) {
+                    console.error(`> Witnet balance below ${minBalance.toString(2)}`)
+                } else {
+                    console.info (`> Witnet balance: ${balance.toString(2)}`)
+                }
             }
+            flushInbound()
         })
 
         provider.on("error", err => {
@@ -148,6 +154,62 @@ async function main() {
         }
     }
 
+    async function flushInbound() {
+        const pending = []
+        const pendingValue = 0n
+        for (let index = 0; index < inbound.length; index ++) {
+            const unwrap = inbound[index]
+            if (wallet.coinbase.cacheInfo.expendable > unwrap?.value) {
+                const { blockNumber, nonce, from, to, digest, metadata, value } = unwrap
+                
+                let vtt; 
+                try {
+                    vtt = await VTTs.sendTransaction({
+                        recipients: [ 
+                            [ to, Witnet.Coins.fromPedros(value) ], 
+                            [ metadata, Witnet.Coins.fromPedros(1n) ]
+                        ],
+                        fees: WIT_VTT_PRIORITY
+                    })
+                } catch (err) {
+                    console.error(err)
+                    pending.push(unwrap)
+                    pendingValue += unwrap.value
+                    continue
+                }
+
+                console.info(`> Unwrapping { block: ${blockNumber}, nonce: ${nonce}, from: ${from} } ...`)
+                console.info(`  => Recipient:  ${to}`)
+                console.info(`  => Metadata:   ${metadata} [${digest.slice(2)}]`)
+                console.info(`  => Value:      ${ethers.formatUnits(value, 9)} WIT`)
+                
+                console.info(`  => Fee:        ${vtt.fees.toString(2)}`)
+                console.info(`  => VTT hash:   ${vtt.hash}`)
+
+                // push new vtt data into unwrapper's mempool
+                if (!vttEthMempool[blockNumber]) vttEthMempool[blockNumber] = []
+                vttEthMempool[blockNumber][vtt.hash] = { nonce, from, to, value }
+                vttBlockNumbers[vtt.hash] = blockNumber
+
+                VTTs.confirmTransaction(vtt.hash, { 
+                    confirmations: WIT_VTT_CONFIRMATIONS,
+                    onStatusChange: traceUnwrapping,
+                    onCheckpoint: traceUnwrapping
+                })
+            
+            } else {
+                pending.push(unwrap)
+                pendingValue += unwrap.value
+            }
+        }
+        if (pendingValue > balance.nanowits) {
+            console.error(`> Insufficient funds (available: ${balance.toString(3)}, required: ${Witnet.Coins.fromPedros(pendingValue).toString(3)})`)
+        } else if (pending.length > 0) {
+            console.info (`> Awaiting UTXOs to be available for ${pending.length} pending transfers.`)
+        }
+        inbound = pending
+    }
+
     async function onUnwrapped(from, to, value, nonce, event) {
         
         let blockNumber = event?.log?.blockNumber || event?.blockNumber
@@ -158,10 +220,14 @@ async function main() {
         ).slice(0, 42);
         const metadata = Witnet.PublicKeyHash.fromHexString(digest).toBech32(wallet.provider.network)
         
+        // Rely on Witnet's metadata storage to verify the unwrap transaction has not yet been attended,
+        // neither by `wallet.coinbase.pkh` nor any other hot wallet in the past.
+        let alreadyUnwrapped = false
+
         const vtts = await wallet.provider
             .getUtxos(metadata)
             .then(utxos => utxos.map(utxo => utxo.output_pointer.split(':')[0]))
-        let alreadyUnwrapped = false
+        
         for (let index = 0; index < vtts.length; index ++) {
             const report = await wallet.provider.getValueTransfer(vtts[index], "ethereal")
             if (report.recipient === to && report.value >= value) {
@@ -173,30 +239,7 @@ async function main() {
             console.info(`> Unwrapped  { block: ${blockNumber}, nonce: ${nonce}, from: ${from}, into: ${to}, value: ${ethers.formatUnits(value, 9)} WIT }`)
         
         } else {
-            console.info(`> Unwrapping { block: ${blockNumber}, nonce: ${nonce}, from: ${from} } ...`)
-            console.info(`  => Recipient:  ${to}`)
-            console.info(`  => Metadata:   ${metadata} [${digest.slice(2)}]`)
-            console.info(`  => Value:      ${ethers.formatUnits(value, 9)} WIT`)
-            const vtt = await VTTs.sendTransaction({
-                recipients: [ 
-                    [ to, Witnet.Coins.fromPedros(value) ], 
-                    [ metadata, Witnet.Coins.fromPedros(1n) ]
-                ],
-                fees: WIT_VTT_PRIORITY
-            })
-            console.info(`  => Fee:        ${vtt.fees.toString(2)}`)
-            console.info(`  => VTT hash:   ${vtt.hash}`)
-
-            // push new vtt data into unwrapper's mempool
-            if (!vttEthMempool[blockNumber]) vttEthMempool[blockNumber] = []
-            vttEthMempool[blockNumber][vtt.hash] = { nonce, from, to, value }
-            vttBlockNumbers[vtt.hash] = blockNumber
-
-            VTTs.confirmTransaction(vtt.hash, { 
-                confirmations: WIT_VTT_CONFIRMATIONS,
-                onStatusChange: traceUnwrapping,
-                onCheckpoint: traceUnwrapping
-            })
+            inbound.push({ blockNumber, from, to, value, nonce, event, digest, metadata })
         }
     }
 
