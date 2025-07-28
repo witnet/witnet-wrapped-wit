@@ -22,12 +22,11 @@ library WrappedWITLib {
     uint16  internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_RESULT_SIZE = 256;
 
     struct Storage {
-        address evmCurator; uint32 _0;
+        address evmCurator; uint32 _0; 
         Witnet.Timestamp evmLastReserveTimestamp;
-        uint64  evmLastReserveNanowits;
-        uint64  evmUnwraps;
-        uint128 witUnwrapperFromBlock;
-        Witnet.Address witUnwrapper; uint96 _1;
+        uint64  evmLastReserveNanowits; 
+        uint64  evmUnwraps; 
+        Witnet.Address witUnwrapper;
         IWrappedWIT.WitOracleSettings witOracleQuerySettings;
         string[] witOracleCrossChainRpcProviders;
         Witnet.RadonHash witOracleProofOfReserveRadonHash;

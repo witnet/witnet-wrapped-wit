@@ -9,7 +9,7 @@ interface IWrappedWIT {
     error Unauthorized();
 
     event CuratorshipTransferred(address indexed evmPrevCurator, address indexed evmNewCurator);
-    event NewUnwrapper(string witUnwrapper, uint256 evmPrevBlock);
+    event NewUnwrapper(string witUnwrapper);
     event ReserveUpdate(uint256 value, Witnet.Timestamp timestamp, Witnet.TransactionHash witDrtHash);
     event Wrapped(string witSender, address evmRecipient, uint256 value, Witnet.TransactionHash witVttHash);
     event Unwrapped(address evmSender, string  witRecipient, uint256 value, uint256 nonce);
@@ -36,7 +36,6 @@ interface IWrappedWIT {
     
     function witCustodian() external view returns (string memory);
     function witUnwrapper() external view returns (string memory);
-    function witUnwrapperFromBlock() external view returns (uint256);
     
     function witOracleEstimateWrappingFee(uint256) external view returns (uint256);
     function witOracleProofOfReserveRadonBytecode() external view returns (bytes memory);

@@ -199,10 +199,6 @@ contract WrappedWIT
         return __storage().witUnwrapper.toBech32(block.chainid == _CANONICAL_CHAIN_ID);
     }
 
-    function witUnwrapperFromBlock() override public view returns (uint256) {
-        return __storage().witUnwrapperFromBlock;
-    }
-
     function witOracleEstimateWrappingFee(uint256 evmGasPrice) override external view returns (uint256) {
         return WrappedWITLib.witOracleEstimateWrappingFee(
             witOracle, 
@@ -289,15 +285,14 @@ contract WrappedWIT
         override external
         returns (uint256 evmUnwrapId)
     {
-        uint64 _evmLastReserveNanowits = __storage().evmLastReserveNanowits;
         require(
             balanceOf(_msgSender()) >= value,
             "not enough balance"
         );
+        uint64 _evmLastReserveNanowits = __storage().evmLastReserveNanowits;
         require(
-            value <= _evmLastReserveNanowits
-                && block.number >= __storage().witUnwrapperFromBlock,
-            "cannot unwrap atm"
+            value >= 10 ** 9 && value <= _evmLastReserveNanowits,
+            "cannot unwrap that much"
         );
         Witnet.Address _recipient = Witnet.fromBech32(
             witRecipientBech32, 
@@ -481,11 +476,7 @@ contract WrappedWIT
             __storage().witOracleCrossChainRpcProviders,
             _witUnwrapperBech32
         );
-        emit NewUnwrapper(
-            _witUnwrapperBech32, 
-            __storage().witUnwrapperFromBlock
-        );
-        __storage().witUnwrapperFromBlock = uint96(block.number + 1);
+        emit NewUnwrapper(_witUnwrapperBech32);
     }
 
     function __storage() internal pure returns (WrappedWITLib.Storage storage) {
