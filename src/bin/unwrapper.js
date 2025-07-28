@@ -283,8 +283,9 @@ async function main() {
     async function checkWitnetBalance() {
         let newBalance = Witnet.Coins.fromPedros((await wallet.coinbase.getBalance()).unlocked)
         let now = Math.floor(Date.now() / 1000)
-        let utxos = (await wallet.coinbase.getUtxos()).filter(utxo => utxo.timelock <= now)
-        if (newBalance.nanowits > balance.nanowits && utxos.length < WIT_MIN_UTXOS) {
+        let increased = newBalance.nanowits > balance.nanowits
+        let utxos = (await wallet.coinbase.getUtxos(increased)).filter(utxo => utxo.timelock <= now)
+        if (increased && utxos.length < WIT_MIN_UTXOS) {
             const splits = Math.min(WIT_MIN_UTXOS * 2, 50)
             let fees = 10000n
             const recipients = []
