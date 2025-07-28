@@ -1,11 +1,15 @@
-const addresses = require("../addresses.json")
 const merge = require("lodash.merge")
+const { settings } = require("witnet-solidity-bridge")
+const addresses = require("../addresses.json")
 module.exports = {
     ABIs: {
         WrappedWIT: require("../artifacts/contracts/WrappedWIT.sol/WrappedWIT.json").abi,
         WrappedWITSuperchain: require("../artifacts/contracts/WrappedWITSuperchain.sol/WrappedWITSuperchain.json").abi,
     },
     getNetworkAddresses: (network) => merge(addresses?.default, addresses[network]),
-    getSettings: require("./settings"),
+    getNetworkChainId: (network) => settings.getNetworks()[network].network_id,
+    getNetworkSettings: (network) => require("./settings")[network],
+    isNetworkCanonical: (network) => require("./settings")[network]?.contract === "WrappedWIT",
+    isNetworkSupported: (network) => Object.keys(addresses).find(key => key === network.toLowerCase()) !== undefined,
     supportedNetworks: () => Object.keys(addresses).filter(network => network !== "default"),
 }
