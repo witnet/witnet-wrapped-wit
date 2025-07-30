@@ -2,13 +2,7 @@ require('dotenv').config();
 const fs = require("fs")
 const { ethers } = require('ethers');
 const { utils, Witnet } = require("@witnet/sdk")
-const { 
-    ABIs, 
-    getNetworkAddresses, 
-    getNetworkChainId, 
-    isNetworkSupported, 
-    isNetworkCanonical 
-} = require("..");
+const { WrappedWIT } = require("..");
 
 const ETH_NETWORK = process.env.WRAPPED_WIT_UNWRAPPER_ETH_NETWORK
 const ETH_SKIP_BLOCKS = process.env.WRAPPED_WIT_UNWRAPPER_ETH_SKIP_BLOCKS || 1
@@ -23,10 +17,10 @@ const WIT_UTXOS_STRATEGY = process.env.WRAPPED_WIT_UNWRAPPER_WIT_UTXOS_STRATEGY 
 const WIT_VTT_CONFIRMATIONS = process.env.WRAPPED_WIT_UNWRAPPER_WIT_VTT_CONFIRMATIONS || 3
 const WIT_VTT_PRIORITY = process.env.WRAPPED_WIT_UNWRAPPER_WIT_VTT_PRIORITY || "opulent"
 
-if (!isNetworkSupported(ETH_NETWORK)) {
+if (!WrappedWIT.isNetworkSupported(ETH_NETWORK)) {
     console.error(`Fatal: ${ETH_NETWORK.toUpperCase()} is not supported!`)
     process.exit(1)
-} else if (!isNetworkCanonical(ETH_NETWORK)) {
+} else if (!WrappedWIT.isNetworkCanonical(ETH_NETWORK)) {
     console.error(`Fatal: ${ETH_NETWORK.toUpperCase()} is not canonical!`)
     process.exit(1)
 }
@@ -71,7 +65,7 @@ async function main() {
     }
 
     let provider;
-    let contract;
+    let wrappedWIT;
 
     let inbound = []
     let vttEthMempool = {}
@@ -85,7 +79,7 @@ async function main() {
         provider = new ethers.WebSocketProvider(ETH_WSS_PROVIDER);
         
         const network = await provider.getNetwork()
-        if (Number(network.chainId) !== getNetworkChainId(ETH_NETWORK)) {
+        if (Number(network.chainId) !== WrappedWIT.getNetworkChainId(ETH_NETWORK)) {
             console.error(`> Fatal: connected to wrong EVM chain id (${network.chainId}).`)
             process.exit(0)
         }
@@ -144,7 +138,7 @@ async function main() {
     
     // Clean listeners and connections before reconnecting
     function cleanup() {
-        contract?.removeAllListeners();
+        wrappedWIT?.removeAllListeners();
         provider?.websocket.close()
     }
 
@@ -155,6 +149,31 @@ async function main() {
         }
     }
 
+    async function onUnwrapped(from, to, value, nonce, event) {
+        
+        let blockNumber = event?.log?.blockNumber || event?.blockNumber
+        
+        // Rely on Witnet's metadata storage to verify the unwrap transaction has not yet been attended,
+        const witUnwrapTx = await WrappedWIT.findUnwrapTransactionFromWitnetProvider(
+            wallet.provider,
+            ETH_NETWORK,
+            blockNumber,
+            nonce, from, to, value,
+        );
+        if (witUnwrapTx) {
+            console.info(`> Unwrapped  { block: ${blockNumber}, nonce: ${nonce}, from: ${from}, into: ${to}, value: ${ethers.formatUnits(value, 9)} WIT }`)
+        } else {
+            const digest = WrappedWIT.getNetworkUnwrapTransactionDigest(ETH_NETWORK, blockNumber, nonce, from, to, value)
+            inbound.push({
+                blockNumber,
+                nonce, from, to, value,
+                event,
+                digest,
+                metadata: Witnet.PublicKeyHash.fromHexString(digest).toBech32(wallet.provider.network)
+            })
+        }
+    }
+
     async function flushInbound() {
         const pending = []
         const pendingValue = 0n
@@ -162,41 +181,53 @@ async function main() {
             const unwrap = inbound[index]
             if (wallet.coinbase.cacheInfo.expendable > unwrap?.value) {
                 const { blockNumber, nonce, from, to, digest, metadata, value } = unwrap
+
+                // Double-check that the unwrap transaction has not yet been attended:
+                const witUnwrapTx = await WrappedWIT.findUnwrapTransactionFromWitnetProvider(
+                    wallet.provider,
+                    ETH_NETWORK,
+                    blockNumber,
+                    nonce, from, to, value,
+                );
+                if (witUnwrapTx) {
+                    console.info(`> Unwrapped  { block: ${blockNumber}, nonce: ${nonce}, from: ${from}, into: ${to}, value: ${ethers.formatUnits(value, 9)} WIT }`)
                 
-                let vtt; 
-                try {
-                    vtt = await VTTs.sendTransaction({
-                        recipients: [ 
-                            [ to, Witnet.Coins.fromPedros(value) ], 
-                            [ metadata, Witnet.Coins.fromPedros(1n) ]
-                        ],
-                        fees: WIT_VTT_PRIORITY
+                } else {
+                    let vtt; 
+                    try {
+                        vtt = await VTTs.sendTransaction({
+                            recipients: [ 
+                                [ to, Witnet.Coins.fromPedros(value) ], 
+                                [ metadata, Witnet.Coins.fromPedros(1n) ]
+                            ],
+                            fees: WIT_VTT_PRIORITY
+                        })
+                    } catch (err) {
+                        console.error(err)
+                        pending.push(unwrap)
+                        pendingValue += unwrap.value
+                        continue
+                    }
+
+                    console.info(`> Unwrapping { block: ${blockNumber}, nonce: ${nonce}, from: ${from} } ...`)
+                    console.info(`  => Recipient:  ${to}`)
+                    console.info(`  => Metadata:   ${metadata} [${digest.slice(2)}]`)
+                    console.info(`  => Value:      ${ethers.formatUnits(value, 9)} WIT`)
+                    
+                    console.info(`  => Fee:        ${vtt.fees.toString(2)}`)
+                    console.info(`  => VTT hash:   ${vtt.hash}`)
+
+                    // push new vtt data into unwrapper's mempool
+                    if (!vttEthMempool[blockNumber]) vttEthMempool[blockNumber] = []
+                    vttEthMempool[blockNumber][vtt.hash] = { nonce, from, to, value }
+                    vttBlockNumbers[vtt.hash] = blockNumber
+
+                    VTTs.confirmTransaction(vtt.hash, { 
+                        confirmations: WIT_VTT_CONFIRMATIONS,
+                        onStatusChange: traceUnwrapping,
+                        onCheckpoint: traceUnwrapping
                     })
-                } catch (err) {
-                    console.error(err)
-                    pending.push(unwrap)
-                    pendingValue += unwrap.value
-                    continue
                 }
-
-                console.info(`> Unwrapping { block: ${blockNumber}, nonce: ${nonce}, from: ${from} } ...`)
-                console.info(`  => Recipient:  ${to}`)
-                console.info(`  => Metadata:   ${metadata} [${digest.slice(2)}]`)
-                console.info(`  => Value:      ${ethers.formatUnits(value, 9)} WIT`)
-                
-                console.info(`  => Fee:        ${vtt.fees.toString(2)}`)
-                console.info(`  => VTT hash:   ${vtt.hash}`)
-
-                // push new vtt data into unwrapper's mempool
-                if (!vttEthMempool[blockNumber]) vttEthMempool[blockNumber] = []
-                vttEthMempool[blockNumber][vtt.hash] = { nonce, from, to, value }
-                vttBlockNumbers[vtt.hash] = blockNumber
-
-                VTTs.confirmTransaction(vtt.hash, { 
-                    confirmations: WIT_VTT_CONFIRMATIONS,
-                    onStatusChange: traceUnwrapping,
-                    onCheckpoint: traceUnwrapping
-                })
             
             } else {
                 pending.push(unwrap)
