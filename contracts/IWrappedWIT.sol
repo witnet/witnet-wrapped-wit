@@ -12,7 +12,7 @@ interface IWrappedWIT {
     event NewUnwrapper(string witUnwrapper);
     event ReserveUpdate(uint256 value, Witnet.Timestamp timestamp, Witnet.TransactionHash witDrtHash);
     event Wrapped(string witSender, address evmRecipient, uint256 value, Witnet.TransactionHash witVttHash);
-    event Unwrapped(address evmSender, string  witRecipient, uint256 value, uint256 nonce);
+    event Unwrapped(address evmSender, string witRecipient, uint256 value, uint256 nonce);
 
     struct WitOracleSettings {
         uint16 minWitnesses;

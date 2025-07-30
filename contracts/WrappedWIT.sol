@@ -250,6 +250,10 @@ contract WrappedWIT
         external
         onlyCurator
     {
+        require(
+            keccak256(bytes(_witUnwrapperBech32)) != __witCustodianBech32Hash,
+            "unacceptable address"
+        );
         __settleWitUnwrapper(_witUnwrapperBech32);
     }
 
