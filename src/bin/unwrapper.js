@@ -13,6 +13,7 @@ const WIT_MASTER_KEY = process.env.WRAPPED_WIT_UNWRAPPER_WIT_MASTER_KEY
 const WIT_MIN_BALANCE = process.env.WRAPPED_WIT_UNWRAPPER_WIT_MIN_BALANCE_WITS || 1000.0
 const WIT_MIN_UTXOS = process.env.WRAPPED_WIT_UNWRAPPER_WIT_MIN_UTXOS || 16
 const WIT_RPC_PROVIDER = process.env.WRAPPED_WIT_UNWRAPPER_WIT_RPC_PROVIDER || "https://rpc-01.witnet.io"
+const WIT_SIGNER_PKH=process.env.WRAPPED_WIT_UNWRAPPER_WIT_SIGNER_PKH
 const WIT_UTXOS_STRATEGY = process.env.WRAPPED_WIT_UNWRAPPER_WIT_UTXOS_STRATEGY || "slim-fit"
 const WIT_VTT_CONFIRMATIONS = process.env.WRAPPED_WIT_UNWRAPPER_WIT_VTT_CONFIRMATIONS || 3
 const WIT_VTT_PRIORITY = process.env.WRAPPED_WIT_UNWRAPPER_WIT_VTT_PRIORITY || "opulent"
@@ -35,20 +36,23 @@ async function main() {
         WIT_MASTER_KEY, { 
             limit: 1,
             strategy: WIT_UTXOS_STRATEGY,
-            provider: await Witnet.JsonRpcProvider.fromURL(WIT_RPC_PROVIDER)
+            provider: await Witnet.JsonRpcProvider.fromURL(WIT_RPC_PROVIDER),
         })
+
+    await wallet.getAccount(WIT_SIGNER_PKH || wallet.coinbase.pkh)
+    const signer = wallet.getSigner(WIT_SIGNER_PKH || wallet.coinbase.pkh)
     
     console.info(`Wit/RPC provider:  ${WIT_RPC_PROVIDER}`)        
     console.info(`Witnet network:    WITNET:${wallet.provider.network.toUpperCase()} (${wallet.provider.networkId.toString(16)})`)
-    console.info(`Witnet hot wallet: ${wallet.coinbase.pkh}`)
+    console.info(`Witnet hot wallet: ${signer.pkh}`)
 
-    const VTTs = Witnet.ValueTransfers.from(wallet.coinbase)
+    const VTTs = Witnet.ValueTransfers.from(signer)
 
     const minBalance = Witnet.Coins.fromWits(WIT_MIN_BALANCE)
 
     let balance = 0n
     balance = await checkWitnetBalance()
-    console.info(`Initial balance:   ${balance.toString(2)} (${wallet.coinbase.cacheInfo.size} UTXOs)`)
+    console.info(`Initial balance:   ${balance.toString(2)} (${signer.cacheInfo.size} UTXOs)`)
     if (balance.pedros < minBalance.pedros) {
         console.error(`❌ Fatal: hot wallet must be funded with at least ${minBalance.toString(2)}.`)
         process.exit(0)
@@ -85,30 +89,26 @@ async function main() {
         }
         console.info(`> Ethereum network:  ${ETH_NETWORK.toUpperCase()} (${network.chainId})`)
 
-        contract = new ethers.Contract(
-            getNetworkAddresses(ETH_NETWORK).WrappedWIT, 
-            ABIs.WrappedWIT, 
-            provider
-        );
-        console.info(`> Ethereum contract: ${await contract.getAddress()}`)        
+        wrappedWIT = await WrappedWIT.fetchContractFromEthersProvider(provider)
+        console.info(`> Ethereum contract: ${await wrappedWIT.getAddress()}`)        
 
-        const witUnwrapper = await contract.witUnwrapper()
-        if (witUnwrapper !== wallet.coinbase.pkh) {
+        const witUnwrapper = await wrappedWIT.witUnwrapper()
+        if (witUnwrapper !== signer.pkh) {
             console.error(`> Fatal: contract's hot wallet mismatch: ${witUnwrapper}`)
             process.exit(0)
         }
 
         if (await provider.getBlockNumber() > fromBlock) {
-            const unwraps = await contract.queryFilter("Unwrapped", fromBlock)
+            const unwraps = await wrappedWIT.queryFilter("Unwrapped", fromBlock)
             if (unwraps.length > 0) {
                 console.info(`> Catching up previous unwraps ...`)
                 await Promise.all(unwraps.map(log => onUnwrapped(...log.args, log)))
             }
         }
        
-        contract.on("Unwrapped", onUnwrapped);
-        contract.on("NewUnwrapper", onNewUnwrapper)
-
+        wrappedWIT.on("NewUnwrapper", onNewUnwrapper)
+        wrappedWIT.on("Unwrapped", onUnwrapped);
+        
         provider.websocket.on("close", (code) => {
             console.error(`⚠️ WebSocket closed with code ${code}. Reconnecting in ${ETH_WSS_RECONNECT_INTERVAL / 1000} seconds...`);
             cleanup();
@@ -143,17 +143,17 @@ async function main() {
     }
 
     function onNewUnwrapper(newUnwrapper, event) {
-        if (newUnwrapper !== wallet.coinbase.pkh) {
-            console.info(`❌ Fatal: contract's hot wallet changed from ${wallet.coinbase.pkh} to ${newUnwrapper} on block ${event.blockNumber}.`)
+        if (newUnwrapper !== signer.pkh) {
+            console.info(`❌ Fatal: contract's hot wallet changed from ${signer.pkh} to ${newUnwrapper} on block ${event.blockNumber}.`)
             process.exit(0)
         }
     }
 
     async function onUnwrapped(from, to, value, nonce, event) {
-        
         let blockNumber = event?.log?.blockNumber || event?.blockNumber
         
         // Rely on Witnet's metadata storage to verify the unwrap transaction has not yet been attended,
+        // neither by `signer.pkh` nor any other hot wallet in the past.
         const witUnwrapTx = await WrappedWIT.findUnwrapTransactionFromWitnetProvider(
             wallet.provider,
             ETH_NETWORK,
@@ -179,7 +179,7 @@ async function main() {
         const pendingValue = 0n
         for (let index = 0; index < inbound.length; index ++) {
             const unwrap = inbound[index]
-            if (wallet.coinbase.cacheInfo.expendable > unwrap?.value) {
+            if (signer.cacheInfo.expendable > unwrap?.value) {
                 const { blockNumber, nonce, from, to, digest, metadata, value } = unwrap
 
                 // Double-check that the unwrap transaction has not yet been attended:
@@ -242,39 +242,6 @@ async function main() {
         inbound = pending
     }
 
-    async function onUnwrapped(from, to, value, nonce, event) {
-        
-        let blockNumber = event?.log?.blockNumber || event?.blockNumber
-
-        const digest = ethers.solidityPackedKeccak256(
-            [ "uint256", "uint256", "address", "string", "uint256" ],
-            [ blockNumber, nonce, from, to, value ],
-        ).slice(0, 42);
-        const metadata = Witnet.PublicKeyHash.fromHexString(digest).toBech32(wallet.provider.network)
-        
-        // Rely on Witnet's metadata storage to verify the unwrap transaction has not yet been attended,
-        // neither by `wallet.coinbase.pkh` nor any other hot wallet in the past.
-        let alreadyUnwrapped = false
-
-        const vtts = await wallet.provider
-            .getUtxos(metadata)
-            .then(utxos => utxos.map(utxo => utxo.output_pointer.split(':')[0]))
-        
-        for (let index = 0; index < vtts.length; index ++) {
-            const report = await wallet.provider.getValueTransfer(vtts[index], "ethereal")
-            if (report.recipient === to && report.value >= value) {
-                alreadyUnwrapped = true
-                break;
-            }
-        }
-        if (alreadyUnwrapped) {
-            console.info(`> Unwrapped  { block: ${blockNumber}, nonce: ${nonce}, from: ${from}, into: ${to}, value: ${ethers.formatUnits(value, 9)} WIT }`)
-        
-        } else {
-            inbound.push({ blockNumber, from, to, value, nonce, event, digest, metadata })
-        }
-    }
-
     function traceUnwrapping(receipt, error) {
         if (error) {
             console.error(`> Failed     { block: ${blockNumber}, nonce: ${data.nomce}, from: ${data.from} }`)
@@ -312,23 +279,23 @@ async function main() {
     }
 
     async function checkWitnetBalance() {
-        let newBalance = Witnet.Coins.fromPedros((await wallet.coinbase.getBalance()).unlocked)
+        let newBalance = Witnet.Coins.fromPedros((await signer.getBalance()).unlocked)
         let now = Math.floor(Date.now() / 1000)
         let increased = newBalance.nanowits > balance.nanowits
-        let utxos = (await wallet.coinbase.getUtxos(increased)).filter(utxo => utxo.timelock <= now)
+        let utxos = (await signer.getUtxos(increased)).filter(utxo => utxo.timelock <= now)
         if (increased && utxos.length < WIT_MIN_UTXOS) {
             const splits = Math.min(WIT_MIN_UTXOS * 2, 50)
             let fees = 10000n
             const recipients = []
             const value = Witnet.Coins.fromPedros((newBalance.pedros - fees) / BigInt(splits))
             fees += (newBalance.pedros - fees) % BigInt(splits)
-            recipients.push(...Array(splits).fill([ wallet.coinbase.pkh, value ]))
+            recipients.push(...Array(splits).fill([ signer.pkh, value ]))
             const receipt = await VTTs.sendTransaction({ recipients, fees: Witnet.Coins.fromPedros(fees) })
             console.info(JSON.stringify(receipt.tx, utils.txJsonReplacer, 4))
             await VTTs.confirmTransaction(receipt.hash, {
                 onStatusChange: (receipt) => { console.info(`> Splitting UTXOs => ${receipt.hash} [${receipt.status}]`)},
             })
-            newBalance = Witnet.Coins.fromPedros((await wallet.coinbase.getBalance()).unlocked)
+            newBalance = Witnet.Coins.fromPedros((await signer.getBalance()).unlocked)
         }
         return newBalance
     }
