@@ -19,7 +19,7 @@
     "src"
   ],
   "scripts": {
-    "prepare": "npx hardhat compile --force",
+    "prepare": "npx hardhat compile --force && node ./scripts/prepare.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
