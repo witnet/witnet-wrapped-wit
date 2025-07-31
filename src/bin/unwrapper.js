@@ -50,7 +50,7 @@ async function main() {
 
     const minBalance = Witnet.Coins.fromWits(WIT_MIN_BALANCE)
 
-    let balance = 0n
+    let balance = Witnet.Coins.fromPedros(0n)
     balance = await checkWitnetBalance()
     console.info(`Initial balance:   ${balance.toString(2)} (${signer.cacheInfo.size} UTXOs)`)
     if (balance.pedros < minBalance.pedros) {
@@ -281,7 +281,7 @@ async function main() {
     async function checkWitnetBalance() {
         let newBalance = Witnet.Coins.fromPedros((await signer.getBalance()).unlocked)
         let now = Math.floor(Date.now() / 1000)
-        let increased = newBalance.nanowits > balance.nanowits
+        let increased = newBalance.nanowits > balance?.nanowtis || 0n
         let utxos = (await signer.getUtxos(increased)).filter(utxo => utxo.timelock <= now)
         if (increased && utxos.length < WIT_MIN_UTXOS) {
             const splits = Math.min(WIT_MIN_UTXOS * 2, 50)
