@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@witnet/sdk": "^1.0.5",
-    "witnet-solidity-bridge": "latest",
+    "witnet-solidity-bridge": "~2.1.9",
     "dotenv": "^16.4.1",
     "ethers": "^6.15.0",
     "lodash.merge": "^4.6.2"

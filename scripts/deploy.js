@@ -25,8 +25,8 @@ async function main() {
     }
     console.info("> Wrapped/WIT EVM deployer:  ", `${await deployer.getAddress()} [WrappedWITDeployer]`)
     
-    const tokenCustodianBech32 = settings[network.name]?.custodian
-    const tokenUnwrapperBech32 = settings[network.name]?.unwrapper || tokenCustodianBech32
+    const tokenCustodianBech32 = settings[network.name].custodian
+    const tokenUnwrapperBech32 = settings[network.name].unwrapper
     const tokenSalt = settings[network.name]?.salt || settings?.default.salt
     
     if (tokenCustodianBech32) {    
