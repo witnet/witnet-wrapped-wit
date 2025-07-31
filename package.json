@@ -16,8 +16,7 @@
   "files": [
     "artifacts",
     "contracts",
-    "src",
-    "addresses.json"
+    "src"
   ],
   "scripts": {
     "prepare": "npx hardhat compile --force",

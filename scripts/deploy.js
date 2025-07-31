@@ -1,7 +1,7 @@
 const { ethers, network } = require("hardhat");
 const { getNetworkAddresses } = require("witnet-solidity-bridge")
 
-const addresses = require("../addresses.json")
+const addresses = require("../src/addresses.json")
 const settings = require("../src/settings")
 
 async function main() {
