@@ -40,7 +40,7 @@
     "hardhat": "^2.24.1"
   },
   "dependencies": {
-    "@witnet/sdk": "^1.0.5",
+    "@witnet/sdk": "^1.0.6",
     "witnet-solidity-bridge": "~2.1.9",
     "dotenv": "^16.4.1",
     "ethers": "^6.15.0",
