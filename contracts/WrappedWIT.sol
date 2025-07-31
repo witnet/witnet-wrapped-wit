@@ -250,10 +250,6 @@ contract WrappedWIT
         external
         onlyCurator
     {
-        require(
-            keccak256(bytes(_witUnwrapperBech32)) != __witCustodianBech32Hash,
-            "unacceptable address"
-        );
         __settleWitUnwrapper(_witUnwrapperBech32);
     }
 
@@ -475,6 +471,10 @@ contract WrappedWIT
     function __settleWitUnwrapper(string memory _witUnwrapperBech32)
         internal
     {
+        require(
+            keccak256(bytes(_witUnwrapperBech32)) != __witCustodianBech32Hash,
+            "unacceptable unwrapper"
+        );
         __storage().witUnwrapper = Witnet.fromBech32(_witUnwrapperBech32, block.chainid == _CANONICAL_CHAIN_ID);
         __formallyVerifyRadonAssets(
             __storage().witOracleCrossChainRpcProviders,
