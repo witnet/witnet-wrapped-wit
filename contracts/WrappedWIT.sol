@@ -292,8 +292,8 @@ contract WrappedWIT
             "not enough balance"
         );
         uint64 _evmLastReserveNanowits = __storage().evmLastReserveNanowits;
-        require(
-            value >= 10 ** _DECIMALS && value <= _evmLastReserveNanowits,
+         require(
+            value <= _evmLastReserveNanowits,
             "cannot unwrap that much"
         );
         Witnet.Address _recipient = Witnet.fromBech32(
