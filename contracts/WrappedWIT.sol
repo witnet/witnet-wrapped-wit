@@ -414,13 +414,13 @@ contract WrappedWIT
             uint64 _totalReserve
         
         ) {
-            __storage().evmLastReserveNanowits = _totalReserve;
-            __storage().evmLastReserveTimestamp = _witOracleProofOfReserve.timestamp;
             emit ReserveUpdate(
                 _totalReserve, 
                 _witOracleProofOfReserve.timestamp,
                 _witOracleProofOfReserve.drTxHash 
             );
+            __storage().evmLastReserveNanowits = _totalReserve;
+            __storage().evmLastReserveTimestamp = _witOracleProofOfReserve.timestamp;
 
         } catch Error(string memory _reason) {
             _revert(_reason);
@@ -477,12 +477,12 @@ contract WrappedWIT
             keccak256(bytes(_witUnwrapperBech32)) != __witCustodianBech32Hash,
             "unacceptable unwrapper"
         );
+        emit NewUnwrapper(_witUnwrapperBech32);
         __storage().witUnwrapper = Witnet.fromBech32(_witUnwrapperBech32, block.chainid == _CANONICAL_CHAIN_ID);
         __formallyVerifyRadonAssets(
             __storage().witOracleCrossChainRpcProviders,
             _witUnwrapperBech32
         );
-        emit NewUnwrapper(_witUnwrapperBech32);
     }
 
     function __storage() internal pure returns (WrappedWITLib.Storage storage) {
