@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity 0.8.28;
 
 import "./IWrappedWIT.sol";
 import {IWitOracleRadonRequestModal} from "witnet-solidity-bridge/contracts/WitOracleRadonRequestFactory.sol";
@@ -17,6 +17,7 @@ library WrappedWITLib {
         /* keccak256("io.witnet.tokens.WIT") */
         0x6116473658e87b023e7f215d122c0048f3d7a669d8df94a5565f0c95871c58f9;
 
+    uint256 internal constant _PERCENT_FACTOR = 100;
     uint24  internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_GAS_LIMIT = 185_000; 
     uint256 internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED = type(uint256).max;
     uint16  internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_RESULT_SIZE = 256;
@@ -40,7 +41,7 @@ library WrappedWITLib {
     // --- Public functions -------------------------------------------------------------------------------------------
 
     function parseWitOracleProofOfReserve(Witnet.DataResult memory witOracleProofOfReserve)
-        public view
+        external view
         returns (uint64)
     {
         uint64[] memory _witBalance;
@@ -64,7 +65,7 @@ library WrappedWITLib {
             uint256 witOracleQueryId,
             bytes calldata witOracleQueryResult
         )
-        public
+        external
         returns (
             Witnet.TransactionHash _witValueTransferTransactionHash,
             string memory _witRecipientBech32,
@@ -144,7 +145,7 @@ library WrappedWITLib {
             IWitOracleRadonRequestModal witOracleCrossChainProofOfInclusionTemplate,
             Witnet.TransactionHash witValueTransferTransactionHash
         ) 
-        public 
+        external 
         returns (uint256 _witQueryId)
     {
         _witQueryId = data().witOracleWrappingTransactionLastQueryId[witValueTransferTransactionHash];
@@ -189,11 +190,11 @@ library WrappedWITLib {
 
     function witOracleEstimateWrappingFee(WitOracle witOracle, uint256 evmGasPrice) internal view returns (uint256) {
         return (
-            (100 + data().witOracleQuerySettings.baseFeeOverhead100)
+            (_PERCENT_FACTOR + data().witOracleQuerySettings.baseFeeOverhead100)
                 * witOracle.estimateBaseFeeWithCallback(
                     evmGasPrice, 
                     _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_GAS_LIMIT
                 )
-        ) / 100;
+        ) / _PERCENT_FACTOR;
     }
 }

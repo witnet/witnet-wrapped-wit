@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Compatible with OpenZeppelin Contracts ^5.0.0
-pragma solidity ^0.8.27;
+pragma solidity 0.8.28;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {ERC20Bridgeable} from "@openzeppelin/community-contracts/contracts/token/ERC20/extensions/ERC20Bridgeable.sol";
@@ -35,6 +35,7 @@ contract WrappedWIT
     using Witnet for Witnet.RadonHash;
 
     uint256 internal constant _CANONICAL_CHAIN_ID = 1; // Ethereum Mainnet
+    uint8   internal constant _DECIMALS = 9;
     address internal constant _SUPERCHAIN_TOKEN_BRIDGE = 0x4200000000000000000000000000000000000028; // Superchain bridge
     
     uint16  internal constant _WIT_ORACLE_REPORTS_MIN_MIN_WITNESSES = 3;
@@ -66,7 +67,6 @@ contract WrappedWIT
         __witCustodian = Witnet.fromBech32(_witCustodianBech32, block.chainid == _CANONICAL_CHAIN_ID);
         __witCustodianBech32Hash = keccak256(bytes(_witCustodianBech32));
 
-        witOracle = WitOracle(IWitOracleAppliance(address(_witOracleRadonRequestFactory)).witOracle());
         string[2][] memory _httpRequestHeaders = new string[2][](1);
         _httpRequestHeaders[0] = [ "Content-Type", "application/json;charset=UTF-8" ];
         witOracleCrossChainProofOfReserveTemplate = _witOracleRadonRequestFactory.buildRadonRequestModal(
@@ -99,6 +99,8 @@ contract WrappedWIT
                 filters: new Witnet.RadonFilter[](0)
             })
         );
+
+        witOracle = WitOracle(IWitOracleAppliance(address(_witOracleRadonRequestFactory)).witOracle());
     }
 
     function initialize(
@@ -135,7 +137,7 @@ contract WrappedWIT
     /// --- ERC20 -----------------------------------------------------------------------------------------------------
 
     function decimals() override public pure returns (uint8) {
-        return 9;
+        return _DECIMALS;
     }
 
 
@@ -254,7 +256,7 @@ contract WrappedWIT
     }
 
     function transferCuratorship(address _newCurator)
-        public 
+        external 
         onlyCurator
     {
         assert(_newCurator != address(0));
@@ -291,7 +293,7 @@ contract WrappedWIT
         );
         uint64 _evmLastReserveNanowits = __storage().evmLastReserveNanowits;
         require(
-            value >= 10 ** 9 && value <= _evmLastReserveNanowits,
+            value >= 10 ** _DECIMALS && value <= _evmLastReserveNanowits,
             "cannot unwrap that much"
         );
         Witnet.Address _recipient = Witnet.fromBech32(
