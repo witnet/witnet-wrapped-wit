@@ -249,8 +249,8 @@ async function main() {
 
     function traceUnwrapping(receipt, error) {
         if (error) {
-            console.error(`> Failed     { block: ${blockNumber}, nonce: ${data.nomce}, from: ${data.from} }`)
-            process.exit(1)
+            console.info(`> Failed     { block: ${blockNumber}, nonce: ${data.nomce}, from: ${data.from} }`)
+            console.error(error)
         }
         let blockNumber = vttBlockNumbers[receipt.hash] 
         let data = vttEthMempool[blockNumber][receipt.hash]
