@@ -1,8 +1,7 @@
 module.exports = {
     default: {
-        curator: "0x34d903c72fC5A73Ef50817841d98F0e4019AF6B4",
-        // salt: 22495054,
-        salt: 272132896,
+        curator: "0x06b5B7b1deaD1ade17C96fc2995Db93b82DeA970",
+        salt: 228882521,
     },
     "ethereum:mainnet": {
         contract:  "WrappedWIT",
@@ -11,8 +10,8 @@ module.exports = {
     },
     "ethereum:sepolia": {
         contract:  "WrappedWIT",
-        custodian: "twit1yyx8ll4ykyk0fugv3apefzlszlf8a9jxxr398l",
-        unwrapper: "twit19kv0m553u0cq9a4kzz3e03qd84mv20e9arw8m2",
+        custodian: "twit120x84rx5l0kmhl89kpezd69pnlxd8rzmjxq3lz",
+        unwrapper: "twit19rnvq8yjrmpa6tjdahct4pd49ha5lmvxjeyfha",
     },
     "base:sepolia": {
         contract: "WrappedWITSuperchain",
