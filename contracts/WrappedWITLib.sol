@@ -27,7 +27,7 @@ library WrappedWITLib {
         Witnet.Timestamp evmLastReserveTimestamp;
         uint64  evmLastReserveNanowits; 
         uint64  evmUnwraps; 
-        Witnet.Address witUnwrapper;
+        Witnet.Address witCustodianUnwrapper;
         IWrappedWIT.WitOracleSettings witOracleQuerySettings;
         string[] witOracleCrossChainRpcProviders;
         Witnet.RadonHash witOracleProofOfReserveRadonHash;

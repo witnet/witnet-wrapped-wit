@@ -46,8 +46,8 @@ contract WrappedWIT
     IWitOracleRadonRequestModal public immutable witOracleCrossChainProofOfReserveTemplate;
     IWitOracleRadonRequestModal public immutable witOracleCrossChainProofOfInclusionTemplate;
     
-    Witnet.Address internal immutable __witCustodian;
-    bytes32 internal immutable __witCustodianBech32Hash;
+    Witnet.Address internal immutable __witCustodianWrapper;
+    bytes32 internal immutable __witCustodianWrapperBech32Hash;
 
     modifier onlyCurator {
         require(
@@ -64,8 +64,8 @@ contract WrappedWIT
         ERC20Permit("Wrapped/WIT")
     {
         // Settle immutable parameters --------------------------------------------------------------------------------
-        __witCustodian = Witnet.fromBech32(_witCustodianBech32, block.chainid == _CANONICAL_CHAIN_ID);
-        __witCustodianBech32Hash = keccak256(bytes(_witCustodianBech32));
+        __witCustodianWrapper = Witnet.fromBech32(_witCustodianBech32, block.chainid == _CANONICAL_CHAIN_ID);
+        __witCustodianWrapperBech32Hash = keccak256(bytes(_witCustodianBech32));
 
         string[2][] memory _httpRequestHeaders = new string[2][](1);
         _httpRequestHeaders[0] = [ "Content-Type", "application/json;charset=UTF-8" ];
@@ -105,7 +105,7 @@ contract WrappedWIT
 
     function initialize(
             address _evmCurator,
-            string calldata _witUnwrapperBech32
+            string calldata _witCustodianUnwrapperBech32
         ) 
         external 
         initializer
@@ -129,7 +129,7 @@ contract WrappedWIT
         __storage().witOracleCrossChainRpcProviders = _witOracleRpcProviders;
 
         // Settle Wit/ Unwrapper address and formally verify parameterized Radon assets:
-        __settleWitUnwrapper(_witUnwrapperBech32);
+        __settleWitCustodianUnwrapper(_witCustodianUnwrapperBech32);
     }
 
  
@@ -193,12 +193,16 @@ contract WrappedWIT
         return __storage().evmUnwraps;
     }
 
-    function witCustodian() override public view returns (string memory) {
-        return __witCustodian.toBech32(block.chainid == _CANONICAL_CHAIN_ID);
+    function witCustodianWrapper() override public view returns (string memory) {
+        return __witCustodianWrapper.toBech32(block.chainid == _CANONICAL_CHAIN_ID);
     }
 
-    function witUnwrapper() override public view returns (string memory) {
-        return __storage().witUnwrapper.toBech32(block.chainid == _CANONICAL_CHAIN_ID);
+    function witCustodianUnwrapper() override public view returns (string memory) {
+        return __storage().witCustodianUnwrapper.toBech32(block.chainid == _CANONICAL_CHAIN_ID);
+    }
+
+    function witOracleCrossChainRpcProviders() override external view returns (string[] memory) {
+        return __storage().witOracleCrossChainRpcProviders;
     }
 
     function witOracleEstimateWrappingFee(uint256 evmGasPrice) override external view returns (uint256) {
@@ -224,6 +228,18 @@ contract WrappedWIT
     /// ===============================================================================================================
     /// --- Wrapped/WIT authoritative methods -------------------------------------------------------------------------
 
+    function settleWitOracleCrossChainRpcProviders(string[] memory _witRpcProviders)
+        external
+        onlyCurator
+    {
+        assert(_witRpcProviders.length > 0);
+        __storage().witOracleCrossChainRpcProviders = _witRpcProviders;
+        __formallyVerifyRadonAssets(
+            _witRpcProviders, 
+            __storage().witCustodianUnwrapper.toBech32(block.chainid == _CANONICAL_CHAIN_ID)
+        );
+    }
+
     function settleWitOracleSettings(WitOracleSettings calldata _settings)
         external
         onlyCurator
@@ -236,23 +252,11 @@ contract WrappedWIT
         __storage().witOracleQuerySettings = _settings;
     }
 
-    function settleWitRpcProviders(string[] memory _witRpcProviders)
+    function settleWitCustodianUnwrapper(string calldata _witCustodianUnwrapperBech32)
         external
         onlyCurator
     {
-        assert(_witRpcProviders.length > 0);
-        __storage().witOracleCrossChainRpcProviders = _witRpcProviders;
-        __formallyVerifyRadonAssets(
-            _witRpcProviders, 
-            __storage().witUnwrapper.toBech32(block.chainid == _CANONICAL_CHAIN_ID)
-        );
-    }
-
-    function settleWitUnwrapper(string calldata _witUnwrapperBech32)
-        external
-        onlyCurator
-    {
-        __settleWitUnwrapper(_witUnwrapperBech32);
+        __settleWitCustodianUnwrapper(_witCustodianUnwrapperBech32);
     }
 
     function transferCuratorship(address _newCurator)
@@ -301,7 +305,7 @@ contract WrappedWIT
             block.chainid == _CANONICAL_CHAIN_ID
         );
         require(
-            !_recipient.eq(__witCustodian),
+            !_recipient.eq(__witCustodianWrapper),
             "invalid recipient"
         );
 
@@ -355,7 +359,7 @@ contract WrappedWIT
             uint64 _value
         ) {
             _require(
-                keccak256(bytes(_witRecipientBech32)) == __witCustodianBech32Hash,
+                keccak256(bytes(_witRecipientBech32)) == __witCustodianWrapperBech32Hash,
                 "invalid custodian"
             );
 
@@ -437,13 +441,13 @@ contract WrappedWIT
     /// @dev Formally verify cross-chain Radon request for notarizing custodian's proofs of reserve.
     function __formallyVerifyRadonAssets(
             string[] memory _witRpcProviders,
-            string memory _witUnwrapperBech32
+            string memory _witCustodianUnwrapperBech32
         )
         internal
     {    
         string[] memory _commonArgs = new string[](2);
-        _commonArgs[0] = witCustodian();
-        _commonArgs[1] = _witUnwrapperBech32;
+        _commonArgs[0] = witCustodianWrapper();
+        _commonArgs[1] = _witCustodianUnwrapperBech32;
         __storage().witOracleProofOfReserveRadonHash = witOracleCrossChainProofOfReserveTemplate
             .verifyRadonRequest(
                 _commonArgs,
@@ -470,18 +474,18 @@ contract WrappedWIT
         _revert("unhandled exception");
     }
 
-    function __settleWitUnwrapper(string memory _witUnwrapperBech32)
+    function __settleWitCustodianUnwrapper(string memory _witCustodianUnwrapperBech32)
         internal
     {
         require(
-            keccak256(bytes(_witUnwrapperBech32)) != __witCustodianBech32Hash,
+            keccak256(bytes(_witCustodianUnwrapperBech32)) != __witCustodianWrapperBech32Hash,
             "unacceptable unwrapper"
         );
-        emit NewUnwrapper(_witUnwrapperBech32);
-        __storage().witUnwrapper = Witnet.fromBech32(_witUnwrapperBech32, block.chainid == _CANONICAL_CHAIN_ID);
+        emit NewCustodianUnwrapper(_witCustodianUnwrapperBech32);
+        __storage().witCustodianUnwrapper = Witnet.fromBech32(_witCustodianUnwrapperBech32, block.chainid == _CANONICAL_CHAIN_ID);
         __formallyVerifyRadonAssets(
             __storage().witOracleCrossChainRpcProviders,
-            _witUnwrapperBech32
+            _witCustodianUnwrapperBech32
         );
     }
 

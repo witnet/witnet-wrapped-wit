@@ -97,9 +97,9 @@ async function main() {
         wrappedWIT = await WrappedWIT.fetchContractFromEthersProvider(provider)
         console.info(`> Ethereum contract: ${await wrappedWIT.getAddress()}`)        
 
-        const witUnwrapper = await wrappedWIT.witUnwrapper()
-        if (witUnwrapper !== signer.pkh) {
-            console.error(`> Fatal: contract's hot wallet mismatch: ${witUnwrapper}`)
+        const witCustodianUnwrapper = await wrappedWIT.witCustodianUnwrapper()
+        if (witCustodianUnwrapper !== signer.pkh) {
+            console.error(`> Fatal: contract's hot wallet mismatch: ${witCustodianUnwrapper}`)
             process.exit(0)
         }
 
@@ -111,7 +111,7 @@ async function main() {
             }
         }
        
-        wrappedWIT.on("NewUnwrapper", onNewUnwrapper)
+        wrappedWIT.on("NewCustodianUnwrapper", onNewUnwrapper)
         wrappedWIT.on("Unwrapped", onUnwrapped);
         
         provider.websocket.on("close", (code) => {

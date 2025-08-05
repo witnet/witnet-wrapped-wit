@@ -9,7 +9,7 @@ interface IWrappedWIT {
     error Unauthorized();
 
     event CuratorshipTransferred(address indexed evmPrevCurator, address indexed evmNewCurator);
-    event NewUnwrapper(string witUnwrapper);
+    event NewCustodianUnwrapper(string witCustodianUnwrapper);
     event ReserveUpdate(uint256 value, Witnet.Timestamp timestamp, Witnet.TransactionHash witDrtHash);
     event Wrapped(string witSender, address evmRecipient, uint256 value, Witnet.TransactionHash witVttHash);
     event Unwrapped(address evmSender, string witRecipient, uint256 value, uint256 nonce);
@@ -34,17 +34,18 @@ interface IWrappedWIT {
     function totalReserve() external view returns (uint256);
     function totalUnwraps() external view returns (uint256);
     
-    function witCustodian() external view returns (string memory);
-    function witUnwrapper() external view returns (string memory);
-    
+    function witCustodianWrapper() external view returns (string memory);
+    function witCustodianUnwrapper() external view returns (string memory);
+
+    function witOracleCrossChainRpcProviders() external view returns (string[] memory);
     function witOracleEstimateWrappingFee(uint256) external view returns (uint256);
     function witOracleProofOfReserveRadonBytecode() external view returns (bytes memory);
     function witOracleQuerySettings() external view returns (WitOracleSettings memory);
     
     /// --- Authoritative methods -------------------------------------------------------------------------------------
+    function settleWitOracleCrossChainRpcProviders(string[] calldata) external;
     function settleWitOracleSettings(WitOracleSettings calldata) external;
-    function settleWitRpcProviders(string[] calldata) external;
-    function settleWitUnwrapper(string calldata) external;
+    function settleWitCustodianUnwrapper(string calldata) external;
     function transferCuratorship(address) external;
 
     // --- Permissionless state-modifying methods ---------------------------------------------------------------------
