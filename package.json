@@ -19,9 +19,12 @@
     "src"
   ],
   "scripts": {
+    "compile": "npx hardhat compile",
+    "deploy": "npx hardhat run scripts/deploy.js",
     "prepare": "npx hardhat compile --force && node ./scripts/prepare.js",
     "start": "node ./src/bin/unwrapper.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "verify": "npx hardhat verify"
   },
   "keywords": [
     "ethereum",
