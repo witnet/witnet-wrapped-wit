@@ -38,9 +38,10 @@ contract WrappedWIT
     uint8   internal constant _DECIMALS = 9;
     address internal constant _SUPERCHAIN_TOKEN_BRIDGE = 0x4200000000000000000000000000000000000028; // Superchain bridge
     
-    uint16  internal constant _WIT_ORACLE_REPORTS_MIN_MIN_WITNESSES = 3;
-    uint16  internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_BASE_FEE_OVERHEAD = 50;
-    uint64  internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_UNITARY_REWARD = 200_000_000; // 0.2 $WIT
+    uint16 internal constant _WIT_ORACLE_REPORTS_MIN_MIN_WITNESSES = 3;
+    uint16 internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_BASE_FEE_OVERHEAD = 50;
+    uint64 internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_UNITARY_REWARD = 200_000_000; // 0.2 $WIT
+    uint24 internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_RESPONSE_CALLBACK_GAS = 210_000;
     
     WitOracle public immutable witOracle;
     IWitOracleRadonRequestModal public immutable witOracleCrossChainProofOfReserveTemplate;
@@ -117,8 +118,9 @@ contract WrappedWIT
         // Initialize authoritative parameters -------------------------------------------------------------
         __storage().witOracleQuerySettings = WitOracleSettings({
             minWitnesses: block.chainid == _CANONICAL_CHAIN_ID ? 12 : _WIT_ORACLE_REPORTS_MIN_MIN_WITNESSES,
-            baseFeeOverhead100: _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_BASE_FEE_OVERHEAD / 5, 
-            unitaryRewardNanowits: _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_UNITARY_REWARD
+            baseFeeOverhead100: _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_BASE_FEE_OVERHEAD / 10, 
+            unitaryRewardNanowits: _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_UNITARY_REWARD,
+            responseCallbackGasLimit: _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_RESPONSE_CALLBACK_GAS
         });
         string[] memory _witOracleRpcProviders = new string[](1);
         _witOracleRpcProviders[0] = (
@@ -248,6 +250,7 @@ contract WrappedWIT
             _settings.minWitnesses >= _WIT_ORACLE_REPORTS_MIN_MIN_WITNESSES
                 && _settings.baseFeeOverhead100 <= _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_BASE_FEE_OVERHEAD
                 && _settings.unitaryRewardNanowits >= _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_UNITARY_REWARD
+                && _settings.responseCallbackGasLimit >= _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_RESPONSE_CALLBACK_GAS
         );
         __storage().witOracleQuerySettings = _settings;
     }

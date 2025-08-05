@@ -18,6 +18,7 @@ interface IWrappedWIT {
         uint16 minWitnesses;
         uint16 baseFeeOverhead100;
         uint64 unitaryRewardNanowits;
+        uint24 responseCallbackGasLimit;
     }
 
     enum WrappingStatus {
