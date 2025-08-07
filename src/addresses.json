@@ -6,7 +6,7 @@
         "WrappedWITSuperchain": "0xFabadaC5963bdE1bCcCd560EA60e9928DC5dF014"
     },
     "celo:alfajores": {
-        "WrappedWITSuperchain": ""
+        "WrappedWITSuperchain": "0xFabadaC5963bdE1bCcCd560EA60e9928DC5dF014"
     },
     "ethereum:sepolia": {
         "WrappedWITLib": "0xd5B8fC4A1D59b18537A575d05F97DA36fb0B14F3",
