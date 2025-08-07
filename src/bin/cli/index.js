@@ -253,11 +253,13 @@ async function main() {
       }
     }
   } else {
-    showMainUsage(router, [
-      ...(!process.env.ETHRPC_PRIVATE_KEYS ? ["ETHRPC_PRIVATE_KEYS"] : []),
-      ...(!process.env.WITNET_SDK_WALLET_MASTER_KEY ? ["WITNET_SDK_WALLET_MASTER_KEY"] : []),
-      ...(!process.env.WITNET_SDK_PROVIDER_URL ? ["WITNET_SDK_PROVIDER_URL"] : []),
-    ])
+    const requiredEnvVars = [
+      "ETHRPC_PRIVATE_KEYS",
+      "WITNET_SDK_WALLET_MASTER_KEY",
+      "WITNET_SDK_PROVIDER_URL"
+    ]
+    const missingEnvVars = requiredEnvVars.filter(key => !process.env[key])
+    showMainUsage(router, missingEnvVars)
     if (!args[0] && ethRpcError) {
       console.info(colors.mred(`\nNo ETH/RPC gateway running on port ${ethRpcPort}.`))
     }
