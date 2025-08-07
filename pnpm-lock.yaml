@@ -21,8 +21,8 @@ importers:
         specifier: ^4.6.2
         version: 4.6.2
       witnet-solidity-bridge:
-        specifier: ~2.1.10
-        version: 2.1.10
+        specifier: ~2.1.11
+        version: 2.1.11
     devDependencies:
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^6.1.0
@@ -2260,8 +2260,8 @@ packages:
   wif@2.0.6:
     resolution: {integrity: sha512-HIanZn1zmduSF+BQhkE+YXIbEiH0xPr1012QbFEGB0xsKqJii0/SqJjyn8dFv6y36kOznMgMB+LGcbZTJ1xACQ==}
 
-  witnet-solidity-bridge@2.1.10:
-    resolution: {integrity: sha512-FkVgRCtFEkdW7fNcXCZQ41jgFtDbAwZIUU10Ox5rMd+co4Y1hNQnqeqh55C/t5EIfmw4uXZRmsg6NBNhJ1x4Ow==}
+  witnet-solidity-bridge@2.1.11:
+    resolution: {integrity: sha512-KsiKSE8u/k1EhdatSt2F0qdyz7V1i/clOoKNeJg7T1UREptG2iLroaeNdH1YpnQNTobHaOgCW3iHNXfh5ZpkAg==}
 
   word-wrap@1.2.5:
     resolution: {integrity: sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==}
@@ -4969,7 +4969,7 @@ snapshots:
     dependencies:
       bs58check: 2.1.2
 
-  witnet-solidity-bridge@2.1.10:
+  witnet-solidity-bridge@2.1.11:
     dependencies:
       dotenv: 16.6.1
       lodash.merge: 4.6.2
