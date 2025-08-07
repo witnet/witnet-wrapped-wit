@@ -167,7 +167,7 @@ contract WrappedWIT
     }
 
     function getWrapTransactionStatus(Witnet.TransactionHash _witnetValueTransferTransactionHash) 
-        override external view 
+        override public view 
         returns (WrappingStatus)
     {
         uint256 _witOracleLastQueryId = __storage().witOracleWrappingTransactionLastQueryId[
@@ -188,12 +188,26 @@ contract WrappedWIT
         }
     }
 
-    function totalReserve() override external view returns (uint256) {
+    function getWrapTransactionStatuses(Witnet.TransactionHash[] calldata _hashes)
+        override external view
+        returns (WrappingStatus[] memory _statuses)
+    {
+        _statuses = new WrappingStatus[](_hashes.length);
+        for (uint _ix = 0; _ix < _hashes.length; ++ _ix) {
+            _statuses[_ix] = getWrapTransactionStatus(_hashes[_ix]);
+        }
+    }
+
+    function totalReserveSupply() override external view returns (uint256) {
         return __storage().evmLastReserveNanowits;
     }
 
     function totalUnwraps() override external view returns (uint256) {
         return __storage().evmUnwraps;
+    }
+    
+    function totalWraps() override external view returns (uint256) {
+        return __storage().evmWraps;
     }
 
     function witCustodianWrapper() override public view returns (string memory) {
@@ -215,12 +229,20 @@ contract WrappedWIT
         );
     }
 
+    function witOracleProofOfReserveLastUpdate() override external view returns (Witnet.Timestamp) {
+        return __storage().evmLastReserveTimestamp;
+    }
+
     function witOracleProofOfReserveRadonBytecode() override external view returns (bytes memory) {
         return witOracle
             .registry()
             .lookupRadonRequestBytecode(
                 __storage().witOracleProofOfReserveRadonHash
             );
+    }
+
+    function witOracleProofOfReserveRadonHash() override external view returns (Witnet.RadonHash) {
+        return __storage().witOracleProofOfReserveRadonHash;
     }
 
     function witOracleQuerySettings() override external view returns (WitOracleSettings memory) {

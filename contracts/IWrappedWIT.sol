@@ -32,15 +32,19 @@ interface IWrappedWIT {
     function evmCurator() external view returns (address);
     function getWrapTransactionLastQueryId(Witnet.TransactionHash) external view returns (uint256);
     function getWrapTransactionStatus(Witnet.TransactionHash) external view returns (WrappingStatus);
-    function totalReserve() external view returns (uint256);
+    function getWrapTransactionStatuses(Witnet.TransactionHash[] calldata) external view returns (WrappingStatus[] memory);
+    function totalReserveSupply() external view returns (uint256);
     function totalUnwraps() external view returns (uint256);
+    function totalWraps()   external view returns (uint256);
     
     function witCustodianWrapper() external view returns (string memory);
     function witCustodianUnwrapper() external view returns (string memory);
 
     function witOracleCrossChainRpcProviders() external view returns (string[] memory);
     function witOracleEstimateWrappingFee(uint256) external view returns (uint256);
+    function witOracleProofOfReserveLastUpdate() external view returns (Witnet.Timestamp);
     function witOracleProofOfReserveRadonBytecode() external view returns (bytes memory);
+    function witOracleProofOfReserveRadonHash() external view returns (Witnet.RadonHash);
     function witOracleQuerySettings() external view returns (WitOracleSettings memory);
     
     /// --- Authoritative methods -------------------------------------------------------------------------------------

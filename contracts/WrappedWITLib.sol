@@ -27,6 +27,7 @@ library WrappedWITLib {
         Witnet.Timestamp evmLastReserveTimestamp;
         uint64  evmLastReserveNanowits; 
         uint64  evmUnwraps; 
+        uint64  evmWraps;
         Witnet.Address witCustodianUnwrapper;
         IWrappedWIT.WitOracleSettings witOracleQuerySettings;
         string[] witOracleCrossChainRpcProviders;
@@ -134,7 +135,10 @@ library WrappedWITLib {
         Witnet.Timestamp _valueTimestamp = Witnet.Timestamp.wrap(_metadata[4].readUint());
         _value = _metadata[5].readUint();
         
-        // Also increase the burnable supply, only if the VTT's actual timestamp is greater than the last PoR's timestamp:
+        // Increase count of validated wrap transactions:
+        data().evmWraps ++;
+        
+        // Also increase the burnable supply, only if the VTT's inclusion timestamp is fresher than last PoR's timestamp:
         if (_valueTimestamp.gt(data().evmLastReserveTimestamp)) {
             data().evmLastReserveNanowits += _value;
         }
