@@ -80,19 +80,19 @@ async function main() {
             addresses[network.name][tokenContract]
                 && (await ethers.provider.getCode(addresses[network.name][tokenContract])).length > 2
         ) {
-            console.info("> Wrapped/WIT EVM contract: ", `${addresses[network.name][tokenContract]} [${tokenContract}]`)
+            console.info("> Wrapped/WIT EVM contract:  ", `${addresses[network.name][tokenContract]} [${tokenContract}]`)
             process.exit(0)
         }
-        console.info("> Wrapped/WIT deploy salt:  ", tokenSalt)
+        console.info("> Wrapped/WIT deploy salt:   ", tokenSalt)
         const tokenAddr = await deployer.determineAddr.staticCall(tokenSalt)
         const Token = await ethers.getContractFactory(tokenContract)
         await deployer.connect(curator).deployBridged.send(
             tokenSalt,
             Token.bytecode
         ).then(response => {
-            console.info("> Wrapped/WIT deploy tx:    ", response.hash)  
+            console.info("> Wrapped/WIT deploy tx:     ", response.hash)  
         })
-        console.info("> Wrapped/WIT EVM contract: ", `${tokenAddr} [${tokenContract}]`)
+        console.info("> Wrapped/WIT EVM contract:  ", `${tokenAddr} [${tokenContract}]`)
     }
 }
 
