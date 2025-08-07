@@ -13,6 +13,6 @@
         "WrappedWIT": "0xFabadaC5963bdE1bCcCd560EA60e9928DC5dF014"
     },
     "optimism:sepolia": {
-        "WrappedWITSuperchain": ""
+        "WrappedWITSuperchain": "0xFabadaC5963bdE1bCcCd560EA60e9928DC5dF014"
     }
 }

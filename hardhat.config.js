@@ -59,7 +59,7 @@ module.exports = {
       "base:sepolia": process.env.ETHERSCAN_V2_API_KEY,
       "celo:alfajores": process.env.ETHERSCAN_V2_API_KEY,
       "ethereum:sepolia": process.env.ETHERSCAN_V1_API_KEY,
-      "optimism:sepolia": process.env.ETHERSCAN_OPTIMISM_API_KEY,
+      "optimism:sepolia": process.env.ETHERSCAN_V2_API_KEY,
       "polygon:amoy": process.env.ETHERSCAN_V2_API_KEY,
       "unichain:sepolia": process.env.ETHERSCAN_V2_API_KEY,
     },
