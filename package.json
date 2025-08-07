@@ -39,7 +39,6 @@
     "@openzeppelin/community-contracts": "git+https://github.com/OpenZeppelin/openzeppelin-community-contracts.git#master",
     "@openzeppelin/contracts": "^5.4.0",
     "@openzeppelin/contracts-upgradeable": "^5.4.0",
-    "cross-env": "^7.0.3",
     "hardhat": "^2.26.1"
   },
   "dependencies": {

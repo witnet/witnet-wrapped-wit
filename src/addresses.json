@@ -9,8 +9,8 @@
         "WrappedWITSuperchain": ""
     },
     "ethereum:sepolia": {
-        "WrappedWITLib": "0x107251b2cf4C6Bc30268139B15dd529B9CB6E773",
-        "WrappedWIT": "0xFABADA91104285704C7c4a1c1BB3D6EeBF7B89CB"
+        "WrappedWITLib": "0xd5B8fC4A1D59b18537A575d05F97DA36fb0B14F3",
+        "WrappedWIT": "0xFabadaC5963bdE1bCcCd560EA60e9928DC5dF014"
     },
     "optimism:sepolia": {
         "WrappedWITSuperchain": ""

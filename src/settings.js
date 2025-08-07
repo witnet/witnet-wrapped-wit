@@ -1,7 +1,7 @@
 module.exports = {
     default: {
         curator: "0x06b5B7b1deaD1ade17C96fc2995Db93b82DeA970",
-        salt: 228882521,
+        salt: 492587619,
     },
     "ethereum:mainnet": {
         contract:  "WrappedWIT",
