@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity >=0.8.20 <0.9.0;
 
 /// @notice Deploy to deterministic addresses without an initcode factor.
 /// @author Solmate (https://github.com/transmissions11/solmate/blob/main/src/utils/CREATE3.sol)
