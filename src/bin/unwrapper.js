@@ -1,7 +1,6 @@
 require('dotenv').config();
 const fs = require("fs")
-const { ethers } = require('ethers');
-const { utils, Witnet } = require("@witnet/sdk")
+const { ethers, utils, Witnet } = require("@witnet/ethers")
 const { WrappedWIT } = require("..");
 
 const ETH_NETWORK = process.env.WRAPPED_WIT_UNWRAPPER_ETH_NETWORK

@@ -2,7 +2,7 @@
   "name": "witnet-wrapped-wit",
   "version": "1.0.2",
   "author": "Witnet Foundation <info@witnet.foundation>",
-  "description": "Wrapped/WIT Solidity contracts",
+  "description": "Wrapped/WIT Solidity contracts and CLI tools",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -11,6 +11,7 @@
   "type": "commonjs",
   "exports": "./src/index.js",
   "bin": {
+    "wrapped-wit": "src/bin/cli/index.js",
     "wrapped-wit-unwrapper": "src/bin/unwrapper.js"
   },
   "files": [
@@ -23,7 +24,7 @@
     "deploy": "npx hardhat run scripts/deploy.js",
     "prepare": "npx hardhat compile --force",
     "start": "node ./src/bin/unwrapper.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node ./src/bin/cli/index.js",
     "verify": "npx hardhat verify"
   },
   "keywords": [
@@ -42,10 +43,6 @@
     "hardhat": "^2.26.1"
   },
   "dependencies": {
-    "@witnet/sdk": "^1.0.6",
-    "witnet-solidity-bridge": "~2.1.11",
-    "dotenv": "^16.4.1",
-    "ethers": "^6.15.0",
-    "lodash.merge": "^4.6.2"
+    "@witnet/ethers": "^1.0.1"
   }
 }
