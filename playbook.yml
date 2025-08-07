@@ -1,0 +1,53 @@
+---
+- hosts: Unwrapper
+  tasks:
+    - name: Create .env.testnet file from GitHub secrets
+      copy:
+        dest: "/home/ubuntu/.env.testnet"
+        mode: '777'
+        content: |
+          WRAPPED_WIT_UNWRAPPER_WIT_MASTER_KEY={{ lookup('env','WRAPPED_WIT_UNWRAPPER_WIT_MASTER_KEY_TESTNET') }}
+          WRAPPED_WIT_UNWRAPPER_ETH_WSS_PROVIDER={{ lookup('env','WRAPPED_WIT_UNWRAPPER_ETH_WSS_PROVIDER_TESTNET') }}
+      no_log: true
+
+    # - name: Create .env.mainnet file from GitHub secrets
+    #   copy:
+    #     dest: "/home/ubuntu/.env.mainnet"
+    #     mode: '777'
+    #     content: |
+    #       WRAPPED_WIT_UNWRAPPER_ETH_NETWORK={{ lookup('env','WRAPPED_WIT_UNWRAPPER_ETH_NETWORK_MAINNET') }}
+    #       WRAPPED_WIT_UNWRAPPER_ETH_WSS_PROVIDER={{ lookup('env','WRAPPED_WIT_UNWRAPPER_ETH_WSS_PROVIDER_MAINNET') }}
+    #   no_log: true
+
+    - name: Copy Docker Compose File
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        mode: '777'
+      with_items:
+        - { src: 'docker-compose.yml', dest: '/home/ubuntu/docker-compose.yml' }
+        
+    - name: install python package manager
+      apt:
+        name: python3-pip
+
+    - name: Install Loki Log Driver
+      shell: docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions || /bin/true
+
+    - name: Enable Loki Log Driver
+      shell: docker plugin enable loki || /bin/true
+
+    - name: Start Services
+      shell: |
+        cd /home/ubuntu/
+        docker compose up --pull always -d --force-recreate
+        sleep 10
+
+    - name: List Running Containers
+      shell: docker ps
+
+    - name: Remove unused Docker Images
+      shell: docker image prune -f || /bin/true
+
+    - name: List Files
+      shell: ls -la /home/ubuntu/
