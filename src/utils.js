@@ -87,10 +87,10 @@ function getNetworkSettings (network) {
 }
 
 function getNetworkUnwrapTransactionDigest (network, evmBlockNumber, nonce, from, to, value) {
-  const _chainId = getNetworkChainId(network)
+  const evmChainId = getNetworkChainId(network)
   return ethers.solidityPackedKeccak256(
-    ["uint256", "uint256", "address", "string", "uint256"],
-    [evmBlockNumber, nonce, from, to, value],
+    ["uint256", "uint256", "uint256", "address", "string", "uint256"],
+    [evmChainId, evmBlockNumber, nonce, from, to, value],
   ).slice(0, 42)
 }
 
