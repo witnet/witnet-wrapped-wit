@@ -1,17 +1,17 @@
 # Wrapped/WIT contracts and CLI tools
 
-> A command-line tool and smart contract suite to wrap and unwrap $WIT tokens between the Witnet blockchain and Ethereum (as ERC-20 tokens), using specific RPC endpoints for each ecosystem.
+> A command-line tool and smart contract suite to wrap and unwrap $WIT coins between the Witnet blockchain and Ethereum, using specific RPC endpoints for each ecosystem.
 
 ## ✨ Overview
 
 This repository contains:
 - A **CLI tool** (`witwrap`) to interact with both Witnet and Ethereum RPCs to:
   - Wrap **native $WIT** coins from Witnet into **ERC-20** tokens on Ethereum.
-  - Unwrap ERC-20 $WIT token on Ethereum back into native coins on Witnet.
+  - Unwrap ERC-20 $WIT tokens on Ethereum back into native coins on Witnet.
   - Check out both wrapped and under-custody $WIT suppies on Ethereum and Witnet.
-  - Notarize **Proof-of-Reserve** reports on Witnet and then push it on-chain into Ethereum.
+  - Notarize **Proof-of-Reserve** reports on Witnet and then push them on-chain into Ethereum.
   - Get list of supported EVM testnets and mainnets.
-  - Get relevant info about the ERC-20 contract on the currently connected EVM network. 
+  - Get relevant info about the ERC-20 contract on each supported EVM networks. 
   - Get history of transfer, wrap and unwrap transactions.
   - Measure actual time taken by cross-chain transactions.
 
@@ -21,8 +21,8 @@ This repository contains:
 
 ## 📦 Installation
 
-### CLI tool
-Install `witwrap` binary, globally:
+### CLI binary
+Install the `witwrap` binary:
 ```bash
 $ npm install -g @witnet/wrapped-wit
 ```
@@ -34,11 +34,11 @@ $ npm install -g @witnet/wrapped-wit
 ```
 - Import from Javascript:
 ```javascript
-  const { WrappedWit } = require("@witnet/wrapped-wit")
+  const { WrappedWIT } = require("@witnet/wrapped-wit")
  ```
 - Import from Typescript:
 ```typescript
-  import { WrappedWit } from "@witnet/wrapped-wit"
+  import { WrappedWIT } from "@witnet/wrapped-wit"
 ```
 
 ## ⚙️ Requirements
@@ -63,14 +63,14 @@ You can optionally:
 
 ### Commands
 
-You need to have a local ETH/RPC proxy running in order to get access to extra commands. You will only be able to wrap and unwrap $WIT token if you connect to an EVM network where the canonical version of the ERC-20 token is available (see supported networks below). 
+You need to have a local ETH/RPC proxy running in order to get access to extra commands. You will only be able to wrap and unwrap $WIT coins if you connect to an EVM network where the canonical version of the ERC-20 token is available (see supported networks below). 
 
 #### `$ witwrap networks`
 Lists supported EVM networks.
 
 Flags:
-- `--mainnets`: Only list supported EVM mainnets.
-- `--testnets`: Only list supported EVM testnets.
+- `--mainnets`: Just list the mainnets.
+- `--testnets`: Just list the testnets.
 
 #### `$ witwrap proxy <evm_network>`
 Launches a local ETH/RPC signing proxy to the specified `evm_network`, listening on port 8545 if no otherwise specified.
@@ -89,8 +89,8 @@ Shows the address and other relevant data of the WrappedWIT contract that's avai
 Flags:
   - `--verbose`: Outputs extra information.
 
-#### `$ witwrap supplies`
-Shows wrapped $WIT supply information on the connected EVM network. It also detects if the total reserve supply in Ethereum is outdated with respect the actual under-custody supply on Witnet, asking you whether you wish to permissionlessly contribute by notarizing and pushing a fresh new **Proof-of-Reserve** report.
+#### `$ witwrap supply`
+Shows wrapped $WIT supply information on the connected EVM network. It also detects if the total reserve supply in Ethereum is outdated with respect the actual under-custody supply on Witnet, asking you whether you wish to permissionlessly contribute by notarizing (in Witnet) and pushing (in Ethereum) a fresh new **Proof-of-Reserve** report.
 
 Flags:
  - `--verbose`: Outputs history of Proof-of-Reserve update reports.
@@ -101,7 +101,7 @@ Options:
 - `--gasPrice`: Max. EVM gas price to pay when pushing a Proof-of-Reserve report into Ethereum.
 
 #### `$ witwrap transfers`
-Shows the history of recent transfers of wrapped $WIT on the proxified EVM network. It also allows you to transfer your own wrapped $WIT tokens in Ethereum, as long the signing addresses of your EVM proxy holds some wrapped $WIT balance.
+Shows the history of recent transfers of wrapped $WIT on the connected EVM network. It also allows you to transfer your own wrapped $WIT tokens in Ethereum, as long the signing addresses of your EVM proxy holds some wrapped $WIT balance.
 
 Flags:
 - `--burns`: Also show history of burnt $WIT (either unwrapped to Witnet, or bridged to other EVM networks).
@@ -116,10 +116,10 @@ Options:
 - `--gasPrice`: Max. EVM gas price to pay when transferring $WIT. 
 
 #### `$ witwrap wrappings`
-Shows the history of past wrapping transactions, as well as an up-to-date list with the status of on-going wrappings workflows. It also allows you to initiate a wrap transaction on Witnet, and validated on Ethereum when finalized.
+Shows the history of past wrapping transactions, as well as an up-to-date list with the status of on-going wrapping workflows. It also allows you to initiate a wrap transaction on Witnet, and validated on Ethereum when finalized.
 
 Flags:
-- `--check`: Show time difference between the wrap transaction took place on Witnet, and when it gets ultimately verified on Ethereum. 
+- `--check`: Show the time difference between the wrap transaction took place on Witnet, and when it gets ultimately verified on Ethereum. 
 
 Options:
 - `--limit`: Limit number of history records.
@@ -127,14 +127,14 @@ Options:
 - `--from`: Filter wrappings from the specified WIT address (required when initiating a new wrap).
 - `--into`: Filter wrappings to the specified EVM address (required when initiating a new wrap).
 - `--value`: Amount of $WIT to be wrapped between the specified addresses.
-- `--vtt-hash`: Hash of some wrapping transaction that took place on Witnet to be verified on Ethereum. 
+- `--vtt-hash`: Hash of some wrapping transaction that took place on Witnet to yet be verified on Ethereum. 
 - `--gasPrice`: Max. EVM gas price to pay when querying the validation of some `--vtt-hash`. 
 
 #### `$ witwrap unwrappings`
 Shows the history of past unwrapping transactions. It also allows you to unwrap $WIT tokens that you hold on any of the EVM proxy signing addresses, as long as you have enough $WIT balance and there's enough under-custody reserve supply on the ERC-20 contract.
 
 Flags:
-- `--check`: Show time difference between the unwrap transaction took place on Ethereum, and when the unwrapped amount gets ultimately transferred on Witnet.
+- `--check`: Show the time difference between the unwrap transaction took place on Ethereum, and when the unwrapped amount gets ultimately transferred on Witnet.
 
 Options:
 - `--limit`: Limit number of history records.
@@ -162,9 +162,9 @@ Soon <sup>TM</sup>.
 | EVM Network | ERC-20 Contract | Witnet Network |
 | :- | :- | :-: |
 | Ethereum Sepolia | [`WrappedWIT`](https://sepolia.etherscan.io/address/0xFabadaC5963bdE1bCcCd560EA60e9928DC5dF014#tokentxns) | Testnet 
-| Base Sepolia | `WrappedWITSuperchain` |
-| Celo Alfajores | `WrappedWITSuperchain` |
-| Optimism Sepolia | `WrappedWITSuperchain` |
+| Base Sepolia | [`WrappedWITSuperchain`](https://sepolia.basescan.org/address/0xFabadaC5963bdE1bCcCd560EA60e9928DC5dF014#tokentxns) |
+| Celo Alfajores | [`WrappedWITSuperchain`](https://alfajores.celoscan.io/address/0xFabadaC5963bdE1bCcCd560EA60e9928DC5dF014#tokentxns) |
+| Optimism Sepolia | [`WrappedWITSuperchain`](https://sepolia-optimism.etherscan.io/address/0xfabadac5963bde1bcccd560ea60e9928dc5df014#tokentxns) |
 
 ## 🚀 Examples
 
@@ -175,7 +175,7 @@ It involves a two-step workflow:
   - Wait a few minutes until the value transfer gets finalized in Witnet.
 - Second, request the Wrapped/WIT to verify finality of the value transfer transaction in Witnet:
   - `witwrap wrappings --vtt-hash <vtt_hash>`
-  - Wait a few minutes until the Wit/Oracle validates the finality of the specified value transfer in Witnet.
+  - Wait a few minutes until the Wit/Oracle on Ethereum validates the finality of the specified value transfer in Witnet.
 - You can at all times filter and check the status of pending wrapping transactions:
   - `witwrap wrappings [--from <witnet_wallet_addres>] [--into <evm_recipient>]`
 
