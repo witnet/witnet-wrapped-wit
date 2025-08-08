@@ -93,10 +93,11 @@ async function main () {
   if (process.argv.indexOf("--port") >= 0) {
     ethRpcPort = parseInt(process.argv[process.argv.indexOf("--port") + 1])
   }
-  let ethRpcProvider, ethRpcNetwork, ethRpcError
+  let ethRpcProvider, ethRpcChainId, ethRpcNetwork, ethRpcError
   try {
     ethRpcProvider = new ethers.JsonRpcProvider(`http://127.0.0.1:${ethRpcPort}`)
-    ethRpcNetwork = utils.getEvmNetworkByChainId((await ethRpcProvider.getNetwork()).chainId)
+    ethRpcChainId = (await ethRpcProvider.getNetwork()).chainId
+    ethRpcNetwork = utils.getEvmNetworkByChainId(ethRpcChainId)
   } catch (err) {
     ethRpcError = err
   }
@@ -262,8 +263,12 @@ async function main () {
     ]
     const missingEnvVars = requiredEnvVars.filter(key => !process.env[key])
     showMainUsage(router, missingEnvVars)
-    if (!args[0] && ethRpcError) {
-      console.info(colors.mred(`\nNo ETH/RPC gateway running on port ${ethRpcPort}.`))
+    if (!args[0] && (ethRpcError || !ethRpcNetwork)) {
+      if (ethRpcChainId) {
+        console.info(colors.mred(`\nTrying to connect to unsupported network (${ethRpcChainId}).`))
+      } else if (ethRpcPort) {
+        console.info(colors.mred(`\nNo ETH/RPC proxy running on port ${ethRpcPort}.`))
+      }
     }
   }
 }
