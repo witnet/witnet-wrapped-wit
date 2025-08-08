@@ -203,8 +203,8 @@ async function main () {
         },
       }
       : {}),
-    gateway: {
-      hint: "Launch a local ETH/RPC signing gateway connected to some specific EVM network.",
+    proxy: {
+      hint: "Launch a local ETH/RPC signing proxy connected to some specific EVM network.",
       params: ["EVM_NETWORK"],
       options: [
         "port",
@@ -225,7 +225,7 @@ async function main () {
     commands: {
       accounts: balance,
       contract,
-      gateway,
+      proxy,
       networks,
       supplies,
       transfers,
@@ -412,7 +412,7 @@ async function balance (flags = {}) {
   )
 }
 
-async function gateway (flags = {}, args = []) {
+async function proxy (flags = {}, args = []) {
   [args] = helpers.deleteExtraFlags(args)
   const network = args[0]
   if (!network) {
