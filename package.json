@@ -1,6 +1,6 @@
 {
   "name": "@witnet/wrapped-wit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "Witnet Foundation <info@witnet.foundation>",
   "description": "Wrapped/WIT Solidity contracts and CLI tools",
   "license": "MIT",
