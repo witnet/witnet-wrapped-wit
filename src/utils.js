@@ -1,7 +1,6 @@
 const merge = require("lodash.merge")
-const { ethers } = require("ethers")
 const WSB = require("witnet-solidity-bridge")
-const { Witnet } = require("@witnet/sdk")
+const { ethers, Witnet } = require("@witnet/ethers")
 
 const ABI = require("../artifacts/contracts/WrappedWIT.sol/WrappedWIT.json").abi
 const addresses = require("./addresses.json")
