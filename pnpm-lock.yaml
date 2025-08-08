@@ -21,8 +21,8 @@ importers:
         specifier: ^16.4.1
         version: 16.6.1
       ethrpc-gateway:
-        specifier: ^2.2.5
-        version: 2.2.5(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+        specifier: ^2.2.6
+        version: 2.2.6(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       inquirer:
         specifier: ^8.0.0
         version: 8.2.6
@@ -1686,8 +1686,8 @@ packages:
     resolution: {integrity: sha512-/Sn9Y0oKl0uqQuvgFk/zQgR7aw1g36qX/jzSQ5lSwlO0GigPymk4eGQfeNTD03w1dPOqfz8V77Cy43jH56pagw==}
     engines: {node: '>=6.5.0', npm: '>=3'}
 
-  ethrpc-gateway@2.2.5:
-    resolution: {integrity: sha512-TvDu0qRNN3egps8lXiiAGGPUxtakckTbYu/o+eGB9KKyDiPnCdFKcDDZmBhI0JvVVMZU07DEm1h+ZJfCzAip+g==}
+  ethrpc-gateway@2.2.6:
+    resolution: {integrity: sha512-cj/ipBzFn/6BXQ88hdCz6rbBmiaNxuyCweHep1svnKIvmOhYsHlvAdYbOCm1LqgwUphv31XeUyW2y+IIszeyiw==}
     hasBin: true
 
   event-emitter@0.3.5:
@@ -4552,7 +4552,7 @@ snapshots:
       cross-env: 7.0.3
       dotenv: 16.6.1
       ethers: 6.15.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      ethrpc-gateway: 2.2.5(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      ethrpc-gateway: 2.2.6(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       inquirer: 8.2.6
       json-bigint: 1.0.0
       lodash.merge: 4.6.2
@@ -5738,7 +5738,7 @@ snapshots:
       bn.js: 4.11.6
       number-to-bn: 1.7.0
 
-  ethrpc-gateway@2.2.5(bufferutil@4.0.9)(utf-8-validate@5.0.10):
+  ethrpc-gateway@2.2.6(bufferutil@4.0.9)(utf-8-validate@5.0.10):
     dependencies:
       axios: 1.9.0
       cors: 2.8.5

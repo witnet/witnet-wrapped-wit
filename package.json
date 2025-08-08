@@ -56,7 +56,7 @@
     "@witnet/sdk": "^1.0.7",
     "cross-env": "^7.0.3",
     "dotenv": "^16.4.1",
-    "ethrpc-gateway": "^2.2.5",
+    "ethrpc-gateway": "^2.2.6",
     "inquirer": "^8.0.0",
     "lodash.merge": "^4.6.2",
     "moment": "^2.30.1",
