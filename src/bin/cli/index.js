@@ -461,26 +461,25 @@ async function contract (flags = {}) {
   const { network, provider, verbose } = flags
   const contract = await WrappedWIT.fetchContractFromEthersProvider(provider)
   const settings = WrappedWIT.getNetworkSettings(network)
+  const isCanonical = WrappedWIT.isNetworkCanonical(network)
 
   const records = []
 
-  records.push(["Contract address", colors.lblue(await contract.getAddress())])
-  if (verbose) records.push(["Curator address", colors.blue(await contract.evmCurator())])
-  records.push(["Wit/Oracle address", colors.mblue(await contract.witOracle())])
-  if (verbose) {
-    records.push(["Wit/Oracle PoI's CCDR template", colors.blue(await contract.witOracleCrossChainProofOfInclusionTemplate())])
-    records.push(["Wit/Oracle PoR's Radon hash", colors.cyan((await contract.witOracleProofOfReserveRadonHash()).slice(2))])
+  records.push(["ERC-20 contract address", colors.lblue(await contract.getAddress())])
+  
+  if (verbose && isCanonical) {
+    records.push(["Wit/Oracle contract address", colors.mblue(await contract.witOracle())])
+    records.push(["Wit/Oracle PoI's CCDR template", colors.mblue(await contract.witOracleCrossChainProofOfInclusionTemplate())])
+    records.push(["Wit/Oracle PoR's Radon hash", colors.green((await contract.witOracleProofOfReserveRadonHash()).slice(2))])
   }
-  if (verbose) {
-    const providers = await contract.witOracleCrossChainRpcProviders()
-    records.push(["Wit/Oracle Cross-chain Wit/RPC providers", colors.gray(providers[0])])
-    providers.slice(1).forEach(provider => records.push(["", colors.gray(provider)]))
+  records.push(["Wit/Custodian recipient address", colors.lmagenta(await contract.witCustodianWrapper())])
+  if (verbose && isCanonical) {
+    records.push(["Wit/Custodian sender address", colors.mmagenta(await contract.witCustodianUnwrapper())])
   }
-  records.push(["Wit/Custodian recipient address", colors.mmagenta(await contract.witCustodianWrapper())])
-  if (verbose) records.push(["Wit/Custodian sender address", colors.magenta(await contract.witCustodianUnwrapper())])
-  records.push(["Total wrap transactions", colors.white(helpers.commas(await contract.totalWraps()))])
-  records.push(["Total unwrap transactions", colors.white(helpers.commas(await contract.totalUnwraps()))])
-
+  if (isCanonical) {
+    records.push(["Verified wrap transactions", colors.white(helpers.commas(await contract.totalWraps()))])
+    records.push(["Requested unwrap transactions", colors.white(helpers.commas(await contract.totalUnwraps()))])
+  }
   helpers.traceTable(records, {
     headlines: [
       `:${colors.lcyan(network.replace(":", " ").toUpperCase())}`,
