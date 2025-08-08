@@ -24,7 +24,8 @@ const settings = {
     check: "See if cross-chain transactions have been consolidated.",
     mints: "Include mint transactions, if any.",
     burns: "Include burn transactions, if any.",
-    testnets: "List supported EVM testnets, instead of mainnets.",
+    mainnets: "Only list supported EVM mainnets.",
+    testnets: "Only list suppoered EVM testnets.",
 
   },
   options: {
@@ -61,22 +62,24 @@ const settings = {
       param: "EVM_GAS_PRICE",
     },
     port: {
-      hint: "Port on which the local ETH/RPC signing gateway is expected to be listening (default: 8545).",
+      hint: "Port on which the local ETH/RPC signing proxy is expected to be listening (default: 8545).",
       param: "HTTP_PORT",
     },
+    remote: {
+      hint: "Remote ETH/RPC provider to connect to, other than default's",
+      param: "URL",
+    },
     witnet: {
-      hint: "Wit/Oracle RPC provider to connect to, other than default.",
+      hint: "Wit/Oracle RPC provider to connect to, other than default's.",
       param: "URL",
     },
     kermit: {
-      hint: "Wit/Kermit REST-API provider to connect to, other than default.",
+      hint: "Wit/Kermit REST-API provider to connect to, other than default's.",
       param: "URL",
     },
   },
   envars: {
-    ETHRPC_PRIVATE_KEYS: "=> Private keys used by the ETH/RPC gateway for signing EVM transactions.",
-    // WITNET_KERMIT_PROVIDER_URL: "=> Wit/Kermit REST-API provider to connect to, if no otherwise specified.",
-    WITNET_SDK_PROVIDER_URL: "=> Wit/Oracle RPC provider(s) to connect to, if no otherwise specified.",
+    ETHRPC_PRIVATE_KEYS: "=> Private keys used by the ETH/RPC proxy for signing EVM transactions.",
     WITNET_SDK_WALLET_MASTER_KEY: "=> Wallet's master key in XPRV format, as exported from either a node, Sheikah or myWitWallet.",
   },
 }
@@ -122,7 +125,6 @@ async function main () {
             "verbose",
           ],
           options: [
-            // "kermit",
             "witnet",
             "port",
             ...(WrappedWIT.isNetworkCanonical(ethRpcNetwork)
@@ -135,7 +137,7 @@ async function main () {
           ],
           envars: [
             ...(WrappedWIT.isNetworkCanonical(ethRpcNetwork)
-              ? ["WITNET_SDK_PROVIDER_URL", "WITNET_SDK_WALLET_MASTER_KEY"]
+              ? ["WITNET_SDK_WALLET_MASTER_KEY"]
               : []
             ),
           ],
@@ -178,10 +180,7 @@ async function main () {
             "vtt-hash",
             "gasPrice",
           ],
-          envars: [
-            "WITNET_SDK_PROVIDER_URL",
-            "WITNET_SDK_WALLET_MASTER_KEY",
-          ],
+          envars: ["WITNET_SDK_WALLET_MASTER_KEY"],
         },
         unwrappings: {
           hint: `Show unwrapping transactions from ${colors.mcyan(ethRpcNetwork.toUpperCase())}.`,
@@ -199,9 +198,7 @@ async function main () {
             "value",
             "gasPrice",
           ],
-          envars: [
-            "WITNET_SDK_PROVIDER_URL",
-          ],
+          envars: [],
         },
       }
       : {}),
@@ -210,16 +207,17 @@ async function main () {
       params: ["EVM_NETWORK"],
       options: [
         "port",
+        "remote",
       ],
       envars: [
         "ETHRPC_PRIVATE_KEYS",
-        "ETHRPC_PROVIDER_URL",
       ],
     },
     networks: {
       hint: "List EVM networks where the Wrapped/WIT token is available.",
       params: "[EVM_ECOSYSTEM]",
       flags: [
+        "mainnets",
         "testnets",
       ],
     },
@@ -237,7 +235,7 @@ async function main () {
 
   let [args, flags] = helpers.extractFlagsFromArgs(process.argv.slice(2), Object.keys(settings.flags))
   if (flags.version) {
-    console.info(`${colors.lwhite(`Wrapped/WIT Ethers CLI v${require("../../../package.json").version}`)}`)
+    console.info(`${colors.lwhite(`Wrapped/WIT CLI v${require("../../../package.json").version}`)}`)
   }
   let options; [args, options] = helpers.extractOptionsFromArgs(args, Object.keys(settings.options))
   if (args[0] && router.commands[args[0]] && router[args[0]]) {
@@ -261,7 +259,6 @@ async function main () {
     const requiredEnvVars = [
       "ETHRPC_PRIVATE_KEYS",
       "WITNET_SDK_WALLET_MASTER_KEY",
-      "WITNET_SDK_PROVIDER_URL",
     ]
     const missingEnvVars = requiredEnvVars.filter(key => !process.env[key])
     showMainUsage(router, missingEnvVars)
@@ -308,8 +305,7 @@ function showUsageError (router, cmd, specs, error) {
   showCommandUsage(router, cmd, specs)
   if (error) {
     console.info()
-    console.info(error)
-    // console.error(error?.stack?.split("\n")[0] || error)
+    console.error(error?.stack?.split("\n")[0] || error)
   }
 }
 
@@ -424,6 +420,7 @@ async function gateway (flags = {}, args = []) {
         "ethrpc",
         network,
         flags?.port || 8545,
+        flags?.remote,
       ],
       { shell: true }
     )
@@ -437,16 +434,19 @@ async function gateway (flags = {}, args = []) {
 }
 
 async function networks (flags = {}) {
-  const { testnets } = flags
+  const { mainnets, testnets } = flags
   const networks = Object.fromEntries(WrappedWIT.getSupportedNetworks()
     .filter(network => {
       const settings = WrappedWIT.getNetworkSettings(network)
       const address = WrappedWIT.getNetworkAddresses(network)[settings.contract]
-      return address && address !== "" && !(!WrappedWIT.isNetworkMainnet(network) ^ testnets)
+      return address && address !== "" && (
+        (WrappedWIT.isNetworkMainnet(network) && (mainnets || !testnets)) ||
+        (!WrappedWIT.isNetworkMainnet(network) && (testnets || !mainnets))
+      )
     })
     .map(network => {
       return [
-        network, {
+        WrappedWIT.isNetworkCanonical(network) ? colors.lwhite(network) : network, {
           "Chain id": WrappedWIT.getNetworkChainId(network),
           Mainnet: WrappedWIT.isNetworkMainnet(network),
           Canonical: WrappedWIT.isNetworkCanonical(network),
