@@ -118,6 +118,9 @@ async function main () {
         },
         supplies: {
           hint: `Show relevant token-related supplies on ${colors.mcyan(ethRpcNetwork.toUpperCase())}.`,
+          flags: [
+            "verbose",
+          ],
           options: [
             // "kermit",
             "witnet",
@@ -126,6 +129,7 @@ async function main () {
               ? ["witnet"]
               : []
             ),
+            "limit",
             "from",
             "gasPrice",
           ],
@@ -486,7 +490,7 @@ async function contract (flags = {}) {
 }
 
 async function supplies (flags = {}) {
-  let { network, provider, from, gasPrice, confirmations } = flags
+  let { network, provider, from, gasPrice, confirmations, verbose, limit } = flags
   let contract = await WrappedWIT.fetchContractFromEthersProvider(provider)
 
   const records = []
@@ -494,7 +498,7 @@ async function supplies (flags = {}) {
   const totalSupply = Witnet.Coins.fromPedros(await contract.totalSupply())
   if (WrappedWIT.isNetworkCanonical(network)) {
     // connect to Witnet
-    const witnet = await Witnet.JsonRpcProvider.fromEnv(flags?.witnet)
+    const witnet = await Witnet.JsonRpcProvider.fromEnv(flags?.witnet || (WrappedWIT.isNetworkMainnet(network) ? undefined : "https://rpc-testnet.witnet.io"))
     const witnetSupply = await witnet.supplyInfo()
 
     const totalReserveSupply = Witnet.Coins.fromPedros(await contract.totalReserveSupply())
@@ -517,12 +521,6 @@ async function supplies (flags = {}) {
 
     const custodianBalance = await witnet.getBalance(witCustodianWrapper)
     witnetBalance += custodianBalance.locked + custodianBalance.staked + custodianBalance.unlocked
-    // if (witnetBalance > totalSupply.pedros) {
-    //   records.push([
-    //     "Pending to-be-wrapped token supply",
-    //     colors.magenta(helpers.commas(Witnet.Coins.fromPedros(witnetBalance - totalSupply.pedros).wits.toFixed(2))),
-    //   ])
-    // }
     if (witCustodianUnwrapper !== witCustodianWrapper) {
       const unwrapperBalance = await witnet.getBalance(witCustodianUnwrapper)
       witnetBalance += unwrapperBalance.locked + unwrapperBalance.staked + unwrapperBalance.unlocked
@@ -576,7 +574,7 @@ async function supplies (flags = {}) {
         // print dry-run report on console
         console.info(colors.lwhite("> Notarizing Proof-of-Reserve on Witnet ..."))
         execSync(
-          `npx witnet radon dry-run ${bytecode} --verbose --indent 2 --headline "WRAPPED / WIT PROOF-OF-RESERVE DRY-RUN REPORT"`,
+          `npx witsdk radon dry-run ${bytecode} --verbose --indent 2 --headline "WRAPPED / WIT PROOF-OF-RESERVE DRY-RUN REPORT"`,
           { stdio: "inherit", stdout: "inherit" },
         )
         console.info()
@@ -666,6 +664,26 @@ async function supplies (flags = {}) {
       "Available ($WIT)",
     ],
   })
+  if (verbose) {
+    let events = await contract.queryFilter("ReserveUpdate")
+    helpers.traceTable(
+      events.reverse().slice(0, limit || 64).map(event => [
+        event.blockNumber,
+        event.args[0], //Witnet.Coins.fromPedros(event.args[0]).wits.toFixed(2),
+        event.args[2].slice(2),
+        moment.unix(Number(event.args[1])),
+      ]), {
+        headlines: [
+          "BLOCK NUMBER",
+          `REPORTED SUPPLY (${colors.lwhite("$pedros")})`,
+          `PROOF-OF-RESERVE WITNESSING ACT ON ${colors.lwhite(`WITNET ${WrappedWIT.isNetworkMainnet(network) ? "MAINNET": "TESTNET"}`)}`,
+          "PROOF-OF-RESERVE TIMESTAMP",
+        ],
+        colors: [ , colors.myellow, colors.magenta, colors.mmagenta ],
+        humanizers: [ helpers.commas, helpers.commas ],
+      }
+    )
+  }
   process.exit(0)
 }
 
@@ -814,7 +832,7 @@ async function unwrappings (flags = {}) {
         headlines: [
           "BLOCK NUMBER",
           "EVM UNWRAP TRANSACTION HASH",
-          `VALUE TRANSFER TRANSACTION HASH ON WITNET ${witnet.network.toUpperCase()}`,
+          `VALUE TRANSFER TRANSACTION HASH ON ${colors.lwhite(`WITNET ${witnet.network.toUpperCase()}`)}`,
           ":TIME DIFF",
         ],
         humanizers: [helpers.commas, , ,],
@@ -838,7 +856,7 @@ async function unwrappings (flags = {}) {
             "BLOCK NUMBER",
             "EVM UNWRAP TRANSACTION HASH",
             "EVM UNWRAPPER",
-            `WIT RECIPIENT ON WITNET ${WrappedWIT.isNetworkMainnet(network) ? "MAINNET" : "TESTNET"}`,
+            `WIT RECIPIENT ON ${colors.lwhite(`WITNET ${WrappedWIT.isNetworkMainnet(network) ? "MAINNET" : "TESTNET"}`)}`,
             `VALUE (${colors.lwhite("$pedros")})`,
           ],
           humanizers: [helpers.commas, , , , helpers.commas],
@@ -1097,7 +1115,7 @@ async function wrappings (flags = {}) {
         }), {
           headlines: [
             "BLOCK NUMBER",
-            `VALUE TRANSFER TRANSACTION HASH ON WITNET ${witnet.network.toUpperCase()}`,
+            `VALUE TRANSFER TRANSACTION HASH ON ${colors.lwhite(`WITNET ${witnet.network.toUpperCase()}`)}`,
             "ERC-20 WRAP VALIDATING TRANSACTION HASH",
             ":TIME DIFF",
           ],
@@ -1128,7 +1146,7 @@ async function wrappings (flags = {}) {
         }), {
           headlines: [
             "BLOCK NUMBER",
-            `WIT SENDER ON WITNET ${WrappedWIT.isNetworkMainnet(network) ? "MAINNET" : "TESTNET"}`,
+            `WIT SENDER ON ${colors.lwhite(`WITNET ${WrappedWIT.isNetworkMainnet(network) ? "MAINNET" : "TESTNET"}`)}`,
             "ERC-20 WRAP VALIDATING TRANSACTION HASH",
             "EVM RECIPIENT",
             `VALUE (${colors.lwhite("$pedros")})`,
