@@ -802,7 +802,7 @@ async function unwrappings (flags = {}) {
   if (into && !value) events = events.filter(event => event.args[1].toLowerCase().indexOf(into.toLowerCase()) > -1)
 
   if (check) {
-    const witnet = await Witnet.JsonRpcProvider.fromEnv(flags?.witnet)
+    const witnet = await Witnet.JsonRpcProvider.fromEnv(flags?.witnet || (WrappedWIT.isNetworkMainnet(network) ? undefined : "https://rpc-testnet.witnet.io"))
     const records = await helpers.prompter(
       Promise.all(events.map(async event => {
         const ethBlock = await provider.getBlock(event.blockNumber)
@@ -874,7 +874,7 @@ async function wrappings (flags = {}) {
   let { provider, network, from, into, value, since, offset, limit, gasPrice, confirmations, check } = flags
 
   let contract = await WrappedWIT.fetchContractFromEthersProvider(provider)
-  const witnet = await Witnet.JsonRpcProvider.fromEnv(flags?.witnet)
+  const witnet = await Witnet.JsonRpcProvider.fromEnv(flags?.witnet || (WrappedWIT.isNetworkMainnet(network) ? undefined : "https://rpc-testnet.witnet.io"))
 
   helpers.traceHeader(network.toUpperCase(), colors.lcyan)
 
