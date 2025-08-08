@@ -1,0 +1,29 @@
+{
+  "extends": "solhint:recommended",
+  "rules": {
+    "compiler-version": [
+      "error",
+      ">=0.6.0 <0.9.0"
+    ],
+    "constructor-syntax": "warn",
+    "func-param-name-mixedcase": "warn",
+    "func-visibility": [
+      "warn",
+      {
+        "ignoreConstructors": true
+      }
+    ],
+    "no-global-import": "off",
+    "modifier-name-mixedcase": "warn",
+    "no-empty-blocks": "off",
+    "no-inline-assembly": "off",
+    "quotes": "off",
+    "var-name-mixedcase": "off",
+    "reason-string": [
+      "warn",
+      {
+        "maxLength": 128
+      }
+    ]
+  }
+}

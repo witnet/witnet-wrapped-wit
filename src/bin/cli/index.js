@@ -85,7 +85,7 @@ const settings = {
 
 main()
 
-async function main() {
+async function main () {
   let ethRpcPort = 8545
   if (process.argv.indexOf("--port") >= 0) {
     ethRpcPort = parseInt(process.argv[process.argv.indexOf("--port") + 1])
@@ -102,8 +102,9 @@ async function main() {
     ...(WrappedWIT.isNetworkSupported(ethRpcNetwork)
       ? {
         accounts: {
-          hint: `Show EVM native and Wrapped/WIT balances for all available signing accounts on ${colors.mcyan(ethRpcNetwork.toUpperCase())
-            }.`,
+          hint: `Show EVM native and Wrapped/WIT balances for all available signing accounts on ${
+            colors.mcyan(ethRpcNetwork.toUpperCase())
+          }.`,
           options: [
             "port",
           ],
@@ -234,7 +235,7 @@ async function main() {
   if (flags.version) {
     console.info(`${colors.lwhite(`Wrapped/WIT Ethers CLI v${require("../../../package.json").version}`)}`)
   }
-  let options;[args, options] = helpers.extractOptionsFromArgs(args, Object.keys(settings.options))
+  let options; [args, options] = helpers.extractOptionsFromArgs(args, Object.keys(settings.options))
   if (args[0] && router.commands[args[0]] && router[args[0]]) {
     const cmd = args[0]
     if (flags.help) {
@@ -256,7 +257,7 @@ async function main() {
     const requiredEnvVars = [
       "ETHRPC_PRIVATE_KEYS",
       "WITNET_SDK_WALLET_MASTER_KEY",
-      "WITNET_SDK_PROVIDER_URL"
+      "WITNET_SDK_PROVIDER_URL",
     ]
     const missingEnvVars = requiredEnvVars.filter(key => !process.env[key])
     showMainUsage(router, missingEnvVars)
@@ -266,7 +267,7 @@ async function main() {
   }
 }
 
-function showMainUsage(router, envars) {
+function showMainUsage (router, envars) {
   showUsageHeadline(router)
   showUsageFlags(["help", "version"])
   showUsageOptions(["port"])
@@ -278,14 +279,14 @@ function showMainUsage(router, envars) {
   showUsageEnvars(envars)
 }
 
-function showCommandUsage(router, cmd, specs) {
+function showCommandUsage (router, cmd, specs) {
   showUsageHeadline(router, cmd, specs)
   showUsageFlags(specs?.flags || [])
   showUsageOptions(specs?.options || [])
   showUsageEnvars(specs?.envars || [])
 }
 
-function showUsageEnvars(envars) {
+function showUsageEnvars (envars) {
   if (envars.length > 0) {
     console.info("\nENVARS:")
     const maxWidth = envars.map(envar => envar.length).reduce((curr, prev) => curr > prev ? curr : prev)
@@ -299,7 +300,7 @@ function showUsageEnvars(envars) {
   }
 }
 
-function showUsageError(router, cmd, specs, error) {
+function showUsageError (router, cmd, specs, error) {
   showCommandUsage(router, cmd, specs)
   if (error) {
     console.info()
@@ -308,7 +309,7 @@ function showUsageError(router, cmd, specs, error) {
   }
 }
 
-function showUsageFlags(flags) {
+function showUsageFlags (flags) {
   if (flags.length > 0) {
     const maxWidth = flags.map(flag => flag.length).reduce((curr, prev) => curr > prev ? curr : prev)
     console.info("\nFLAGS:")
@@ -320,7 +321,7 @@ function showUsageFlags(flags) {
   }
 }
 
-function showUsageHeadline(router, cmd, specs) {
+function showUsageHeadline (router, cmd, specs) {
   console.info("USAGE:")
   const flags = cmd && (!specs?.flags || specs.flags.length === 0) ? "" : "[FLAGS] "
   const options = specs?.options && specs.options.length > 0 ? "[OPTIONS] " : ""
@@ -337,7 +338,7 @@ function showUsageHeadline(router, cmd, specs) {
       } else {
         params = optionalize(specs?.params) + " "
       }
-      console.info(`   ${colors.lwhite(`npx wrapped-wit ${cmd}`)} ${params ? green(params) : ""}${flags}${options}`)
+      console.info(`   ${colors.lwhite(`npx wrapped-wit ${cmd}`)} ${params ? colors.green(params) : ""}${flags}${options}`)
     } else {
       console.info(`   ${colors.lwhite(`npx wrapped-wit ${cmd}`)} ${flags}${options}`)
     }
@@ -348,7 +349,7 @@ function showUsageHeadline(router, cmd, specs) {
   }
 }
 
-function showUsageOptions(options) {
+function showUsageOptions (options) {
   if (options.length > 0) {
     console.info("\nOPTIONS:")
     const maxLength = options
@@ -368,7 +369,7 @@ function showUsageOptions(options) {
 
 /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-async function balance(flags = {}) {
+async function balance (flags = {}) {
   const { provider, network } = flags
   const contract = await WrappedWIT.fetchContractFromEthersProvider(provider)
   helpers.traceHeader(network.toUpperCase(), colors.lcyan)
@@ -399,14 +400,14 @@ async function balance(flags = {}) {
         address !== "" ? colors.yellow(helpers.commas(wit)) : colors.lyellow(helpers.commas(wit) + " WIT"),
       ]
     }), {
-    headlines: ["INDEX", "EVM ADDRESS", `${colors.lwhite("ETH")} BALANCE`, `${colors.lwhite("WIT")} BALANCE`],
-    humanizers: [helpers.commas, , ,],
-    colors: [, colors.mblue],
-  }
+      headlines: ["INDEX", "EVM ADDRESS", `${colors.lwhite("ETH")} BALANCE`, `${colors.lwhite("WIT")} BALANCE`],
+      humanizers: [helpers.commas, , ,],
+      colors: [, colors.mblue],
+    }
   )
 }
 
-async function gateway(flags = {}, args = []) {
+async function gateway (flags = {}, args = []) {
   [args] = helpers.deleteExtraFlags(args)
   const network = args[0]
   if (!network) {
@@ -416,10 +417,10 @@ async function gateway(flags = {}, args = []) {
   } else {
     const shell = spawn(
       os.type() === "Windows_NT" ? "npx.cmd" : "npx", [
-      "ethrpc",
-      network,
-      flags?.port || 8545,
-    ],
+        "ethrpc",
+        network,
+        flags?.port || 8545,
+      ],
       { shell: true }
     )
     shell.stdout.on("data", (x) => {
@@ -431,7 +432,7 @@ async function gateway(flags = {}, args = []) {
   }
 }
 
-async function networks(flags = {}) {
+async function networks (flags = {}) {
   const { testnets } = flags
   const networks = Object.fromEntries(WrappedWIT.getSupportedNetworks()
     .filter(network => {
@@ -452,7 +453,7 @@ async function networks(flags = {}) {
   console.table(networks)
 }
 
-async function contract(flags = {}) {
+async function contract (flags = {}) {
   const { network, provider, verbose } = flags
   const contract = await WrappedWIT.fetchContractFromEthersProvider(provider)
   const settings = WrappedWIT.getNetworkSettings(network)
@@ -460,7 +461,7 @@ async function contract(flags = {}) {
   const records = []
 
   records.push(["Contract address", colors.lblue(await contract.getAddress())])
-  if (verbose) records.push(["Curator address", colors.blue(await contract.evmCurator())]);
+  if (verbose) records.push(["Curator address", colors.blue(await contract.evmCurator())])
   records.push(["Wit/Oracle address", colors.mblue(await contract.witOracle())])
   if (verbose) {
     records.push(["Wit/Oracle PoI's CCDR template", colors.blue(await contract.witOracleCrossChainProofOfInclusionTemplate())])
@@ -472,10 +473,9 @@ async function contract(flags = {}) {
     providers.slice(1).forEach(provider => records.push(["", colors.gray(provider)]))
   }
   records.push(["Wit/Custodian recipient address", colors.mmagenta(await contract.witCustodianWrapper())])
-  if (verbose) records.push(["Wit/Custodian sender address", colors.magenta(await contract.witCustodianUnwrapper())]);
+  if (verbose) records.push(["Wit/Custodian sender address", colors.magenta(await contract.witCustodianUnwrapper())])
   records.push(["Total wrap transactions", colors.white(helpers.commas(await contract.totalWraps()))])
   records.push(["Total unwrap transactions", colors.white(helpers.commas(await contract.totalUnwraps()))])
-  
 
   helpers.traceTable(records, {
     headlines: [
@@ -485,9 +485,9 @@ async function contract(flags = {}) {
   })
 }
 
-async function supplies(flags = {}) {
-  const { network, provider, from, gasPrice } = flags
-  const contract = await WrappedWIT.fetchContractFromEthersProvider(provider)
+async function supplies (flags = {}) {
+  let { network, provider, from, gasPrice, confirmations } = flags
+  let contract = await WrappedWIT.fetchContractFromEthersProvider(provider)
 
   const records = []
 
@@ -628,21 +628,21 @@ async function supplies(flags = {}) {
         helpers.traceData("  - Push data report: ", message.slice(2), 64, "\x1b[90m")
         console.info(`  - Push data digest: ${digest.slice(2)}`)
         console.info(`  - Push data proof:  ${report?.evm_proof.slice(2)}`)
-        
+
         // push data report into the consumer contract:
-        if (!from) from = (await provider.listAccounts())[0].address;
+        if (!from) from = (await provider.listAccounts())[0].address
         contract = contract.connect(await provider.getSigner(from))
         console.info(`  - EVM data pusher:  ${from}`)
         await contract
           .pushDataReport
           .send(
-            utils.abiEncodeDataPushReport(report), 
-            report.evm_proof, 
+            utils.abiEncodeDataPushReport(report),
+            report.evm_proof,
             { gasPrice }
           )
           .then(async (tx) => {
             console.info(`  - Transaction hash: ${tx.hash}`)
-            return helpers.prompter(tx.wait(confirmations || 1 ))
+            return helpers.prompter(tx.wait(confirmations || 1))
           })
           .then(receipt => {
             console.info(`  - Block number:     ${helpers.commas(receipt.blockNumber)}`)
@@ -669,7 +669,7 @@ async function supplies(flags = {}) {
   process.exit(0)
 }
 
-async function transfers(flags = {}) {
+async function transfers (flags = {}) {
   let { provider, network, from, into, value, since, gasPrice, confirmations } = flags
   let contract = await WrappedWIT.fetchContractFromEthersProvider(provider)
   helpers.traceHeader(network.toUpperCase(), colors.lcyan)
@@ -723,17 +723,17 @@ async function transfers(flags = {}) {
           event.args[2],
         ]
       }), {
-      headlines: ["BLOCK NUMBER", "EVM TRANSACTION HASH", "EVM SENDER", "EVM RECIPIENT", `VALUE (${colors.lwhite("$pedros")})`],
-      humanizers: [helpers.commas, , , , helpers.commas],
-      colors: [, colors.gray, , , colors.yellow],
-    }
+        headlines: ["BLOCK NUMBER", "EVM TRANSACTION HASH", "EVM SENDER", "EVM RECIPIENT", `VALUE (${colors.lwhite("$pedros")})`],
+        humanizers: [helpers.commas, , , , helpers.commas],
+        colors: [, colors.gray, , , colors.yellow],
+      }
     )
   } else {
     console.info(`^ No transfers found ${from ? `from "${from}" ` : ""}${into ? `into "${into}"` : ""}.`)
   }
 }
 
-async function unwrappings(flags = {}) {
+async function unwrappings (flags = {}) {
   let { check, provider, network, from, into, value, since, offset, limit, gasPrice, confirmations } = flags
   let contract = await WrappedWIT.fetchContractFromEthersProvider(provider)
   helpers.traceHeader(network.toUpperCase(), colors.lcyan)
@@ -811,15 +811,15 @@ async function unwrappings(flags = {}) {
         wit?.hash,
         timediff,
       ]), {
-      headlines: [
-        "BLOCK NUMBER",
-        "EVM UNWRAP TRANSACTION HASH",
-        `VALUE TRANSFER TRANSACTION HASH ON WITNET ${witnet.network.toUpperCase()}`,
-        ":TIME DIFF",
-      ],
-      humanizers: [helpers.commas, , ,],
-      colors: [, colors.gray, colors.magenta],
-    }
+        headlines: [
+          "BLOCK NUMBER",
+          "EVM UNWRAP TRANSACTION HASH",
+          `VALUE TRANSFER TRANSACTION HASH ON WITNET ${witnet.network.toUpperCase()}`,
+          ":TIME DIFF",
+        ],
+        humanizers: [helpers.commas, , ,],
+        colors: [, colors.gray, colors.magenta],
+      }
     )
   } else {
     if (events.length > 0) {
@@ -834,16 +834,16 @@ async function unwrappings(flags = {}) {
             event.args[2],
           ]
         }), {
-        headlines: [
-          "BLOCK NUMBER",
-          "EVM UNWRAP TRANSACTION HASH",
-          "EVM UNWRAPPER",
-          `WIT RECIPIENT ON WITNET ${WrappedWIT.isNetworkMainnet(network) ? "MAINNET" : "TESTNET"}`,
-          `VALUE (${colors.lwhite("$pedros")})`,
-        ],
-        humanizers: [helpers.commas, , , , helpers.commas],
-        colors: [, colors.gray, colors.mblue, colors.mmagenta, colors.yellow],
-      }
+          headlines: [
+            "BLOCK NUMBER",
+            "EVM UNWRAP TRANSACTION HASH",
+            "EVM UNWRAPPER",
+            `WIT RECIPIENT ON WITNET ${WrappedWIT.isNetworkMainnet(network) ? "MAINNET" : "TESTNET"}`,
+            `VALUE (${colors.lwhite("$pedros")})`,
+          ],
+          humanizers: [helpers.commas, , , , helpers.commas],
+          colors: [, colors.gray, colors.mblue, colors.mmagenta, colors.yellow],
+        }
       )
     } else {
       console.info(`^ No unwrappings found ${from ? `from "${from}" ` : ""}${into ? `into "${into}"` : ""}.`)
@@ -852,7 +852,7 @@ async function unwrappings(flags = {}) {
   process.exit(0)
 }
 
-async function wrappings(flags = {}) {
+async function wrappings (flags = {}) {
   let { provider, network, from, into, value, since, offset, limit, gasPrice, confirmations, check } = flags
 
   let contract = await WrappedWIT.fetchContractFromEthersProvider(provider)
@@ -1095,14 +1095,14 @@ async function wrappings(flags = {}) {
             timediff,
           ]
         }), {
-        headlines: [
-          "BLOCK NUMBER",
-          `VALUE TRANSFER TRANSACTION HASH ON WITNET ${witnet.network.toUpperCase()}`,
-          "ERC-20 WRAP VALIDATING TRANSACTION HASH",
-          ":TIME DIFF",
-        ],
-        colors: [, colors.magenta],
-      }
+          headlines: [
+            "BLOCK NUMBER",
+            `VALUE TRANSFER TRANSACTION HASH ON WITNET ${witnet.network.toUpperCase()}`,
+            "ERC-20 WRAP VALIDATING TRANSACTION HASH",
+            ":TIME DIFF",
+          ],
+          colors: [, colors.magenta],
+        }
       )
     } else {
       console.info(`^ No verified wrappings found so far ${from ? `from "${from}" ` : ""}${into ? `into "${into}"` : ""}.`)
@@ -1126,16 +1126,16 @@ async function wrappings(flags = {}) {
             record.value,
           ]
         }), {
-        headlines: [
-          "BLOCK NUMBER",
-          `WIT SENDER ON WITNET ${WrappedWIT.isNetworkMainnet(network) ? "MAINNET" : "TESTNET"}`,
-          "ERC-20 WRAP VALIDATING TRANSACTION HASH",
-          "EVM RECIPIENT",
-          `VALUE (${colors.lwhite("$pedros")})`,
-        ],
-        humanizers: [, , , , helpers.commas],
-        colors: [, colors.mmagenta, , colors.mblue, colors.yellow],
-      }
+          headlines: [
+            "BLOCK NUMBER",
+            `WIT SENDER ON WITNET ${WrappedWIT.isNetworkMainnet(network) ? "MAINNET" : "TESTNET"}`,
+            "ERC-20 WRAP VALIDATING TRANSACTION HASH",
+            "EVM RECIPIENT",
+            `VALUE (${colors.lwhite("$pedros")})`,
+          ],
+          humanizers: [, , , , helpers.commas],
+          colors: [, colors.mmagenta, , colors.mblue, colors.yellow],
+        }
       )
     } else {
       console.info(`^ No verified wrappings found so far ${from ? `from "${from}" ` : ""}${into ? `into "${into}"` : ""}.`)

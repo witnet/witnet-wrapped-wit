@@ -22,6 +22,8 @@
   "scripts": {
     "compile": "npx hardhat compile",
     "deploy": "npx hardhat run scripts/deploy.js",
+    "fmt": "solhint --max-warnings 30 \"contracts/**/*.sol\" && eslint --ext .js,.ts,.cjs . --ignore-path .gitignore",
+    "fmt!": "solhint --max-warnings 30 \"contracts/**/*.sol\" --fix && eslint --ext .js,.ts,.cjs . --fix --ignore-path .gitignore",
     "prepare": "npx hardhat compile --force",
     "start": "node ./src/bin/unwrapper.js",
     "test": "node ./src/bin/cli/index.js",
@@ -40,7 +42,13 @@
     "@openzeppelin/community-contracts": "git+https://github.com/OpenZeppelin/openzeppelin-community-contracts.git#master",
     "@openzeppelin/contracts": "^5.4.0",
     "@openzeppelin/contracts-upgradeable": "^5.4.0",
-    "hardhat": "^2.26.1"
+    "eslint": "^8.57.1",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-n": "^16.6.2",
+    "eslint-plugin-promise": "^6.6.0",
+    "hardhat": "^2.26.1",
+    "solhint": "^5.0.3"
   },
   "dependencies": {
     "@witnet/ethers": "^1.0.1"

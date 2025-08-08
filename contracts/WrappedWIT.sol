@@ -11,7 +11,6 @@ import "witnet-solidity-bridge/contracts/WitOracle.sol";
 
 import {
     IWitOracleRadonRequestModal,
-    IWitOracleRadonRequestTemplate,
     IWitOracleRadonRequestFactory
 } from "witnet-solidity-bridge/contracts/WitOracleRadonRequestFactory.sol";
 
@@ -192,7 +191,7 @@ contract WrappedWIT
         returns (WrappingStatus[] memory _statuses)
     {
         _statuses = new WrappingStatus[](_hashes.length);
-        for (uint _ix = 0; _ix < _hashes.length; ++ _ix) {
+        for (uint256 _ix = 0; _ix < _hashes.length; ++ _ix) {
             _statuses[_ix] = getWrapTransactionStatus(_hashes[_ix]);
         }
     }

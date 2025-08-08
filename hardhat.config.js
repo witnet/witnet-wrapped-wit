@@ -1,4 +1,4 @@
-require("@nomicfoundation/hardhat-toolbox");
+require("@nomicfoundation/hardhat-toolbox")
 require("dotenv").config()
 
 /** @type import('hardhat/config').HardhatUserConfig */
@@ -11,7 +11,7 @@ module.exports = {
     "base:sepolia": {
       chainId: 84532,
       confirmations: 2,
-      url: "http://127.0.0.1:8502"
+      url: "http://127.0.0.1:8502",
     },
     "celo:alfajores": {
       chainId: 44787,
@@ -35,7 +35,7 @@ module.exports = {
     },
     "unichain:sepolia": {
       chainId: 1301,
-      confirmations: 2, 
+      confirmations: 2,
       url: "http://127.0.0.1:8500",
     },
   },
@@ -95,7 +95,7 @@ module.exports = {
         urls: {
           apiURL: "https://api.etherscan.io/v2/api?chainid=11155420",
           browserURL: "https://sepolia-optimism.etherscan.io",
-        }
+        },
       },
       {
         network: "polygon:amoy",
@@ -103,7 +103,7 @@ module.exports = {
         urls: {
           apiURL: "https://api.etherscan.io/v2/api?chainid=80002",
           browserURL: "https://amoy.polygonscan.com/",
-        }
+        },
       },
       {
         network: "unichain:sepolia",
@@ -111,8 +111,8 @@ module.exports = {
         urls: {
           apiURL: "https://api.etherscan.io/v2/api?chainid=1301",
           browserURL: "https://sepolia.uniscan.xyz/",
-        }
+        },
       },
     ],
   },
-};
+}

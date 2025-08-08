@@ -1,3 +1,3 @@
 module.exports = {
-    WrappedWIT: require("./utils"),
+  WrappedWIT: require("./utils"),
 }
