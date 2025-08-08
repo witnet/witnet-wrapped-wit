@@ -338,14 +338,14 @@ function showUsageHeadline (router, cmd, specs) {
       } else {
         params = optionalize(specs?.params) + " "
       }
-      console.info(`   ${colors.lwhite(`npx wrapped-wit ${cmd}`)} ${params ? colors.green(params) : ""}${flags}${options}`)
+      console.info(`   ${colors.lwhite(`npx witwrap ${cmd}`)} ${params ? colors.green(params) : ""}${flags}${options}`)
     } else {
-      console.info(`   ${colors.lwhite(`npx wrapped-wit ${cmd}`)} ${flags}${options}`)
+      console.info(`   ${colors.lwhite(`npx witwrap ${cmd}`)} ${flags}${options}`)
     }
     console.info("\nDESCRIPTION:")
     console.info(`   ${router[cmd].hint}`)
   } else {
-    console.info(`   ${colors.lwhite("npx wrapped-wit")} <COMMAND> ${flags}${options}`)
+    console.info(`   ${colors.lwhite("npx witwrap")} <COMMAND> ${flags}${options}`)
   }
 }
 
