@@ -120,8 +120,8 @@ async function main () {
             "verbose",
           ],
         },
-        supplies: {
-          hint: `Show relevant token-related supplies on ${colors.mcyan(ethRpcNetwork.toUpperCase())}.`,
+        supply: {
+          hint: `Show wrapped $WIT supply information on ${colors.mcyan(ethRpcNetwork.toUpperCase())}.`,
           flags: [
             "verbose",
           ],
@@ -223,11 +223,11 @@ async function main () {
       ],
     },
     commands: {
-      accounts: balance,
+      accounts,
       contract,
       proxy,
       networks,
-      supplies,
+      supply,
       transfers,
       unwrappings,
       wrappings,
@@ -310,7 +310,8 @@ function showUsageError (router, cmd, specs, error) {
   showCommandUsage(router, cmd, specs)
   if (error) {
     console.info()
-    console.error(error?.stack?.split("\n")[0] || error)
+    console.info(error)
+    // console.error(error?.stack?.split("\n")[0] || error)
   }
 }
 
@@ -374,7 +375,7 @@ function showUsageOptions (options) {
 
 /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-async function balance (flags = {}) {
+async function accounts (flags = {}) {
   const { provider, network } = flags
   const contract = await WrappedWIT.fetchContractFromEthersProvider(provider)
   helpers.traceHeader(network.toUpperCase(), colors.lcyan)
@@ -493,7 +494,7 @@ async function contract (flags = {}) {
   })
 }
 
-async function supplies (flags = {}) {
+async function supply (flags = {}) {
   let { network, provider, from, gasPrice, confirmations, verbose, limit } = flags
   let contract = await WrappedWIT.fetchContractFromEthersProvider(provider)
 
