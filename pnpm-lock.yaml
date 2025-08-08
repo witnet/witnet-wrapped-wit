@@ -11,6 +11,9 @@ importers:
       '@witnet/ethers':
         specifier: ^1.0.1
         version: 1.0.1(@types/node@22.15.29)(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@witnet/sdk':
+        specifier: ^1.0.7
+        version: 1.0.7(@types/node@22.15.29)(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
