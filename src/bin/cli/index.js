@@ -915,7 +915,7 @@ async function wrappings (flags = {}) {
     }
 
     const user = await prompt([{
-      message: `Transfer ${value.toString(2)} into custodian address at ${witCustodianWrapper} ?`,
+      message: `Transfer ${helpers.commas(value.wits.toFixed(2))} native WIT to the Wrapped/WIT's custodian address at ${witCustodianWrapper} ?`,
       name: "continue",
       type: "confirm",
       default: false,
@@ -933,7 +933,7 @@ async function wrappings (flags = {}) {
       })
       console.info(`  - From:       ${colors.mmagenta(ledger.pkh)}`)
       console.info(`  - Into:       ${colors.mcyan(witCustodianWrapper)}`)
-      console.info(`  - Value:      ${colors.myellow(`${value.wits.toFixed(2)} WIT`)}`)
+      console.info(`  - Value:      ${colors.myellow(`${helpers.commas(value.wits.toFixed(2))} WIT`)}`)
       console.info(`  - Fees:       ${colors.yellow(tx.fees.toString())}`)
       console.info(`  - VTT hash:   ${colors.lwhite(tx.hash)}`)
 
@@ -1002,7 +1002,7 @@ async function wrappings (flags = {}) {
 
     if (proceed && vtt.finalized !== 1) {
       console.info(colors.mred("\n => Sorry, wait a few minutes until the transaction gets finalized on Witnet,"))
-      console.info(colors.mred("      before querying cross-chain verification.\n"))
+      console.info(colors.mred("    before querying cross-chain verification.\n"))
       proceed = false
     }
 
@@ -1021,7 +1021,7 @@ async function wrappings (flags = {}) {
         // connect contract to the eth/rpc provider's default signer
         contract = contract.connect(await provider.getSigner())
 
-        console.info(colors.lwhite(`> Wrapping ${ethers.formatUnits(vtt.value, 9)} WIT ...`))
+        console.info(colors.lwhite(`> Wrapping ${helpers.commas(ethers.formatUnits(BigInt(vtt.value), 9))} WIT ...`))
         console.info(`  - WITNET sender:  ${vtt.sender}`)
         console.info(`  - EVM recipient:  ${ethers.getAddress(`0x${vtt.metadata}`)}`)
         console.info(`  - EVM signer:     ${(await provider.getSigner()).address}`)
