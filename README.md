@@ -113,7 +113,7 @@ Shows the history of recent transfers of wrapped $WIT on the connected EVM netwo
 **Options**:
 - `--limit`: Limit number of history records.
 - `--since`: Process events starting from the specified EVM block number.
-- `--from`: Filter transfers from the specified EVM address (required with when ordering a new transfer).
+- `--from`: Filter transfers from the specified EVM address (required when ordering a new transfer).
 - `--into`: Filter transfers to the specified EVM address (required when ordering a new transfer).
 - `--value`: Amount of $WIT to transfer between the specified addresses.
 - `--gasPrice`: Max. EVM gas price to pay when transferring $WIT. 
