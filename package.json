@@ -11,8 +11,7 @@
   "type": "commonjs",
   "exports": "./src/index.js",
   "bin": {
-    "witwrap": "src/bin/cli/index.j",
-    "wrapped-wit": "src/bin/cli/index.js",
+    "witwrap": "src/bin/cli/index.js",
     "wrapped-wit-unwrapper": "src/bin/unwrapper.js"
   },
   "files": [
