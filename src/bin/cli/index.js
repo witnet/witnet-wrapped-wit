@@ -62,7 +62,7 @@ const settings = {
       param: "EVM_GAS_PRICE",
     },
     port: {
-      hint: "Port on which the local ETH/RPC signing proxy is expected to be listening (default: 8545).",
+      hint: "Port on which the local ETH/RPC signing gateway is expected to be listening (default: 8545).",
       param: "HTTP_PORT",
     },
     remote: {
@@ -79,7 +79,7 @@ const settings = {
     },
   },
   envars: {
-    ETHRPC_PRIVATE_KEYS: "=> Private keys used by the ETH/RPC proxy for signing EVM transactions.",
+    ETHRPC_PRIVATE_KEYS: "=> Private keys used by the ETH/RPC gateway for signing EVM transactions.",
     WITNET_SDK_WALLET_MASTER_KEY: "=> Wallet's master key in XPRV format, as exported from either a node, Sheikah or myWitWallet.",
   },
 }
@@ -203,8 +203,8 @@ async function main () {
         },
       }
       : {}),
-    proxy: {
-      hint: "Launch a local ETH/RPC signing proxy connected to some specific EVM network.",
+    gateway: {
+      hint: "Launch a local ETH/RPC signing gateway connected to some specific EVM network.",
       params: ["EVM_NETWORK"],
       options: [
         "port",
@@ -225,7 +225,7 @@ async function main () {
     commands: {
       accounts,
       contract,
-      proxy,
+      gateway,
       networks,
       supply,
       transfers,
@@ -267,7 +267,7 @@ async function main () {
       if (ethRpcChainId) {
         console.info(colors.mred(`\nTrying to connect to unsupported network (${ethRpcChainId}).`))
       } else if (ethRpcPort) {
-        console.info(colors.mred(`\nNo ETH/RPC proxy running on port ${ethRpcPort}.`))
+        console.info(colors.mred(`\nNo ETH/RPC gateway running on port ${ethRpcPort}.`))
       }
     }
   }
@@ -413,7 +413,7 @@ async function accounts (flags = {}) {
   )
 }
 
-async function proxy (flags = {}, args = []) {
+async function gateway (flags = {}, args = []) {
   [args] = helpers.deleteExtraFlags(args)
   const network = args[0]
   if (!network) {

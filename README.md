@@ -52,7 +52,7 @@ $ npm install -g @witnet/wrapped-wit
   WITNET_SDK_WALLET_MASTER_KEY="xprv_string_here_as_exported_from_mww_or_sheikah"
 ```
 You can optionally:
-- Settle your preferred ETH/RPC provider when launching the local proxy (see below).
+- Settle your preferred ETH/RPC provider when launching the local gateway (see below).
 - Settle your preferred WIT/RPC provider by using the command-line option `--witnet`, where suitable.
 
 ## 🛠️ Usage
@@ -63,7 +63,7 @@ You can optionally:
 
 ### Commands
 
-You need to have a local **ETH/RPC proxy** running in order to get access to extra commands. You will only be able to wrap and unwrap $WIT coins if you connect to an EVM network where the canonical version of the ERC-20 token is available (see supported networks below). 
+You need to have a local **ETH/RPC gateway** running in order to get access to extra commands. You will only be able to wrap and unwrap $WIT coins if you connect to an EVM network where the canonical version of the ERC-20 token is available (see supported networks below). 
 
 ---
 #### `$ witwrap networks`
@@ -74,14 +74,14 @@ Lists supported EVM networks.
 - `--testnets`: Just list the testnets.
 
 ---
-#### `$ witwrap proxy <evm_network>`
-Launches a local ETH/RPC signing proxy to the specified `evm_network`, listening on port 8545 if no otherwise specified.
+#### `$ witwrap gateway <evm_network>`
+Launches a local ETH/RPC signing gateway to the specified `evm_network`, listening on port 8545 if no otherwise specified.
 
 **Options**:
-  - `--port`: Port where the new proxy should be listening on.
-  - `--remote`: URL of the ETH/RPC remote provider to use instead of the proxy's default for the specified network. 
+  - `--port`: Port where the new gateway should be listening on.
+  - `--remote`: URL of the ETH/RPC remote provider to use instead of the gateway's default for the specified network. 
 
-> *Launch a proxy to your preferred EVM network on a different terminal so you can augment the available commands of the `witwrap` CLI binary. If you launch the proxy on a port other than default's, you'll need to specify `--port <PORT>` when invoking other commands of the `witwrap` binary.*
+> *Launch a gateway to your preferred EVM network on a different terminal so you can augment the available commands of the `witwrap` CLI binary. If you launch the gateway on a port other than default's, you'll need to specify `--port <PORT>` when invoking other commands of the `witwrap` binary.*
 
 ---
 #### `$ witwrap contract`
@@ -104,7 +104,7 @@ Shows wrapped $WIT supply information on the connected EVM network. It also dete
 
 ---
 #### `$ witwrap transfers`
-Shows the history of recent transfers of wrapped $WIT on the connected EVM network. It also allows you to transfer wrapped $WIT tokens in Ethereum, as long the signing addresses of your EVM proxy holds some wrapped $WIT balance.
+Shows the history of recent transfers of wrapped $WIT on the connected EVM network. It also allows you to transfer wrapped $WIT tokens in Ethereum, as long the signing addresses of your EVM gateway holds some wrapped $WIT balance.
 
 **Flags**:
 - `--burns`: Also show history of burnt $WIT (either unwrapped to Witnet, or bridged to other EVM networks).
@@ -136,7 +136,7 @@ Shows the history of past wrapping transactions, as well as an up-to-date list w
 
 ---
 #### `$ witwrap unwrappings`
-Shows the history of past unwrapping transactions. It also allows you to unwrap $WIT tokens that you hold on any of the EVM proxy signing addresses, as long as there's enough under-custody reserve supply on the ERC-20 contract.
+Shows the history of past unwrapping transactions. It also allows you to unwrap $WIT tokens that you hold on any of the EVM gateway signing addresses, as long as there's enough under-custody reserve supply on the ERC-20 contract.
 
 **Flags**:
 - `--check`: Show the time difference since the moment when the unwrap transaction took place on Ethereum, and the unwrapped amount got ultimately transferred to the recipient on Witnet.
