@@ -39,24 +39,24 @@
   ],
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^6.1.0",
-    "@openzeppelin/community-contracts": "git+https://github.com/OpenZeppelin/openzeppelin-community-contracts.git#master",
+    "@openzeppelin/community-contracts": "github:OpenZeppelin/openzeppelin-community-contracts#master",
     "@openzeppelin/contracts": "^5.4.0",
     "@openzeppelin/contracts-upgradeable": "^5.4.0",
     "eslint": "^8.57.1",
     "eslint-config-standard": "^17.1.0",
-    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-promise": "^6.6.0",
-    "hardhat": "^2.26.1",
-    "solhint": "^5.0.3"
+    "hardhat": "^2.26.3",
+    "solhint": "^5.2.0"
   },
   "dependencies": {
-    "@witnet/ethers": "^1.0.2",
-    "@witnet/sdk": "^1.0.8",
+    "@witnet/ethers": "^1.0.3",
+    "@witnet/sdk": "^1.0.12",
     "cross-env": "^7.0.3",
-    "dotenv": "^16.4.1",
-    "ethrpc-gateway": "^2.2.6",
-    "inquirer": "^8.0.0",
+    "dotenv": "^16.6.1",
+    "ethrpc-gateway": "^2.2.7",
+    "inquirer": "^8.2.7",
     "lodash.merge": "^4.6.2",
     "moment": "^2.30.1",
     "witnet-solidity-bridge": "~2.1.11"
