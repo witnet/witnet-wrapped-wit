@@ -52,7 +52,7 @@
   },
   "dependencies": {
     "@witnet/ethers": "^1.0.3",
-    "@witnet/sdk": "^1.0.12",
+    "@witnet/sdk": "^1.0.13",
     "cross-env": "^7.0.3",
     "dotenv": "^16.6.1",
     "ethrpc-gateway": "^2.2.7",
