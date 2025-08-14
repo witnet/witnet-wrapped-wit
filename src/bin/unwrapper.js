@@ -205,12 +205,23 @@ async function main () {
         } else {
           let vtt
           try {
-            vtt = await VTTs.sendTransaction({
+            // estimate vtt's fees ... 
+            vtt = await VTTs.signTransaction({
               recipients: [
-                [to, Witnet.Coins.fromPedros(value)],
+                [to, Witnet.Coins.fromPedros(value - 1n)], // `value` always greater than MIN_UNWRAPPABLE_AMOUNT
                 [metadata, Witnet.Coins.fromPedros(1n)],
               ],
               fees: WIT_VTT_PRIORITY,
+            })
+            // discount vtt's fees from the transfer value,
+            // summing up the change only if equal to 1 $pedro
+            const amount = vtt.change?.pedros === 1n ? value - vtt.fees.pedros : value - 1n - vtt.fees.pedros
+            vtt = await VTTs.sendTransaction({
+              recipients: [
+                [to, Witnet.Coins.fromPedros(amount)],
+                [metadata, Witnet.Coins.fromPedros(1n)],
+              ],
+              fees: vtt.fees,
             })
           } catch (err) {
             console.error(err)
