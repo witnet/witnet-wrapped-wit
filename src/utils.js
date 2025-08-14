@@ -5,6 +5,9 @@ const { ethers, Witnet } = require("@witnet/ethers")
 const ABI = require("../artifacts/contracts/WrappedWIT.sol/WrappedWIT.json").abi
 const addresses = require("./addresses.json")
 
+export const MIN_UNWRAPPABLE_AMOUNT = 10n ** 9;
+export const MIN_WRAPPABLE_AMOUNT   = 10n ** 9;
+
 module.exports = {
   ABI,
   fetchContractFromEthersProvider,

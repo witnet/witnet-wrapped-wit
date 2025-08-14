@@ -893,6 +893,10 @@ async function wrappings (flags = {}) {
     }
   }
 
+  if (value && BigInt(value) < WrappedWIT.MIN_WRAPPABLE_AMOUNT) {
+    throw new Error(`Minimum wrappable amount: ${ethers.formatUnits(WrappedWIT.MIN_WRAPPABLE_AMOUNT, 9)} WIT`)
+  }
+
   let wallet, ledger
   if (value || flags["vtt-hash"]) {
     // create local wallet
@@ -965,6 +969,11 @@ async function wrappings (flags = {}) {
       throw new Error(`Transaction ${vttHash} transfers no value to custodian address at ${witCustodianWrapper}.`)
     } else if (!vtt.metadata) {
       throw new Error(`Transaction ${vttHash} transfers value to custodian address at ${witCustodianWrapper}, but specifies no EVM recipient.`)
+    }
+
+    // check minimum wrappable value:
+    if (BigInt(vtt.value) < WrappedWIT.MIN_WRAPPABLE_AMOUNT) {
+      throw new Error(`Transaction ${vttHash} transfers less than ${ethers.formatUnits(WrappedWIT.MIN_WRAPPABLE_AMOUNT, 9)} WIT`)
     }
 
     let proceed, wrapEvent, user
@@ -1063,7 +1072,11 @@ async function wrappings (flags = {}) {
 
   // insert pending to-be-validated wrap transactions, only if --from or --into are specified:
   {
-    const utxos = await witnet.getUtxos(witCustodianWrapper)
+    const utxos = await witnet
+      .getUtxos(witCustodianWrapper)
+      .then(utxos => utxos.filter(
+        utxo => BigInt(utxo.value) >= WrappedWIT.MIN_WRAPPABLE_AMOUNT
+      ));
     const hashes = [...new Set(utxos.map(utxo => utxo.output_pointer.split(":")[0]))]
     for (let index = 0; index < hashes.length; index++) {
       const vtt = await witnet.getValueTransfer(hashes[index], "ethereal")
