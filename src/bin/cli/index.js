@@ -899,9 +899,9 @@ async function wrappings (flags = {}) {
     wallet = await Witnet.Wallet.fromEnv({ provider: witnet, strategy: "slim-fit", onlyWithFunds: false })
 
     // select account/signer address from witnet wallet
-    ledger = from ? wallet.getAccount(from) : wallet
+    ledger = from ? (wallet.getAccount(from) ?? wallet.getSigner(from)) : wallet
     if (!ledger) {
-      throw new Error("--from <WIT_ADDRESS> not found on wallet.")
+      throw new Error("--from <WIT_ADDRESS> not found in self-custody wallet.")
     }
   }
 
