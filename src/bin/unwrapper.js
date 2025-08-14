@@ -153,28 +153,33 @@ async function main () {
   async function onUnwrapped (from, to, value, nonce, event) {
     const blockNumber = event?.log?.blockNumber || event?.blockNumber
 
-    // Rely on Witnet's metadata storage to verify the unwrap transaction has not yet been attended,
-    // neither by `signer.pkh` nor any other hot wallet in the past.
-    const witUnwrapTx = await WrappedWIT.findUnwrapTransactionFromWitnetProvider(
-      wallet.provider,
-      ETH_NETWORK,
-      blockNumber,
-      nonce, from, to, value,
-    )
-    if (witUnwrapTx) {
-      console.info(`> Unwrapped  { block: ${blockNumber}, nonce: ${nonce}, from: ${from}, into: ${to}, value: ${ethers.formatUnits(value, 9)} WIT }`)
-    } else {
-      const digest = WrappedWIT.getNetworkUnwrapTransactionDigest(ETH_NETWORK, blockNumber, nonce, from, to, value)
-      inbound.push({
+    if (BigInt(value) >= WrappedWIT.MIN_UNWRAPPABLE_AMOUNT) {
+      // Rely on Witnet's metadata storage to verify the unwrap transaction has not yet been attended,
+      // neither by `signer.pkh` nor any other hot wallet in the past.
+      const witUnwrapTx = await WrappedWIT.findUnwrapTransactionFromWitnetProvider(
+        wallet.provider,
+        ETH_NETWORK,
         blockNumber,
-        nonce,
-        from,
-        to,
-        value,
-        event,
-        digest,
-        metadata: Witnet.PublicKeyHash.fromHexString(digest).toBech32(wallet.provider.network),
-      })
+        nonce, from, to, value,
+      )
+      if (witUnwrapTx) {
+        console.info(`> Unwrapped  { block: ${blockNumber}, nonce: ${nonce}, from: ${from}, into: ${to}, value: ${ethers.formatUnits(value, 9)} WIT }`)
+      } else {
+        const digest = WrappedWIT.getNetworkUnwrapTransactionDigest(ETH_NETWORK, blockNumber, nonce, from, to, value)
+        inbound.push({
+          blockNumber,
+          nonce,
+          from,
+          to,
+          value,
+          event,
+          digest,
+          metadata: Witnet.PublicKeyHash.fromHexString(digest).toBech32(wallet.provider.network),
+        })
+      }
+    } else {
+      // Ignore unwrap transactions on Ethereum with a value lesser than WrappedWIT.MIN_UNWRAPPABLE_AMOUNT:
+      console.error(`> IGNORED    { block: ${blockNumber}, nonce: ${nonce}, from: ${from}, into: ${to}, value: ${ethers.formatUnits(value, 9)} WIT }`)
     }
   }
 
@@ -200,12 +205,23 @@ async function main () {
         } else {
           let vtt
           try {
-            vtt = await VTTs.sendTransaction({
+            // estimate vtt's fees ... 
+            vtt = await VTTs.signTransaction({
               recipients: [
-                [to, Witnet.Coins.fromPedros(value)],
+                [to, Witnet.Coins.fromPedros(value - 1n)], // `value` always greater than MIN_UNWRAPPABLE_AMOUNT
                 [metadata, Witnet.Coins.fromPedros(1n)],
               ],
               fees: WIT_VTT_PRIORITY,
+            })
+            // discount vtt's fees from the transfer value,
+            // summing up the change only if equal to 1 $pedro
+            const amount = vtt.change?.pedros === 1n ? value - vtt.fees.pedros : value - 1n - vtt.fees.pedros
+            vtt = await VTTs.sendTransaction({
+              recipients: [
+                [to, Witnet.Coins.fromPedros(amount)],
+                [metadata, Witnet.Coins.fromPedros(1n)],
+              ],
+              fees: vtt.fees,
             })
           } catch (err) {
             console.error(err)
