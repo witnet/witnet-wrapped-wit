@@ -33,6 +33,8 @@ contract WrappedWIT
     using Witnet for Witnet.Address;
     using Witnet for Witnet.RadonHash;
 
+    uint256 public constant MIN_UNWRAPPABLE_NANOWITS = 1e9; // 1.0 $WIT
+
     uint256 internal constant _CANONICAL_CHAIN_ID = 1; // Ethereum Mainnet
     uint8   internal constant _DECIMALS = 9;
     address internal constant _SUPERCHAIN_TOKEN_BRIDGE = 0x4200000000000000000000000000000000000028; // Superchain bridge
@@ -305,7 +307,7 @@ contract WrappedWIT
             witOracleCrossChainProofOfInclusionTemplate,
             _witnetValueTransferTransactionHash
         );
-        require(
+        _require(
             _witOracleQueryId != WrappedWITLib._WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED, 
             "already minted"
         );
@@ -315,20 +317,24 @@ contract WrappedWIT
         override external
         returns (uint256 evmUnwrapId)
     {
-        require(
+        _require(
             balanceOf(_msgSender()) >= value,
             "not enough balance"
         );
         uint64 _evmLastReserveNanowits = __storage().evmLastReserveNanowits;
-         require(
+        _require(
             value <= _evmLastReserveNanowits,
             "cannot unwrap that much"
+        );
+        _require(
+            value >= MIN_UNWRAPPABLE_NANOWITS,
+            "cannot unwrap that little"
         );
         Witnet.Address _recipient = Witnet.fromBech32(
             witRecipientBech32, 
             block.chainid == _CANONICAL_CHAIN_ID
         );
-        require(
+        _require(
             !_recipient.eq(__witCustodianWrapper),
             "invalid recipient"
         );
@@ -501,7 +507,7 @@ contract WrappedWIT
     function __settleWitCustodianUnwrapper(string memory _witCustodianUnwrapperBech32)
         internal
     {
-        require(
+        _require(
             keccak256(bytes(_witCustodianUnwrapperBech32)) != __witCustodianWrapperBech32Hash,
             "unacceptable unwrapper"
         );
