@@ -812,15 +812,15 @@ async function unwrappings (flags = {}) {
     const records = await helpers.prompter(
       Promise.all(events.map(async event => {
         const ethBlock = await provider.getBlock(event.blockNumber)
-        const witUnwrapTx = await WrappedWIT.findUnwrapTransactionFromWitnetProvider(
-          witnet,
-          network,
-          event.blockNumber,
-          event.args[3], // nonce
-          event.args[0], // from
-          event.args[1], // to
-          event.args[2] // value
-        )
+        const witUnwrapTx = await WrappedWIT.findUnwrapTransactionFromWitnetProvider({
+          witJsonRpcProvider: witnet,
+          evmNetwork: network,
+          evmBlockNumber: event.blockNumber,
+          nonce: event.args[3],
+          from: event.args[0],
+          to: event.args[1], 
+          value: event.args[2],
+        })
         return [
           { blockNumber: event.blockNumber, hash: event.transactionHash, timestamp: ethBlock.timestamp },
           witUnwrapTx,

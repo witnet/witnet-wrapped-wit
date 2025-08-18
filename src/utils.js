@@ -5,11 +5,12 @@ const { ethers, Witnet } = require("@witnet/ethers")
 const ABI = require("../artifacts/contracts/WrappedWIT.sol/WrappedWIT.json").abi
 const addresses = require("./addresses.json")
 
-export const MIN_UNWRAPPABLE_AMOUNT = 10n ** 9;
+const MIN_UNWRAPPABLE_AMOUNT = 3n; // 3 $pedros
 const MIN_WRAPPABLE_AMOUNT = BigInt(10 ** 12);  // 1000.0 $WIT
 
 module.exports = {
   ABI,
+  MIN_UNWRAPPABLE_AMOUNT,
   MIN_WRAPPABLE_AMOUNT,
   fetchContractFromEthersProvider,
   findNetworkByChainId,
@@ -44,24 +45,25 @@ function findNetworkByChainId (evmChainId) {
   else return undefined
 }
 
-async function findUnwrapTransactionFromWitnetProvider (
+async function findUnwrapTransactionFromWitnetProvider ({
   witJsonRpcProvider,
   evmNetwork,
   evmBlockNumber,
   nonce,
   from,
   to,
-  value
-) {
+  value, 
+  signer
+}) {
   const digest = getNetworkUnwrapTransactionDigest(evmNetwork, evmBlockNumber, nonce, from, to, value)
   const pkh = Witnet.PublicKeyHash.fromHexString(digest).toBech32(witJsonRpcProvider.network)
   return witJsonRpcProvider
-    .getUtxos(pkh)
+    .getUtxos(pkh, { fromSigner: signer })
     .then(async utxos => {
       const hashes = utxos.map(utxo => utxo.output_pointer.split(":")[0])
       for (let index = 0; index < utxos.length; index++) {
-        const vtt = await witJsonRpcProvider.getValueTransfer(hashes[index], "ethereal")
-        if (vtt.recipient === to && vtt.value >= value && value >= MIN_WRAPPABLE_AMOUNT) {
+        const vtt = await witJsonRpcProvider.getValueTransfer(hashes[index], "simple")
+        if (vtt.recipient === to && vtt.value + vtt?.fee >= value - 1n) {
           return {
             ...vtt,
             hash: hashes[index],

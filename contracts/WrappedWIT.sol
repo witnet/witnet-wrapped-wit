@@ -33,10 +33,9 @@ contract WrappedWIT
     using Witnet for Witnet.Address;
     using Witnet for Witnet.RadonHash;
 
-    uint256 public constant MIN_UNWRAPPABLE_NANOWITS = 1e9; // 1.0 $WIT
-
     uint256 internal constant _CANONICAL_CHAIN_ID = 1; // Ethereum Mainnet
     uint8   internal constant _DECIMALS = 9;
+    uint256 internal constant _MIN_UNWRAPPABLE_NANOWITS = 3; // 3 $nanowits
     address internal constant _SUPERCHAIN_TOKEN_BRIDGE = 0x4200000000000000000000000000000000000028; // Superchain bridge
     
     uint16 internal constant _WIT_ORACLE_REPORTS_MIN_MIN_WITNESSES = 3;
@@ -327,7 +326,7 @@ contract WrappedWIT
             "cannot unwrap that much"
         );
         _require(
-            value >= MIN_UNWRAPPABLE_NANOWITS,
+            value >= _MIN_UNWRAPPABLE_NANOWITS,
             "cannot unwrap that little"
         );
         Witnet.Address _recipient = Witnet.fromBech32(

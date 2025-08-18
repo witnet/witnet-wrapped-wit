@@ -156,12 +156,13 @@ async function main () {
     if (BigInt(value) >= WrappedWIT.MIN_UNWRAPPABLE_AMOUNT) {
       // Rely on Witnet's metadata storage to verify the unwrap transaction has not yet been attended,
       // neither by `signer.pkh` nor any other hot wallet in the past.
-      const witUnwrapTx = await WrappedWIT.findUnwrapTransactionFromWitnetProvider(
-        wallet.provider,
-        ETH_NETWORK,
-        blockNumber,
+      const witUnwrapTx = await WrappedWIT.findUnwrapTransactionFromWitnetProvider({
+        witJsonRpcProvider: wallet.provider,
+        evmNetwork: ETH_NETWORK,
+        evmBlockNumber: blockNumber,
         nonce, from, to, value,
-      )
+        signer: signer.pkh,
+      })
       if (witUnwrapTx) {
         console.info(`> Unwrapped  { block: ${blockNumber}, nonce: ${nonce}, from: ${from}, into: ${to}, value: ${ethers.formatUnits(value, 9)} WIT }`)
       } else {
@@ -192,12 +193,13 @@ async function main () {
         const { blockNumber, nonce, from, to, digest, metadata, value } = unwrap
 
         // Double-check that the unwrap transaction has not yet been attended:
-        const witUnwrapTx = await WrappedWIT.findUnwrapTransactionFromWitnetProvider(
-          wallet.provider,
-          ETH_NETWORK,
-          blockNumber,
+        const witUnwrapTx = await WrappedWIT.findUnwrapTransactionFromWitnetProvider({
+          witJsonRpcProvider: wallet.provider,
+          evmNetwork: ETH_NETWORK,
+          evmBlockNumber: blockNumber,
           nonce, from, to, value,
-        )
+          signer: signer.pkh,
+        })
         if (witUnwrapTx) {
           console.info(`> Unwrapped  { block: ${blockNumber}, nonce: ${nonce}, from: ${from}, into: ${to}, value: ${
             ethers.formatUnits(value, 9)
@@ -214,11 +216,16 @@ async function main () {
               fees: WIT_VTT_PRIORITY,
             })
             // discount vtt's fees from the transfer value,
-            // summing up the change only if equal to 1 $pedro
-            const amount = vtt.change?.pedros === 1n ? value - vtt.fees.pedros : value - 1n - vtt.fees.pedros
+            if (vtt.fees.pedros >= value - 1n) {
+              // ...but never allow fees to be greater than the value:
+              vtt.value = (value - 1n) / 2n
+              vtt.fees = amount
+            } else {
+              vtt.value = value - 1n - vtt.fees
+            }
             vtt = await VTTs.sendTransaction({
               recipients: [
-                [to, Witnet.Coins.fromPedros(amount)],
+                [to, Witnet.Coins.fromPedros(vtt.value)],
                 [metadata, Witnet.Coins.fromPedros(1n)],
               ],
               fees: vtt.fees,
