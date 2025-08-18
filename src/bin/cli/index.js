@@ -565,7 +565,7 @@ async function supply (flags = {}) {
         helpers.traceHeader(network.toUpperCase(), colors.lcyan)
 
         // create Witnet Wallet
-        const wallet = await Witnet.Wallet.fromEnv({ provider: witnet, strategy: "slim-first" })
+        const wallet = await Witnet.Wallet.fromEnv({ provider: witnet, strategy: "slim-fit" })
 
         // fetch proof-of-reserve radon bytecode from the token contract
         const bytecode = await contract.witOracleProofOfReserveRadonBytecode()
@@ -896,7 +896,7 @@ async function wrappings (flags = {}) {
   let wallet, ledger
   if (value || flags["vtt-hash"]) {
     // create local wallet
-    wallet = await Witnet.Wallet.fromEnv({ provider: witnet, strategy: "slim-first", onlyWithFunds: false })
+    wallet = await Witnet.Wallet.fromEnv({ provider: witnet, strategy: "slim-fit", onlyWithFunds: false })
 
     // select account/signer address from witnet wallet
     ledger = from ? wallet.getAccount(from) : wallet
