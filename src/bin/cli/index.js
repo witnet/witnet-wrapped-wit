@@ -894,7 +894,7 @@ async function wrappings (flags = {}) {
     }
   }
 
-  if (value && BigInt(value) < WrappedWIT.MIN_WRAPPABLE_AMOUNT) {
+  if (value && Witnet.Coins.fromWits(value).pedros < WrappedWIT.MIN_WRAPPABLE_NANOWITS) {
     throw new Error(`Minimum wrappable amount: ${ethers.formatUnits(WrappedWIT.MIN_WRAPPABLE_NANOWITS, 9)} WIT`)
   }
 
