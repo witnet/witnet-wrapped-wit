@@ -23,6 +23,7 @@ const settings = {
     version: "Print the CLI name and version.",
 
     check: "See if cross-chain transactions have been consolidated.",
+    force: "Notarize and push a fresh Proof-of-Reserve report, without prompting the user.",
     mints: "Include mint transactions, if any.",
     burns: "Include burn transactions, if any.",
     mainnets: "Only list supported EVM mainnets.",
@@ -124,6 +125,7 @@ async function main () {
         supply: {
           hint: `Show wrapped $WIT supply information on ${colors.mcyan(ethRpcNetwork.toUpperCase())}.`,
           flags: [
+            ...(WrappedWIT.isNetworkCanonical(ethRpcNetwork) ? ["force"] : []),
             "verbose",
           ],
           options: [
@@ -499,7 +501,7 @@ async function contract (flags = {}) {
 }
 
 async function supply (flags = {}) {
-  let { network, provider, from, gasPrice, confirmations, verbose, limit } = flags
+  let { network, provider, force, from, gasPrice, confirmations, verbose, limit } = flags
   let contract = await WrappedWIT.fetchContractFromEthersProvider(provider)
 
   const records = []
@@ -557,15 +559,19 @@ async function supply (flags = {}) {
       )),
     ])
 
-    if (witnetBalance !== totalReserveSupply.pedros) {
-      const user = await prompt([{
-        message: "On-chain under-custody supply is outdated! Shall we report a fresh new Proof-of-Reserve ?",
-        name: "continue",
-        type: "confirm",
-        default: false,
-      }])
+    if (force || witnetBalance !== totalReserveSupply.pedros) {
+      let proceed = force
+      if (!force && witnetBalance !== totalReserveSupply.pedros) {
+        const user = await prompt([{
+          message: "On-chain under-custody supply is outdated! Shall we report a fresh new Proof-of-Reserve ?",
+          name: "continue",
+          type: "confirm",
+          default: force,
+        }])
+        proceed = user.continue
+      }
 
-      if (user.continue) {
+      if (proceed) {
         helpers.traceHeader(network.toUpperCase(), colors.lcyan)
 
         // create Witnet Wallet
