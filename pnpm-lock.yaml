@@ -12,8 +12,8 @@ importers:
         specifier: ^1.0.3
         version: 1.0.3(@types/node@24.2.1)(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@witnet/sdk':
-        specifier: ^1.0.12
-        version: 1.0.12(@types/node@24.2.1)(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+        specifier: ^1.0.13
+        version: 1.0.13(@types/node@24.2.1)(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
@@ -21,8 +21,8 @@ importers:
         specifier: ^16.6.1
         version: 16.6.1
       ethrpc-gateway:
-        specifier: ^2.2.7
-        version: 2.2.7(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+        specifier: ^2.2.8
+        version: 2.2.8(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       inquirer:
         specifier: ^8.2.7
         version: 8.2.7(@types/node@24.2.1)
@@ -41,7 +41,7 @@ importers:
         version: 6.1.0(ebuljcx2gbryhsxbychzqmjpja)
       '@openzeppelin/community-contracts':
         specifier: github:OpenZeppelin/openzeppelin-community-contracts#master
-        version: https://codeload.github.com/OpenZeppelin/openzeppelin-community-contracts/tar.gz/7ccb1053373e2cb114043676a15e30f1431ffa7b
+        version: https://codeload.github.com/OpenZeppelin/openzeppelin-community-contracts/tar.gz/b0c00eb0816b17d2ddc0c2537941c343fd793e59
       '@openzeppelin/contracts':
         specifier: ^5.4.0
         version: 5.4.0
@@ -575,8 +575,8 @@ packages:
     resolution: {integrity: sha512-q4n32/FNKIhQ3zQGGw5CvPF6GTvDCpYwIf7bEY/dZTZbgfDsHyjJwURxUJf3VQuuJj+fDIFl4+KkBVbw4Ef6jA==}
     engines: {node: '>= 12'}
 
-  '@openzeppelin/community-contracts@https://codeload.github.com/OpenZeppelin/openzeppelin-community-contracts/tar.gz/7ccb1053373e2cb114043676a15e30f1431ffa7b':
-    resolution: {tarball: https://codeload.github.com/OpenZeppelin/openzeppelin-community-contracts/tar.gz/7ccb1053373e2cb114043676a15e30f1431ffa7b}
+  '@openzeppelin/community-contracts@https://codeload.github.com/OpenZeppelin/openzeppelin-community-contracts/tar.gz/b0c00eb0816b17d2ddc0c2537941c343fd793e59':
+    resolution: {tarball: https://codeload.github.com/OpenZeppelin/openzeppelin-community-contracts/tar.gz/b0c00eb0816b17d2ddc0c2537941c343fd793e59}
     version: 0.0.1
 
   '@openzeppelin/contracts-upgradeable@5.4.0':
@@ -784,8 +784,8 @@ packages:
     resolution: {integrity: sha512-4oN00kY52cdrj+CdeNT1SHtzc6RA8CbBGuW6HF4fe2om9BgoBBWMFj6yhG8pwTqVjon5IK4aNDn3mMbl94chVw==}
     hasBin: true
 
-  '@witnet/sdk@1.0.12':
-    resolution: {integrity: sha512-DaWNH6rqQVt60HPZ4MAxo56L4cnoMtCpqV0251yyjvv6YjoiatnlMRECCWXioGOsBqydMYus/0PNHbQjjwLVXw==}
+  '@witnet/sdk@1.0.13':
+    resolution: {integrity: sha512-Z4C+K8rJ7MN8TjcxJyUCmfck3N1vSMGEaNnfsRH8VwVnLp5C49M9YyyZp5z0X1eJTo9+5EHCeVEKdWapE9JHpg==}
     hasBin: true
 
   abbrev@1.0.9:
@@ -1694,8 +1694,8 @@ packages:
     resolution: {integrity: sha512-/Sn9Y0oKl0uqQuvgFk/zQgR7aw1g36qX/jzSQ5lSwlO0GigPymk4eGQfeNTD03w1dPOqfz8V77Cy43jH56pagw==}
     engines: {node: '>=6.5.0', npm: '>=3'}
 
-  ethrpc-gateway@2.2.7:
-    resolution: {integrity: sha512-AHfhcQbSsA5YMgkvmON8gSv+/o6+FSGYqIjHWNv3xQl7eJEgQ6Ht72vFDqd60FwdaeWz59LnLvQpWYwyhDEiXg==}
+  ethrpc-gateway@2.2.8:
+    resolution: {integrity: sha512-kYK5BE791LA+7jTCRFqamAiURysddS1TkpD2oEYMKuFoQ3dauBNnMCPicx7Uf96Q9CLYEywE46Lo7KDSEJs3Ug==}
     hasBin: true
 
   event-emitter@0.3.5:
@@ -1736,8 +1736,9 @@ packages:
   fastq@1.19.1:
     resolution: {integrity: sha512-GwLTyxkCXjXbxqIhTsMI2Nui8huMPtnxg7krajPJAjnEG/iiOS7i+zCtWGZR9G0NBKbXKh6X9m9UIsYX/N6vvQ==}
 
-  fdir@6.4.6:
-    resolution: {integrity: sha512-hiFoqpyZcfNm1yc4u8oWCf9A2c4D3QjCrks3zmoVKVxpQRzmPNar1hUJcBG2RQHvEVGDN+Jm81ZheVLAQMK6+w==}
+  fdir@6.5.0:
+    resolution: {integrity: sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg==}
+    engines: {node: '>=12.0.0'}
     peerDependencies:
       picomatch: ^3 || ^4
     peerDependenciesMeta:
@@ -4362,7 +4363,7 @@ snapshots:
       '@nomicfoundation/solidity-analyzer-linux-x64-musl': 0.1.2
       '@nomicfoundation/solidity-analyzer-win32-x64-msvc': 0.1.2
 
-  '@openzeppelin/community-contracts@https://codeload.github.com/OpenZeppelin/openzeppelin-community-contracts/tar.gz/7ccb1053373e2cb114043676a15e30f1431ffa7b': {}
+  '@openzeppelin/community-contracts@https://codeload.github.com/OpenZeppelin/openzeppelin-community-contracts/tar.gz/b0c00eb0816b17d2ddc0c2537941c343fd793e59': {}
 
   '@openzeppelin/contracts-upgradeable@5.4.0(@openzeppelin/contracts@5.4.0)':
     dependencies:
@@ -4581,13 +4582,13 @@ snapshots:
 
   '@witnet/ethers@1.0.3(@types/node@24.2.1)(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
     dependencies:
-      '@witnet/sdk': 1.0.12(@types/node@24.2.1)(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@witnet/sdk': 1.0.13(@types/node@24.2.1)(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       axios: 1.11.0
       cbor: 10.0.10
       cross-env: 7.0.3
       dotenv: 16.6.1
       ethers: 6.15.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      ethrpc-gateway: 2.2.7(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      ethrpc-gateway: 2.2.8(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       inquirer: 8.2.7(@types/node@24.2.1)
       json-bigint: 1.0.0
       lodash.merge: 4.6.2
@@ -4600,7 +4601,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@witnet/sdk@1.0.12(@types/node@24.2.1)(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
+  '@witnet/sdk@1.0.13(@types/node@24.2.1)(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
     dependencies:
       axios: 1.11.0
       bech32: 2.0.0
@@ -5192,7 +5193,7 @@ snapshots:
     dependencies:
       cipher-base: 1.0.6
       inherits: 2.0.4
-      ripemd160: 2.0.1
+      ripemd160: 2.0.2
       sha.js: 2.4.12
 
   create-hash@1.2.0:
@@ -5764,7 +5765,7 @@ snapshots:
       bn.js: 4.11.6
       number-to-bn: 1.7.0
 
-  ethrpc-gateway@2.2.7(bufferutil@4.0.9)(utf-8-validate@5.0.10):
+  ethrpc-gateway@2.2.8(bufferutil@4.0.9)(utf-8-validate@5.0.10):
     dependencies:
       axios: 1.11.0
       cors: 2.8.5
@@ -5854,7 +5855,7 @@ snapshots:
     dependencies:
       reusify: 1.1.0
 
-  fdir@6.4.6(picomatch@4.0.3):
+  fdir@6.5.0(picomatch@4.0.3):
     optionalDependencies:
       picomatch: 4.0.3
 
@@ -7685,7 +7686,7 @@ snapshots:
 
   tinyglobby@0.2.14:
     dependencies:
-      fdir: 6.4.6(picomatch@4.0.3)
+      fdir: 6.5.0(picomatch@4.0.3)
       picomatch: 4.0.3
 
   tmp@0.0.33:
