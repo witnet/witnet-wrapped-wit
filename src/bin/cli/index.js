@@ -17,6 +17,7 @@ const { colors } = helpers
 
 const settings = {
   flags: {
+    debug: "Show stack trace in case a typed error occurs.",
     help: "Show usage information for a specific command.",
     verbose: "Outputs detailed information.",
     version: "Print the CLI name and version.",
@@ -253,7 +254,7 @@ async function main () {
           network: ethRpcNetwork,
         }, args.slice(1))
       } catch (e) {
-        showUsageError(router, cmd, router[cmd], e)
+        showUsageError(router, cmd, router[cmd], e, flags)
       }
     }
   } else {
@@ -306,12 +307,15 @@ function showUsageEnvars (envars) {
   }
 }
 
-function showUsageError (router, cmd, specs, error) {
+function showUsageError (router, cmd, specs, error, flags) {
   showCommandUsage(router, cmd, specs)
   if (error) {
     console.info()
-    console.info(error)
-    // console.error(error?.stack?.split("\n")[0] || error)
+    if (flags?.debug) {
+      console.info(error)
+    } else {
+      console.error(error?.stack?.split("\n")[0] || error)
+    }
   }
 }
 
@@ -916,7 +920,7 @@ async function wrappings (flags = {}) {
   if (value && witnet) {
     value = Witnet.Coins.fromWits(value)
     if ((await ledger.getBalance()).unlocked < value.pedros) {
-      throw new Error(`Insufficient funds on ${ledger.pkh}`)
+      throw new Error(`Insufficient funds on ${ledger.pkh}.`)
     }
 
     const user = await prompt([{
@@ -1134,7 +1138,7 @@ async function wrappings (flags = {}) {
             "ERC-20 WRAP VALIDATING TRANSACTION HASH",
             ":TIME DIFF",
           ],
-          colors: [, colors.magenta],
+          colors: [colors.white, colors.magenta],
         }
       )
     } else {
@@ -1167,7 +1171,7 @@ async function wrappings (flags = {}) {
             `VALUE (${colors.lwhite("$pedros")})`,
           ],
           humanizers: [, , , , helpers.commas],
-          colors: [, colors.mmagenta, , colors.mblue, colors.yellow],
+          colors: [colors.white, colors.mmagenta, , colors.mblue, colors.yellow],
         }
       )
     } else {
