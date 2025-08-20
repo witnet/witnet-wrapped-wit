@@ -690,7 +690,7 @@ async function supply (flags = {}) {
         moment.unix(Number(event.args[1])),
       ]), {
         headlines: [
-          "BLOCK NUMBER",
+          "EVM BLOCK NUMBER",
           `REPORTED SUPPLY (${colors.lwhite("$pedros")})`,
           `PROOF-OF-RESERVE WITNESSING ACT ON ${colors.lwhite(`WITNET ${WrappedWIT.isNetworkMainnet(network) ? "MAINNET": "TESTNET"}`)}`,
           "PROOF-OF-RESERVE TIMESTAMP",
@@ -757,7 +757,7 @@ async function transfers (flags = {}) {
           event.args[2],
         ]
       }), {
-        headlines: ["BLOCK NUMBER", "EVM TRANSACTION HASH", "EVM SENDER", "EVM RECIPIENT", `VALUE (${colors.lwhite("$pedros")})`],
+        headlines: ["EVM BLOCK NUMBER", "EVM TRANSACTION HASH", "EVM SENDER", "EVM RECIPIENT", `VALUE (${colors.lwhite("$pedros")})`],
         humanizers: [helpers.commas, , , , helpers.commas],
         colors: [, colors.gray, , , colors.yellow],
       }
@@ -846,7 +846,7 @@ async function unwrappings (flags = {}) {
         timediff,
       ]), {
         headlines: [
-          "BLOCK NUMBER",
+          "EVM BLOCK NUMBER",
           "EVM UNWRAP TRANSACTION HASH",
           `VALUE TRANSFER TRANSACTION HASH ON ${colors.lwhite(`WITNET ${witnet.network.toUpperCase()}`)}`,
           ":TIME DIFF",
@@ -869,7 +869,7 @@ async function unwrappings (flags = {}) {
           ]
         }), {
           headlines: [
-            "BLOCK NUMBER",
+            "EVM BLOCK NUMBER",
             "EVM UNWRAP TRANSACTION HASH",
             "EVM UNWRAPPER",
             `WIT RECIPIENT ON ${colors.lwhite(`WITNET ${WrappedWIT.isNetworkMainnet(network) ? "MAINNET" : "TESTNET"}`)}`,
@@ -1139,7 +1139,7 @@ async function wrappings (flags = {}) {
           ]
         }), {
           headlines: [
-            "BLOCK NUMBER",
+            "EVM BLOCK NUMBER",
             `VALUE TRANSFER TRANSACTION HASH ON ${colors.lwhite(`WITNET ${witnet.network.toUpperCase()}`)}`,
             "ERC-20 WRAP VALIDATING TRANSACTION HASH",
             ":TIME DIFF",
@@ -1170,7 +1170,7 @@ async function wrappings (flags = {}) {
           ]
         }), {
           headlines: [
-            "BLOCK NUMBER",
+            "EVM BLOCK NUMBER",
             `WIT SENDER ON ${colors.lwhite(`WITNET ${WrappedWIT.isNetworkMainnet(network) ? "MAINNET" : "TESTNET"}`)}`,
             "ERC-20 WRAP VALIDATING TRANSACTION HASH",
             "EVM RECIPIENT",
