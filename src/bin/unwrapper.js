@@ -153,7 +153,7 @@ async function main () {
   async function onUnwrapped (from, to, value, nonce, event) {
     const blockNumber = event?.log?.blockNumber || event?.blockNumber
 
-    if (BigInt(value) >= WrappedWIT.MIN_UNWRAPPABLE_AMOUNT) {
+    if (BigInt(value) >= WrappedWIT.MIN_UNWRAPPABLE_NANOWITS) {
       // Rely on Witnet's metadata storage to verify the unwrap transaction has not yet been attended,
       // neither by `signer.pkh` nor any other hot wallet in the past.
       const witUnwrapTx = await WrappedWIT.findUnwrapTransactionFromWitnetProvider({
@@ -179,7 +179,7 @@ async function main () {
         })
       }
     } else {
-      // Ignore unwrap transactions on Ethereum with a value lesser than WrappedWIT.MIN_UNWRAPPABLE_AMOUNT:
+      // Ignore unwrap transactions on Ethereum with a value lesser than WrappedWIT.MIN_UNWRAPPABLE_NANOWITS:
       console.error(`> IGNORED    { block: ${blockNumber}, nonce: ${nonce}, from: ${from}, into: ${to}, value: ${ethers.formatUnits(value, 9)} WIT }`)
     }
   }
@@ -210,7 +210,7 @@ async function main () {
             // estimate vtt's fees ... 
             vtt = await VTTs.signTransaction({
               recipients: [
-                [to, Witnet.Coins.fromPedros(value - 1n)], // `value` always greater than MIN_UNWRAPPABLE_AMOUNT
+                [to, Witnet.Coins.fromPedros(value - 1n)], // `value` always greater than MIN_UNWRAPPABLE_NANOWITS
                 [metadata, Witnet.Coins.fromPedros(1n)],
               ],
               fees: WIT_VTT_PRIORITY,

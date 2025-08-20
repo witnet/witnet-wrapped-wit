@@ -5,13 +5,13 @@ const { ethers, Witnet } = require("@witnet/ethers")
 const ABI = require("../artifacts/contracts/WrappedWIT.sol/WrappedWIT.json").abi
 const addresses = require("./addresses.json")
 
-const MIN_UNWRAPPABLE_AMOUNT = 3n; // 3 $pedros
-const MIN_WRAPPABLE_AMOUNT = BigInt(10 ** 12);  // 1000.0 $WIT
+const MIN_UNWRAPPABLE_NANOWITS = 3n; // 3 $pedros
+const MIN_WRAPPABLE_NANOWITS = BigInt(10 ** 12);  // 1000.0 $WIT
 
 module.exports = {
   ABI,
-  MIN_UNWRAPPABLE_AMOUNT,
-  MIN_WRAPPABLE_AMOUNT,
+  MIN_UNWRAPPABLE_NANOWITS,
+  MIN_WRAPPABLE_NANOWITS,
   fetchContractFromEthersProvider,
   findNetworkByChainId,
   findUnwrapTransactionFromWitnetProvider,
