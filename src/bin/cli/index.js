@@ -278,7 +278,7 @@ async function main () {
 
 function showMainUsage (router, envars) {
   showUsageHeadline(router)
-  showUsageFlags(["help", "version"])
+  showUsageFlags(["debug", "help", "version"])
   showUsageOptions(["port"])
   console.info("\nCOMMANDS:")
   const maxLength = Object.keys(router.commands).map(key => key.length).reduce((prev, curr) => curr > prev ? curr : prev)
