@@ -334,7 +334,8 @@ contract WrappedWIT
             block.chainid == _CANONICAL_CHAIN_ID
         );
         _require(
-            !_recipient.eq(__witCustodianWrapper),
+            !_recipient.eq(__witCustodianWrapper)
+                && !_recipient.eq(__storage().witCustodianUnwrapper),
             "invalid recipient"
         );
 
