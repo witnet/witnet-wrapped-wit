@@ -218,14 +218,14 @@ async function main () {
             // discount vtt's fees from the transfer value,
             if (vtt.fees.pedros >= value - 1n) {
               // ...but never allow fees to be greater than the value:
-              vtt.value = (value - 1n) / 2n
-              vtt.fees = amount
+              vtt.value = Witnet.Coins.fromPedros((value - 1n) / 2n + 1n - value % 2n)
+              vtt.fees = Witnet.Coins.fromPedros((value - 1n) / 2n)
             } else {
-              vtt.value = value - 1n - vtt.fees
+              vtt.value = Witnet.Coins.fromPedros(value - 1n - vtt.fees.pedros)
             }
             vtt = await VTTs.sendTransaction({
               recipients: [
-                [to, Witnet.Coins.fromPedros(vtt.value)],
+                [to, vtt.value],
                 [metadata, Witnet.Coins.fromPedros(1n)],
               ],
               fees: vtt.fees,
@@ -239,10 +239,9 @@ async function main () {
 
           console.info(`> Unwrapping { block: ${blockNumber}, nonce: ${nonce}, from: ${from} } ...`)
           console.info(`  => Recipient:  ${to}`)
-          console.info(`  => Metadata:   ${metadata} [${digest.slice(2)}]`)
-          console.info(`  => Value:      ${ethers.formatUnits(value, 9)} WIT`)
-
-          console.info(`  => Fee:        ${vtt.fees.toString(2)}`)
+          console.info(`  => Metadata:   ${digest} (${metadata})`)
+          console.info(`  => Value:      ${Witnet.Coins.fromPedros(vtt.value.pedros - 1n).toString(2)}`)
+          console.info(`  => Fee:        ${Witnet.Coins.fromPedros(vtt.fees.pedros + 1n).toString(2)}`)
           console.info(`  => VTT hash:   ${vtt.hash}`)
 
           // push new vtt data into unwrapper's mempool
