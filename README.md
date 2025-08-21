@@ -128,11 +128,16 @@ Shows the history of past wrapping transactions, as well as an up-to-date list w
 **Options**:
 - `--limit`: Limit number of history records.
 - `--since`: Process events starting from the specified EVM block number.
-- `--from`: Filter wrappings from the specified WIT address (required when initiating a new wrap).
+- `--from`: Filter wrappings from the specified WIT address.
 - `--into`: Filter wrappings to the specified EVM address (required when initiating a new wrap).
 - `--value`: Amount of $WIT to be wrapped between the specified addresses.
 - `--vtt-hash`: Request the validation on Ethereum of some not-yet verified wrapping transaction that took place on Witnet. 
 - `--gasPrice`: Max. EVM gas price to pay when querying the validation of some `--vtt-hash`. 
+
+> *When ordering a new wrap:*
+>- *If no --from is specified, the transaction will get paid by any set of self-custody HD-derived accounts holding sufficient funds.*
+>- *Wrapping from the wallet's coinbase address, requires its address to be specified as --from.*
+>- *Make sure that you have enough funds for covering both the amoung being wrapped, and the network fees.*
 
 ---
 #### `$ witwrap unwrappings`
