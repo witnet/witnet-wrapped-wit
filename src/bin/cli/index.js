@@ -14,6 +14,8 @@ const helpers = require("./helpers")
 const { colors } = helpers
 
 const DEFAULT_BATCH_SIZE = 32
+const DEFAULT_LIMIT = 64
+const DEFAULT_SINCE = -5000
 
 /// CONSTANTS AND GLOBALS =============================================================================================
 
@@ -34,19 +36,19 @@ const settings = {
   },
   options: {
     offset: {
-      hint: "Skip the first output records when using --fromBlock (default: 0)",
+      hint: "Skip first found records (default: 0)",
       param: "OFFSET",
     },
     limit: {
-      hint: "Limit number of output records (default: 64).",
+      hint: `Limit number of output records (default: ${DEFAULT_LIMIT}).`,
       param: "LIMIT",
     },
     since: {
-      hint: "Process events starting from the given EVM block number.",
+      hint: `Process events starting from the given EVM block number (default: ${DEFAULT_SINCE}).`,
       param: "EVM_BLOCK",
     },
     from: {
-      hint: "Filter events by sender address.",
+      hint: "Filter events by sender address (or sender of --value, when specified).",
       param: "EVM|WIT_ADDRESS",
     },
     into: {
@@ -155,14 +157,12 @@ async function main () {
             "mints",
           ],
           options: [
-            "port",
+            "from",
+            "into",
             "limit",
             "offset",
             "since",
-            "from",
-            "into",
             "value",
-            "gasPrice",
           ],
         },
       }
@@ -175,16 +175,13 @@ async function main () {
             "check",
           ],
           options: [
-            "witnet",
-            "port",
+            "from",
+            "into",
             "limit",
             "offset",
             "since",
-            "from",
-            "into",
             "value",
             "vtt-hash",
-            "gasPrice",
           ],
           envars: ["WITNET_SDK_WALLET_MASTER_KEY"],
         },
@@ -194,15 +191,12 @@ async function main () {
             "check",
           ],
           options: [
-            "witnet",
-            "port",
+            "from",
+            "into",
             "limit",
             "offset",
             "since",
-            "from",
-            "into",
             "value",
-            "gasPrice",
           ],
           envars: [],
         },
@@ -685,14 +679,14 @@ async function supply (flags = {}) {
   if (verbose) {
     let events = await contract.queryFilter("ReserveUpdate")
     helpers.traceTable(
-      events.reverse().slice(0, limit || 64).map(event => [
+      events.reverse().slice(0, limit || DEFAULT_LIMIT).map(event => [
         event.blockNumber,
         event.args[0], //Witnet.Coins.fromPedros(event.args[0]).wits.toFixed(2),
         event.args[2].slice(2),
         moment.unix(Number(event.args[1])),
       ]), {
         headlines: [
-          "EVM BLOCK NUMBER",
+          "EVM BLOCK",
           `REPORTED SUPPLY (${colors.lwhite("$pedros")})`,
           `PROOF-OF-RESERVE WITNESSING ACT ON ${colors.lwhite(`WITNET ${WrappedWIT.isNetworkMainnet(network) ? "MAINNET": "TESTNET"}`)}`,
           "PROOF-OF-RESERVE TIMESTAMP",
@@ -737,15 +731,39 @@ async function transfers (flags = {}) {
       })
   }
 
-  const fromBlock = since ? BigInt(flags.since) : undefined
-  let events = (fromBlock !== undefined && !value
-    ? (await contract.queryFilter("Transfer", fromBlock)).slice(flags?.offset || 0, flags?.limit || 64)
-    : (await contract.queryFilter("Transfer")).reverse().slice(0, flags?.limit || 64)
+  // determine current block number
+  const blockNumber = await provider.getBlockNumber()
+
+  // determine fromBlock
+  let fromBlock
+  if (since === undefined || since < 0) {
+    fromBlock = BigInt(blockNumber) + BigInt(since ?? DEFAULT_SINCE)
+  } else {
+    fromBlock = BigInt(since ?? 0n)
+  }
+  
+  // fetch events since specified block
+  let events = await contract.queryFilter("Transfer", fromBlock)
+
+  // filter out mints and burns, if not otherwise specified
+  if (!flags?.mints) events = events.filter(event => event.args[0] !== "0x0000000000000000000000000000000000000000");
+  if (!flags?.burns) events = events.filter(event => event.args[1] !== "0x0000000000000000000000000000000000000000");
+
+  // apply --from filter
+  if (from) events = events.filter(event => event.args[0].toLowerCase().indexOf(from.toLowerCase()) > -1);
+
+  // apply --into filter, only if no --value is specified
+  if (into && !value) events = events.filter(event => event.args[1].toLowerCase().indexOf(into.toLowerCase()) > -1);
+
+  // count records
+  const totalTransfers = events.length
+  
+  // apply limit/offset filter
+  events = (!value && (!flags?.since || BigInt(flags.since) < 0n)
+    ? events.slice(flags?.offset || 0).slice(0, flags?.limit || DEFAULT_LIMIT) // oldest first
+    : events.reverse().slice(flags?.offset || 0).slice(0, flags?.limit || DEFAULT_LIMIT) // latest first
   )
-  if (from) events = events.filter(event => event.args[0].toLowerCase().indexOf(from.toLowerCase()) > -1)
-  if (into && !value) events = events.filter(event => event.args[1].toLowerCase().indexOf(into.toLowerCase()) > -1)
-  if (!flags?.mints) events = events.filter(event => event.args[0] !== "0x0000000000000000000000000000000000000000")
-  if (!flags?.burns) events = events.filter(event => event.args[1] !== "0x0000000000000000000000000000000000000000")
+
   if (events.length > 0) {
     helpers.traceTable(
       events.map(event => {
@@ -759,13 +777,16 @@ async function transfers (flags = {}) {
           event.args[2],
         ]
       }), {
-        headlines: ["EVM BLOCK NUMBER", "EVM TRANSACTION HASH", "EVM SENDER", "EVM RECIPIENT", `VALUE (${colors.lwhite("$pedros")})`],
+        headlines: ["EVM BLOCK", "EVM TRANSACTION HASH", "EVM SENDER", "EVM RECIPIENT", `VALUE (${colors.lwhite("$pedros")})`],
         humanizers: [helpers.commas, , , , helpers.commas],
         colors: [, colors.gray, , , colors.yellow],
       }
     )
+    console.info(`^ Listing ${events.length} out of ${totalTransfers} transfers${
+      fromBlock ? ` since block #${helpers.commas(fromBlock)}.` : ` up until current block #${helpers.colors.lwhite(helpers.commas(blockNumber))}.`
+    }`)
   } else {
-    console.info(`^ No transfers found ${from ? `from "${from}" ` : ""}${into ? `into "${into}"` : ""}.`)
+    console.info(`^ No transfers${fromBlock ? ` since block #${helpers.colors.lwhite(helpers.commas(fromBlock))}.` : "."}`)
   }
 }
 
@@ -811,15 +832,34 @@ async function unwrappings (flags = {}) {
       })
   }
 
-  const fromBlock = since ? BigInt(flags.since) : undefined
-  let events = (fromBlock !== undefined && !value
-    ? (await contract.queryFilter("Unwrapped", fromBlock)).slice(offset || 0, limit || 64)
-    : (await contract.queryFilter("Unwrapped")).reverse().slice(0, limit || 64)
-  )
-  if (from) events = events.filter(event => event.args[0].toLowerCase().indexOf(from.toLowerCase()) > -1)
-  if (into && !value) events = events.filter(event => event.args[1].toLowerCase().indexOf(into.toLowerCase()) > -1)
+  // determine current block number
+  const blockNumber = await provider.getBlockNumber()
 
-  if (check) {
+  // determine fromBlock
+  let fromBlock
+  if (since === undefined || since < 0) {
+    fromBlock = BigInt(blockNumber) + BigInt(since ?? DEFAULT_SINCE)
+  } else {
+    fromBlock = BigInt(since ?? 0n)
+  }
+
+  // fetch events since specified block
+  let events = await contract.queryFilter("Unwrapped", fromBlock)
+
+  // apply --from filter
+  if (from) events = events.filter(event => event.args[0].toLowerCase().indexOf(from.toLowerCase()) > -1);
+
+  // apply --into filter, only if no --value is specified
+  if (into && !value) events = events.filter(event => event.args[1].toLowerCase().indexOf(into.toLowerCase()) > -1);
+
+  // count events
+  const totalEvents = events.length
+  
+  // apply limit/offset filter
+  events = (!value && (!flags?.since || BigInt(flags.since) < 0n)
+    ? events.slice(offset || 0).slice(0, limit || DEFAULT_LIMIT) // oldest first
+    : events.reverse().slice(offset || 0).slice(0, limit || DEFAULT_LIMIT) // latest first
+  )
     const witnet = await Witnet.JsonRpcProvider.fromEnv(flags?.witnet || (WrappedWIT.isNetworkMainnet(network) ? undefined : "https://rpc-testnet.witnet.io"))
     const records = await helpers.prompter(
       Promise.all(events.map(async event => {
@@ -848,7 +888,7 @@ async function unwrappings (flags = {}) {
         timediff,
       ]), {
         headlines: [
-          "EVM BLOCK NUMBER",
+          "EVM BLOCK",
           "EVM UNWRAP TRANSACTION HASH",
           `VALUE TRANSFER TRANSACTION HASH ON ${colors.lwhite(`WITNET ${witnet.network.toUpperCase()}`)}`,
           ":TIME DIFF",
@@ -871,7 +911,7 @@ async function unwrappings (flags = {}) {
           ]
         }), {
           headlines: [
-            "EVM BLOCK NUMBER",
+            "EVM BLOCK",
             "EVM UNWRAP TRANSACTION HASH",
             "EVM UNWRAPPER",
             `WIT RECIPIENT ON ${colors.lwhite(`WITNET ${WrappedWIT.isNetworkMainnet(network) ? "MAINNET" : "TESTNET"}`)}`,
@@ -881,9 +921,14 @@ async function unwrappings (flags = {}) {
           colors: [, colors.gray, colors.mblue, colors.mmagenta, colors.yellow],
         }
       )
-    } else {
-      console.info(`^ No unwrappings found ${from ? `from "${from}" ` : ""}${into ? `into "${into}"` : ""}.`)
     }
+  }
+  if (events.length > 0) {
+    console.info(`^ Listed ${events.length} out of ${totalEvents} unwrappings${
+      fromBlock ? ` since block #${helpers.commas(fromBlock)}.` : ` up until current block #${helpers.colors.lwhite(helpers.commas(blockNumber))}.`
+    }`)
+  } else {
+    console.info(`^ No unwrappings${fromBlock ? ` since block #${helpers.colors.lwhite(helpers.commas(fromBlock))}.` : "."}`)
   }
   process.exit(0)
 }
@@ -1071,17 +1116,31 @@ async function wrappings (flags = {}) {
     }
   }
 
-  const fromBlock = since ? BigInt(since) : undefined
+  // determine current block number
+  const blockNumber = await provider.getBlockNumber()
 
-  let events = []
+  // determine fromBlock
+  let fromBlock
+  if (since === undefined || since < 0) {
+    fromBlock = BigInt(blockNumber) + BigInt(since ?? DEFAULT_SINCE)
+  } else {
+    fromBlock = BigInt(since ?? 0n)
+  }
 
-  events.push(...(fromBlock !== undefined && !value
-    ? (await contract.queryFilter("Wrapped", fromBlock)).slice(offset || 0, limit || 64)
-    : (await contract.queryFilter("Wrapped")).reverse().slice(0, limit || 64)
-  ))
+  // fetch events since specified block
+  let events = await contract.queryFilter("Wrapped", fromBlock)
 
-  if (from) events = events.filter(event => event.args[0].toLowerCase().indexOf(from.toLowerCase()) > -1)
-  if (into) events = events.filter(event => event.args[1].toLowerCase().indexOf(into.toLowerCase()) > -1)
+  // apply --from filter
+  if (from) events = events.filter(event => event.args[0].toLowerCase().indexOf(from.toLowerCase()) > -1);
+
+  // apply --into filter
+  if (into) events = events.filter(event => event.args[1].toLowerCase().indexOf(into.toLowerCase()) > -1);
+
+  // apply limit/offset filter
+  events = (!value && (!flags?.since || BigInt(flags.since) < 0n)
+    ? events.slice(offset || 0).slice(0, limit || DEFAULT_LIMIT) // oldest first
+    : events.reverse().slice(offset || 0).slice(0, limit || DEFAULT_LIMIT) // latest first
+  )
 
   // insert pending to-be-validated wrap transactions:
   {
@@ -1119,7 +1178,8 @@ async function wrappings (flags = {}) {
     }
   }
 
-  if (check) {
+  // count records
+  const totalEvents = events.length
     const records = []
     records.push(...await helpers.prompter(
       Promise.all(events.map(async event => {
@@ -1147,7 +1207,7 @@ async function wrappings (flags = {}) {
           ]
         }), {
           headlines: [
-            "EVM BLOCK NUMBER",
+            "EVM BLOCK",
             `VALUE TRANSFER TRANSACTION HASH ON ${colors.lwhite(`WITNET ${witnet.network.toUpperCase()}`)}`,
             "ERC-20 WRAP VALIDATING TRANSACTION HASH",
             ":TIME DIFF",
@@ -1155,8 +1215,6 @@ async function wrappings (flags = {}) {
           colors: [colors.white, colors.magenta],
         }
       )
-    } else {
-      console.info(`^ No verified wrappings found so far ${from ? `from "${from}" ` : ""}${into ? `into "${into}"` : ""}.`)
     }
   } else {
     const records = events.map(event => ({
@@ -1178,7 +1236,7 @@ async function wrappings (flags = {}) {
           ]
         }), {
           headlines: [
-            "EVM BLOCK NUMBER",
+            "EVM BLOCK",
             `WIT SENDER ON ${colors.lwhite(`WITNET ${WrappedWIT.isNetworkMainnet(network) ? "MAINNET" : "TESTNET"}`)}`,
             "ERC-20 WRAP VALIDATING TRANSACTION HASH",
             "EVM RECIPIENT",
@@ -1188,9 +1246,14 @@ async function wrappings (flags = {}) {
           colors: [colors.white, colors.mmagenta, , colors.mblue, colors.yellow],
         }
       )
-    } else {
-      console.info(`^ No verified wrappings found so far ${from ? `from "${from}" ` : ""}${into ? `into "${into}"` : ""}.`)
     }
+  }
+  if (events.length > 0) {
+    console.info(`^ Liste ${events.length} out of ${totalEvents} wrappings${
+      fromBlock ? ` since block #${helpers.commas(fromBlock)}.` : ` up until current block #${helpers.colors.lwhite(helpers.commas(blockNumber))}.`
+    }`)
+  } else {
+    console.info(`^ No wrappings${fromBlock ? ` since block #${helpers.colors.lwhite(helpers.commas(fromBlock))}.` : "."}`)
   }
   process.exit(0)
 }

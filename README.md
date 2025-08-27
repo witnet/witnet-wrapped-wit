@@ -66,7 +66,7 @@ You can optionally:
 You need to have a local **ETH/RPC gateway** running in order to get access to extra commands. You will only be able to wrap and unwrap $WIT coins if you connect to an EVM network where the canonical version of the ERC-20 token is available (see supported networks below). 
 
 ---
-#### `$ witwrap networks`
+#### `witwrap networks`
 Lists supported EVM networks.
 
 **Flags**:
@@ -74,24 +74,24 @@ Lists supported EVM networks.
 - `--testnets`: Just list the testnets.
 
 ---
-#### `$ witwrap gateway <evm_network>`
+#### `witwrap gateway <evm_network>`
 Launches a local ETH/RPC signing gateway to the specified `evm_network`, listening on port 8545 if no otherwise specified.
 
 **Options**:
-  - `--port`: Port where the new gateway should be listening on.
+  - `--port`: Port where the new gateway should be listening on.  
   - `--remote`: URL of the ETH/RPC remote provider to use instead of the gateway's default for the specified network. 
 
 > *Launch a gateway to your preferred EVM network on a different terminal so you can augment the available commands of the `witwrap` CLI binary. If you launch the gateway on a port other than default's, you'll need to specify `--port <PORT>` when invoking other commands of the `witwrap` binary.*
 
 ---
-#### `$ witwrap contract`
+#### `witwrap contract`
 Shows the address and other relevant data of the WrappedWIT contract that's available on the connected EVM network. 
 
 **Flags**:
   - `--verbose`: Outputs extra information.
 
 ---
-#### `$ witwrap supply`
+#### `witwrap supply`
 Shows wrapped $WIT supply information on the connected EVM network. It also detects if the total reserve supply in Ethereum is outdated with respect the actual under-custody supply on Witnet, asking you whether you wish to permissionlessly contribute by notarizing (in Witnet) and pushing (in Ethereum) a fresh new **Proof-of-Reserve** report.
 
 **Flags**:
@@ -103,7 +103,7 @@ Shows wrapped $WIT supply information on the connected EVM network. It also dete
 - `--gasPrice`: Max. EVM gas price to pay when pushing a Proof-of-Reserve report into Ethereum.
 
 ---
-#### `$ witwrap transfers`
+#### `witwrap transfers`
 Shows the history of recent transfers of wrapped $WIT on the connected EVM network. It also allows you to transfer wrapped $WIT tokens in Ethereum, as long the signing addresses of your EVM gateway holds some wrapped $WIT balance.
 
 **Flags**:
@@ -111,25 +111,27 @@ Shows the history of recent transfers of wrapped $WIT on the connected EVM netwo
 - `--mints`: Also show history of minted $WIT (either wrapped from Witnet, or bridged from other EVM networks).
 
 **Options**:
-- `--limit`: Limit number of history records.
-- `--since`: Process events starting from the specified EVM block number.
 - `--from`: Filter transfers from the specified EVM address (required when ordering a new transfer).
 - `--into`: Filter transfers to the specified EVM address (required when ordering a new transfer).
+- `--limit`: Limit number of listed records.
+- `--offset`: Skip first records before listing.
+- `--since`: Process events starting from the specified EVM block number (default: -5000).
 - `--value`: Amount of $WIT to transfer between the specified addresses.
 - `--gasPrice`: Max. EVM gas price to pay when transferring $WIT. 
 
 ---
-#### `$ witwrap wrappings`
+#### `witwrap wrappings`
 Shows the history of past wrapping transactions, as well as an up-to-date list with the status of on-going wrapping workflows. It also allows you to initiate a wrap transaction on Witnet, and validate it on Ethereum when finalized.
 
 **Flags**:
 - `--check`: Show the time difference since the moment when the wrap transaction took place on Witnet, and when it got ultimately verified on Ethereum. 
 
 **Options**:
-- `--limit`: Limit number of history records.
-- `--since`: Process events starting from the specified EVM block number.
 - `--from`: Filter wrappings from the specified WIT address.
 - `--into`: Filter wrappings to the specified EVM address (required when initiating a new wrap).
+- `--limit`: Limit number of listed records.
+- `--offset`: Skip first records before listing.
+- `--since`: Process events starting from the specified EVM block number (default: -5000).
 - `--value`: Amount of $WIT to be wrapped between the specified addresses.
 - `--vtt-hash`: Request the validation on Ethereum of some not-yet verified wrapping transaction that took place on Witnet. 
 - `--gasPrice`: Max. EVM gas price to pay when querying the validation of some `--vtt-hash`. 
@@ -137,20 +139,21 @@ Shows the history of past wrapping transactions, as well as an up-to-date list w
 > *When ordering a new wrap:*
 >- *If no --from is specified, the transaction will get paid by any set of self-custody HD-derived accounts holding sufficient funds.*
 >- *Wrapping from the wallet's coinbase address, requires its address to be specified as --from.*
->- *Make sure that you have enough funds for covering both the amoung being wrapped, and the network fees.*
+>- *Make sure that you have enough funds for covering both the amount being wrapped and the Witnet network fee for such transaction.*
 
 ---
-#### `$ witwrap unwrappings`
+#### `witwrap unwrappings`
 Shows the history of past unwrapping transactions. It also allows you to unwrap $WIT tokens that you hold on any of the EVM gateway signing addresses, as long as there's enough under-custody reserve supply on the ERC-20 contract.
 
 **Flags**:
 - `--check`: Show the time difference since the moment when the unwrap transaction took place on Ethereum, and the unwrapped amount got ultimately transferred to the recipient on Witnet.
 
 **Options**:
-- `--limit`: Limit number of history records.
-- `--since`: Process events starting from the specified EVM block number.
 - `--from`: Filter unwrappings from the specified EVM address (required when ordering a new unwrap).
 - `--into`: Filter unwrappings to the specified WIT address (required when ordering a new unwrap).
+- `--limit`: Limit number of listed records.
+- `--offset`: Skip first records before listing.
+- `--since`: Process events starting from the specified EVM block number (default: -5000).
 - `--value`: Amount of $WIT to be unwrapped between the specified addresses.
 - `--gasPrice`: Max. EVM gas price to pay when querying the unwrapping of the specified amount.
 
