@@ -186,6 +186,12 @@ function traceData (header, data, width, color) {
   if (color) process.stdout.write("\x1b[0m")
 }
 
+function* chunks(arr, n) {
+  for (let i = 0; i < arr.length; i += n) {
+    yield arr.slice(i, i + n)
+  }
+}
+
 module.exports = {
   colors: {
     blue,
@@ -211,6 +217,7 @@ module.exports = {
   },
   colorstrip,
   commas,
+  chunks,
   deleteExtraFlags,
   extractFlagsFromArgs,
   extractOptionsFromArgs,
