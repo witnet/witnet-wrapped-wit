@@ -22,17 +22,15 @@ const DEFAULT_SINCE = -5000
 const settings = {
   flags: {
     debug: "Show stack trace in case a typed error occurs.",
-    help: "Show usage information for a specific command.",
-    verbose: "Outputs detailed information.",
-    version: "Print the CLI name and version.",
-
-    check: "See if cross-chain transactions have been consolidated.",
     force: "Notarize and push a fresh Proof-of-Reserve report, without prompting the user.",
+    help: "Show usage information for a specific command.",
     mints: "Include mint transactions, if any.",
     burns: "Include burn transactions, if any.",
     mainnets: "Only list supported EVM mainnets.",
     testnets: "Only list suppoered EVM testnets.",
     "trace-back": "See if cross-chain transactions have been consolidated.",
+    verbose: "Outputs detailed information.",
+    version: "Print the CLI name and version.",
   },
   options: {
     offset: {
@@ -115,9 +113,7 @@ async function main () {
           hint: `Show EVM native and Wrapped/WIT balances for all available signing accounts on ${
             colors.mcyan(ethRpcNetwork.toUpperCase())
           }.`,
-          options: [
-            "port",
-          ],
+          options: [],
           envars: [],
         },
         contract: {
@@ -133,15 +129,7 @@ async function main () {
             "verbose",
           ],
           options: [
-            "witnet",
-            "port",
-            ...(WrappedWIT.isNetworkCanonical(ethRpcNetwork)
-              ? ["witnet"]
-              : []
-            ),
             "limit",
-            "from",
-            "gasPrice",
           ],
           envars: [
             ...(WrappedWIT.isNetworkCanonical(ethRpcNetwork)
@@ -782,7 +770,7 @@ async function transfers (flags = {}) {
         colors: [, colors.gray, , , colors.yellow],
       }
     )
-    console.info(`^ Listing ${events.length} out of ${totalTransfers} transfers${
+    console.info(`^ Listed ${events.length} out of ${totalTransfers} transfers${
       fromBlock ? ` since block #${helpers.commas(fromBlock)}.` : ` up until current block #${helpers.colors.lwhite(helpers.commas(blockNumber))}.`
     }`)
   } else {
