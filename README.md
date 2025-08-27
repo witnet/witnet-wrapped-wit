@@ -124,7 +124,7 @@ Shows the history of recent transfers of wrapped $WIT on the connected EVM netwo
 Shows the history of past wrapping transactions, as well as an up-to-date list with the status of on-going wrapping workflows. It also allows you to initiate a wrap transaction on Witnet, and validate it on Ethereum when finalized.
 
 **Flags**:
-- `--check`: Show the time difference since the moment when the wrap transaction took place on Witnet, and when it got ultimately verified on Ethereum. 
+- `--trace-back`: Check the time difference since the moment when the wrap transaction took place on Witnet, and when it got ultimately verified on Ethereum. 
 
 **Options**:
 - `--from`: Filter wrappings from the specified WIT address.
@@ -132,7 +132,7 @@ Shows the history of past wrapping transactions, as well as an up-to-date list w
 - `--limit`: Limit number of listed records.
 - `--offset`: Skip first records before listing.
 - `--since`: Process events starting from the specified EVM block number (default: -5000).
-- `--value`: Amount of $WIT to be wrapped between the specified addresses.
+- `--value`: Amount of $WIT to be wrapped between specified addresses.
 - `--vtt-hash`: Request the validation on Ethereum of some not-yet verified wrapping transaction that took place on Witnet. 
 - `--gasPrice`: Max. EVM gas price to pay when querying the validation of some `--vtt-hash`. 
 
@@ -146,7 +146,7 @@ Shows the history of past wrapping transactions, as well as an up-to-date list w
 Shows the history of past unwrapping transactions. It also allows you to unwrap $WIT tokens that you hold on any of the EVM gateway signing addresses, as long as there's enough under-custody reserve supply on the ERC-20 contract.
 
 **Flags**:
-- `--check`: Show the time difference since the moment when the unwrap transaction took place on Ethereum, and the unwrapped amount got ultimately transferred to the recipient on Witnet.
+- `--trace-back`: Check the time difference since the moment when the unwrap transaction took place on Ethereum, and the unwrapped amount got ultimately transferred to the recipient on Witnet.
 
 **Options**:
 - `--from`: Filter unwrappings from the specified EVM address (required when ordering a new unwrap).
@@ -154,7 +154,7 @@ Shows the history of past unwrapping transactions. It also allows you to unwrap 
 - `--limit`: Limit number of listed records.
 - `--offset`: Skip first records before listing.
 - `--since`: Process events starting from the specified EVM block number (default: -5000).
-- `--value`: Amount of $WIT to be unwrapped between the specified addresses.
+- `--value`: Amount of $WIT to be unwrapped between specified addresses.
 - `--gasPrice`: Max. EVM gas price to pay when querying the unwrapping of the specified amount.
 
 ## 📄 Smart Contracts

@@ -32,15 +32,15 @@ const settings = {
     burns: "Include burn transactions, if any.",
     mainnets: "Only list supported EVM mainnets.",
     testnets: "Only list suppoered EVM testnets.",
-
+    "trace-back": "See if cross-chain transactions have been consolidated.",
   },
   options: {
     offset: {
-      hint: "Skip first found records (default: 0)",
+      hint: "Skip first records before listing (default: 0)",
       param: "OFFSET",
     },
     limit: {
-      hint: `Limit number of output records (default: ${DEFAULT_LIMIT}).`,
+      hint: `Limit number of listed records (default: ${DEFAULT_LIMIT}).`,
       param: "LIMIT",
     },
     since: {
@@ -172,7 +172,7 @@ async function main () {
         wrappings: {
           hint: `Show wrapping transactions into ${colors.mcyan(ethRpcNetwork.toUpperCase())}.`,
           flags: [
-            "check",
+            "trace-back",
           ],
           options: [
             "from",
@@ -188,7 +188,7 @@ async function main () {
         unwrappings: {
           hint: `Show unwrapping transactions from ${colors.mcyan(ethRpcNetwork.toUpperCase())}.`,
           flags: [
-            "check",
+            "trace-back",
           ],
           options: [
             "from",
@@ -791,7 +791,7 @@ async function transfers (flags = {}) {
 }
 
 async function unwrappings (flags = {}) {
-  let { check, provider, network, from, into, value, since, offset, limit, gasPrice, confirmations } = flags
+  let { provider, network, from, into, value, since, offset, limit, gasPrice, confirmations } = flags 
   let contract = await WrappedWIT.fetchContractFromEthersProvider(provider)
   helpers.traceHeader(network.toUpperCase(), colors.lcyan)
 
@@ -860,6 +860,8 @@ async function unwrappings (flags = {}) {
     ? events.slice(offset || 0).slice(0, limit || DEFAULT_LIMIT) // oldest first
     : events.reverse().slice(offset || 0).slice(0, limit || DEFAULT_LIMIT) // latest first
   )
+
+  if (flags["trace-back"]) {
     const witnet = await Witnet.JsonRpcProvider.fromEnv(flags?.witnet || (WrappedWIT.isNetworkMainnet(network) ? undefined : "https://rpc-testnet.witnet.io"))
     const records = await helpers.prompter(
       Promise.all(events.map(async event => {
@@ -934,7 +936,7 @@ async function unwrappings (flags = {}) {
 }
 
 async function wrappings (flags = {}) {
-  let { provider, network, from, into, value, since, offset, limit, gasPrice, confirmations, check } = flags
+  let { provider, network, from, into, value, since, offset, limit, gasPrice, confirmations } = flags
 
   let contract = await WrappedWIT.fetchContractFromEthersProvider(provider)
   const witnet = await Witnet.JsonRpcProvider.fromEnv(flags?.witnet || (WrappedWIT.isNetworkMainnet(network) ? undefined : "https://rpc-testnet.witnet.io"))
@@ -1180,6 +1182,8 @@ async function wrappings (flags = {}) {
 
   // count records
   const totalEvents = events.length
+
+  if (flags["trace-back"]) {
     const records = []
     records.push(...await helpers.prompter(
       Promise.all(events.map(async event => {
