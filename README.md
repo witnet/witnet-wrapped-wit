@@ -88,14 +88,14 @@ Launches a local ETH/RPC signing gateway to the specified `evm_network`, listeni
 Shows the address and other relevant data of the WrappedWIT contract that's available on the connected EVM network. 
 
 **Flags**:
-  - `--verbose`: Outputs extra information.
+- `--verbose`: Outputs extra information.
 
 ---
 #### `witwrap supply`
 Shows wrapped $WIT supply information on the connected EVM network. It also detects if the total reserve supply in Ethereum is outdated with respect the actual under-custody supply on Witnet, asking you whether you wish to permissionlessly contribute by notarizing (in Witnet) and pushing (in Ethereum) a fresh new **Proof-of-Reserve** report.
 
 **Flags**:
- - `--verbose`: Outputs history of Proof-of-Reserve update reports.
+- `--verbose`: Outputs history of Proof-of-Reserve update reports.
 
 **Options**:
 - `--limit`: Limit number of history records.
@@ -214,5 +214,3 @@ Learn more about Witnet, the $WIT coin and the Wit/Oracle framework for smart co
 
 ## 🧾 License
 MIT © 2025 — Maintained by the [Witnet Project](https://github.com/witnet).
-
-
