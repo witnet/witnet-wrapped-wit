@@ -11,19 +11,19 @@ async function main () {
   }
 
   const curator = (await ethers.getSigner(settings[network.name]?.curator || settings?.default.curator))
-  const Deployer = await ethers.getContractFactory("WrappedWITDeployer")
+  const Factory = await ethers.getContractFactory("Factory")
   let deployer
   if (
-    !addresses.default.WrappedWITDeployer ||
-            (await ethers.provider.getCode(addresses.default.WrappedWITDeployer)).length < 3
+    !addresses.default.Factory ||
+            (await ethers.provider.getCode(addresses.default.Factory)).length < 3
   ) {
     console.info("> Wrapped/WIT EVM curator:   ", curator.address)
-    deployer = await Deployer.connect(curator).deploy()
-    addresses.default.WrappedWITDeployer = await deployer.getAddress()
+    deployer = await Factory.connect(curator).deploy()
+    addresses.default.Factory = await deployer.getAddress()
   } else {
-    deployer = Deployer.attach(addresses.default.WrappedWITDeployer)
+    deployer = Factory.attach(addresses.default.Factory)
   }
-  console.info("> Wrapped/WIT EVM deployer:  ", `${await deployer.getAddress()} [WrappedWITDeployer]`)
+  console.info("> Wrapped/WIT EVM factory:   ", `${await deployer.getAddress()} [Factory]`)
 
   const tokenCustodianBech32 = settings[network.name].custodian
   const tokenUnwrapperBech32 = settings[network.name].unwrapper

@@ -8,7 +8,7 @@ import {Create3} from "./Create3.sol";
 
 /// @notice CREATE3 (EIP-3171) contract factory for deploying both canonical 
 /// @notice and bridged versions of the Wrapped/WIT ERC-20 token.
-contract WrappedWITDeployer is Ownable2Step {
+contract Factory is Ownable2Step {
 
     constructor() Ownable(msg.sender) {}
 

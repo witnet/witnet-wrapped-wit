@@ -1,6 +1,6 @@
 {
     "default": {
-        "WrappedWITDeployer": "0x3A47E26423860171078916dFA6C9F9aa7949b715"
+        "Factory": "0x3A47E26423860171078916dFA6C9F9aa7949b715"
     },
     "base:sepolia": {
         "WrappedWITSuperchain": "0xFabadaC5963bdE1bCcCd560EA60e9928DC5dF014"
