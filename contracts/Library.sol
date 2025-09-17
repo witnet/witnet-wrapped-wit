@@ -2,7 +2,7 @@
 
 pragma solidity >=0.8.20 <0.9.0;
 
-import "./IWrappedWIT.sol";
+import "./interfaces/IWrappedWIT.sol";
 import {IWitOracleRadonRequestModal} from "witnet-solidity-bridge/contracts/WitOracleRadonRequestFactory.sol";
 
 /// @title Witnet Request Board base data model library
