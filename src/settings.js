@@ -14,12 +14,13 @@ module.exports = {
     unwrapper: "twit19rnvq8yjrmpa6tjdahct4pd49ha5lmvxjeyfha",
   },
   "base:sepolia": {
-    contract: "WrappedWITSuperchain",
-  },
-  "celo:alfajores": {
-    contract: "WrappedWITSuperchain",
+    contract: "StandardBridgeWIT",
+    bridge: "0x",
+    remote: "0x",
   },
   "optimism:sepolia": {
-    contract: "WrappedWITSuperchain",
+    contract: "StandardBridgeWIT",
+    bridge: "0x",
+    remote: "0x",
   },
 }
