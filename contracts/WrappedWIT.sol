@@ -73,7 +73,7 @@ contract WrappedWIT
         witOracleCrossChainProofOfReserveTemplate = _witOracleRadonRequestFactory.buildRadonRequestModal(
             IWitOracleRadonRequestFactory.DataSourceRequest({
                 method: Witnet.RadonRetrievalMethods.HttpPost,
-                body: '{"jsonrpc":"2.0","method":"getBalance2","params":{"pkh":"\\1\\;\\2\\"},"id":1}',
+                body: '{"jsonrpc":"2.0","method":"getBalance2","params":{"pkh":"\\0\\;\\1\\"},"id":1}',
                 headers: _httpRequestHeaders,
                 script: // [RadonString] parseJSONMap()
                         // [RadonMap]    getMap("result")
@@ -88,7 +88,7 @@ contract WrappedWIT
         witOracleCrossChainProofOfInclusionTemplate = _witOracleRadonRequestFactory.buildRadonRequestModal(
             IWitOracleRadonRequestFactory.DataSourceRequest({
                 method: Witnet.RadonRetrievalMethods.HttpPost,
-                body: '{"jsonrpc":"2.0","method":"getValueTransfer","params":{"hash":"\\1\\","mode":"ethereal","force":true},"id":1}',
+                body: '{"jsonrpc":"2.0","method":"getValueTransfer","params":{"hash":"\\0\\","mode":"ethereal","force":true},"id":1}',
                 headers: _httpRequestHeaders,         
                 script: // [RadonString] parseJSONMap()
                         // [RadonMap]    getMap("result")
