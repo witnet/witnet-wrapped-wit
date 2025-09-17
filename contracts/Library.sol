@@ -7,15 +7,15 @@ import {IWitOracleRadonRequestModal} from "witnet-solidity-bridge/contracts/WitO
 
 /// @title Witnet Request Board base data model library
 /// @author The Witnet Foundation.
-library WrappedWITLib {  
+library Library {  
 
     using Witnet for Witnet.DataResult;
     using Witnet for Witnet.Timestamp;
     using WitnetCBOR for WitnetCBOR.CBOR;
     
     bytes32 internal constant _WRAPPED_WIT_STORAGE_SLOT =
-        /* keccak256("io.witnet.tokens.WIT") */
-        0x6116473658e87b023e7f215d122c0048f3d7a669d8df94a5565f0c95871c58f9;
+        /* keccak256("io.witnet.tokens.WIT") & ~bytes32(uint256(0xff) */
+        0x6116473658e87b023e7f215d122c0048f3d7a669d8df94a5565f0c95871c5800;
 
     uint256 internal constant _PERCENT_FACTOR = 100;
     uint24  internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_GAS_LIMIT = 220_000; 

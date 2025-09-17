@@ -17,7 +17,7 @@ import {
 import {IWitOracleConsumer} from "witnet-solidity-bridge/contracts/interfaces/IWitOracleConsumer.sol";
 import {IWitOracleQueriableConsumer} from "witnet-solidity-bridge/contracts/interfaces/IWitOracleQueriableConsumer.sol";
 
-import {IWrappedWIT, WrappedWITLib} from "./WrappedWITLib.sol";
+import {IWrappedWIT, Library} from "./Library.sol";
 
 /// @custom:security-contact info@witnet.foundation
 contract WrappedWIT
@@ -175,7 +175,7 @@ contract WrappedWIT
         if (_witOracleLastQueryId == 0) {
             return WrappingStatus.Unknown;
         
-        } else if (_witOracleLastQueryId == WrappedWITLib._WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED) {
+        } else if (_witOracleLastQueryId == Library._WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED) {
             return WrappingStatus.Done;
         
         } else {
@@ -222,7 +222,7 @@ contract WrappedWIT
     }
 
     function witOracleEstimateWrappingFee(uint256 evmGasPrice) override external view returns (uint256) {
-        return WrappedWITLib.witOracleEstimateWrappingFee(
+        return Library.witOracleEstimateWrappingFee(
             witOracle, 
             evmGasPrice
         );
@@ -301,13 +301,13 @@ contract WrappedWIT
         override public payable
         returns (uint256 _witOracleQueryId)
     {
-        _witOracleQueryId = WrappedWITLib.witOracleQueryWitnetValueTransferProofOfInclusion(
+        _witOracleQueryId = Library.witOracleQueryWitnetValueTransferProofOfInclusion(
             witOracle,
             witOracleCrossChainProofOfInclusionTemplate,
             _witnetValueTransferTransactionHash
         );
         _require(
-            _witOracleQueryId != WrappedWITLib._WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED, 
+            _witOracleQueryId != Library._WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED, 
             "already minted"
         );
     }
@@ -377,7 +377,7 @@ contract WrappedWIT
     {
         _require(reportableFrom(msg.sender), "invalid oracle");
 
-        try WrappedWITLib.processWitOracleQueryResult(
+        try Library.processWitOracleQueryResult(
             queryId, 
             queryResult
         
@@ -441,7 +441,7 @@ contract WrappedWIT
             );
 
         // Parse expected integer from the posted query's result:
-        try WrappedWITLib.parseWitOracleProofOfReserve(
+        try Library.parseWitOracleProofOfReserve(
             _witOracleProofOfReserve
         
         ) returns (
@@ -519,7 +519,7 @@ contract WrappedWIT
         );
     }
 
-    function __storage() internal pure returns (WrappedWITLib.Storage storage) {
-        return WrappedWITLib.data();
+    function __storage() internal pure returns (Library.Storage storage) {
+        return Library.data();
     }
 }
