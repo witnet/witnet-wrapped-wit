@@ -77,15 +77,19 @@ async function main () {
         process.exit(1)
       })
     }
-    console.info("> Wrapped/WIT address:   ", `${contractAddr}`)
+    console.info("> Wrapped/WIT address:  ", `${contractAddr}`)
     
   } else if (contractName === "SuperchainWIT") {
+    const tokenSalt = settings[networkName]?.salt || settings?.default.salt
+
     console.info("> Wrapped/WIT factory:  ", `${await factory.getAddress()}`)
     console.info("> Wrapped/WIT vanity:   ", tokenSalt)
+    
     let contractAddr = addresses[networkName][contractName]
     if (!contractAddr || (await ethers.provider.getCode(contractAddr)).length <= 2) {
+      contractAddr = await factory.determineAddr.staticCall(tokenSalt)
       const Token = await ethers.getContractFactory(contractName)
-      await deployer.connect(curator).deployBridged.send(
+      await factory.connect(curator).deployBridged.send(
         tokenSalt,
         Token.bytecode
       ).then(response => {

@@ -3,10 +3,13 @@
         "Factory": "0x3A47E26423860171078916dFA6C9F9aa7949b715"
     },
     "base:sepolia": {
-        "StandardBridgeWIT": "0x6d2A4f0336a414b57F0D2b01E0459CAE1d02a9a5"
+        "StandardBridgeWIT": "0x09439AEA6834bDD787D17326ef323602Cc2CDb04"
     },
     "ethereum:sepolia": {
         "Library": "0xd4FDBA92738c6825561494eeABD155B1FDb99078",
-        "WrappedWIT": "0xc0AEaB81a4AAd04985030c1e06C29DDA473d161C"
+        "WrappedWIT": "0xACCEDE56d29371000aF1478Aa733d6Cb69bc1458"
+    },
+    "optimism:sepolia": {
+        "SuperchainWIT": "0xACCEDE56d29371000aF1478Aa733d6Cb69bc1458"
     }
 }
