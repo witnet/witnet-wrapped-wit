@@ -1,7 +1,9 @@
-require("dotenv").config()
-const fs = require("fs")
-const { ethers, utils, Witnet } = require("@witnet/ethers")
-const { WrappedWIT } = require("..")
+
+import * as dotenv from "dotenv"
+dotenv.config()
+import { existsSync, writeFileSync, readFileSync } from "fs"
+import { ethers, utils, Witnet } from "@witnet/ethers"
+import { WrappedWIT } from "../index.js"
 
 const ETH_NETWORK = process.env.WRAPPED_WIT_UNWRAPPER_ETH_NETWORK
 const ETH_SKIP_BLOCKS = process.env.WRAPPED_WIT_UNWRAPPER_ETH_SKIP_BLOCKS || 1
@@ -25,8 +27,8 @@ if (!WrappedWIT.isNetworkSupported(ETH_NETWORK)) {
   process.exit(1)
 }
 
-if (!fs.existsSync(STORAGE_PATH)) {
-  fs.writeFileSync(STORAGE_PATH, "")
+if (!existsSync(STORAGE_PATH)) {
+  writeFileSync(STORAGE_PATH, "")
 }
 
 async function main () {
@@ -58,7 +60,7 @@ async function main () {
 
   let fromBlock
   try {
-    fromBlock = BigInt(fs.readFileSync(STORAGE_PATH))
+    fromBlock = BigInt(readFileSync(STORAGE_PATH))
   } catch (err) {
     console.error(err)
   }
@@ -298,7 +300,7 @@ async function main () {
       fromBlock = blockNumber
       try {
         console.info(`> EVM checkpoint at: ${blockNumber}`)
-        fs.writeFileSync(STORAGE_PATH, fromBlock.toString(), { flag: "w+" })
+        writeFileSync(STORAGE_PATH, fromBlock.toString(), { flag: "w+" })
       } catch (err) {
         console.error(`❌ Fatal: cannot write into local storage: ${err}`)
         process.exit(0)

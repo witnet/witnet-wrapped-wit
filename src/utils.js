@@ -1,14 +1,16 @@
-const merge = require("lodash.merge")
-const WSB = require("witnet-solidity-bridge")
-const { ethers, Witnet } = require("@witnet/ethers")
+import { default as merge } from "lodash.merge"
+import { default as WSB } from "witnet-solidity-bridge"
+import { ethers, Witnet } from "@witnet/ethers"
 
-const ABI = require("../artifacts/contracts/WrappedWIT.sol/WrappedWIT.json").abi
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 const addresses = require("./addresses.json")
 
-const MIN_UNWRAPPABLE_NANOWITS = 3n; // 3 $pedros
-const MIN_WRAPPABLE_NANOWITS = BigInt(10 ** 12);  // 1000.0 $WIT
+export const ABI = require("../artifacts/contracts/WrappedWIT.sol/WrappedWIT.json").abi
+export const MIN_UNWRAPPABLE_NANOWITS = 3n; // 3 $pedros
+export const MIN_WRAPPABLE_NANOWITS = BigInt(10 ** 12);  // 1000.0 $WIT
 
-module.exports = {
+export default {
   ABI,
   MIN_UNWRAPPABLE_NANOWITS,
   MIN_WRAPPABLE_NANOWITS,
@@ -26,7 +28,7 @@ module.exports = {
   isNetworkSupported,
 }
 
-async function fetchContractFromEthersProvider (ethersProvider) {
+export async function fetchContractFromEthersProvider (ethersProvider) {
   const chainId = (await ethersProvider.getNetwork()).chainId
   const network = findNetworkByChainId(chainId)
   if (!network) {
@@ -39,13 +41,13 @@ async function fetchContractFromEthersProvider (ethersProvider) {
   )
 }
 
-function findNetworkByChainId (evmChainId) {
+export function findNetworkByChainId (evmChainId) {
   const found = Object.entries(WSB.supportedNetworks()).find(([, config]) => config.network_id.toString() === evmChainId.toString())
   if (found && BigInt(getNetworkChainId(found[0])) === BigInt(evmChainId)) return found[0]
   else return undefined
 }
 
-async function findUnwrapTransactionFromWitnetProvider ({
+export async function findUnwrapTransactionFromWitnetProvider ({
   witJsonRpcProvider,
   evmNetwork,
   evmBlockNumber,
@@ -74,24 +76,24 @@ async function findUnwrapTransactionFromWitnetProvider ({
     })
 }
 
-function getNetworkAddresses (network) {
+export function getNetworkAddresses (network) {
   return merge(addresses?.default, addresses[network])
 }
 
-function getNetworkChainId (network) {
+export function getNetworkChainId (network) {
   return WSB.settings.getNetworks()[network].network_id
 }
 
-function getNetworkContractAddress (network) {
+export function getNetworkContractAddress (network) {
   const settings = getNetworkSettings(network)
   return merge(addresses?.default, addresses[network])[settings?.contract]
 }
 
-function getNetworkSettings (network) {
-  return require("./settings")[network]
+export function getNetworkSettings (network) {
+  return require("./settings.json")[network]
 }
 
-function getNetworkUnwrapTransactionDigest (network, evmBlockNumber, nonce, from, to, value) {
+export function getNetworkUnwrapTransactionDigest (network, evmBlockNumber, nonce, from, to, value) {
   const evmChainId = getNetworkChainId(network)
   return ethers.solidityPackedKeccak256(
     ["uint256", "uint256", "uint256", "address", "string", "uint256"],
@@ -99,19 +101,19 @@ function getNetworkUnwrapTransactionDigest (network, evmBlockNumber, nonce, from
   ).slice(0, 42)
 }
 
-function getSupportedNetworks () {
+export function getSupportedNetworks () {
   return Object.keys(addresses).filter(network => network !== "default")
 }
 
-function isNetworkCanonical (network) {
+export function isNetworkCanonical (network) {
   return getNetworkSettings(network)?.contract === "WrappedWIT"
 }
 
-function isNetworkMainnet (network) {
+export function isNetworkMainnet (network) {
   return !!WSB.settings.getNetworks()[network]?.mainnet
 }
 
-function isNetworkSupported (network) {
+export function isNetworkSupported (network) {
   const settings = getNetworkSettings(network)
   const address = merge(addresses?.default, addresses[network])[settings?.contract]
   return address && address !== "" && address.startsWith("0x")

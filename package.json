@@ -8,11 +8,11 @@
     "type": "git",
     "url": "https://github.com/witnet/witnet-wrapped-wit"
   },
-  "type": "commonjs",
-  "exports": "./src/index.js",
+  "type": "module",
+  "exports": "./src/index.cjs",
   "bin": {
-    "witwrap": "src/bin/cli/index.js",
-    "wrapped-wit-unwrapper": "src/bin/unwrapper.js"
+    "witwrap": "src/bin/cli/index.cjs",
+    "unwrapper": "src/bin/unwrapper.js"
   },
   "files": [
     "artifacts",
@@ -26,7 +26,7 @@
     "fmt!": "solhint --max-warnings 30 \"contracts/**/*.sol\" --fix && eslint --ext .js,.ts,.cjs . --fix --ignore-path .gitignore",
     "prepare": "npx hardhat compile --force",
     "start": "node ./src/bin/unwrapper.js",
-    "test": "node ./src/bin/cli/index.js",
+    "test": "node ./src/bin/cli/index.cjs",
     "verify": "npx hardhat verify"
   },
   "keywords": [
@@ -38,7 +38,10 @@
     "ERC-20"
   ],
   "devDependencies": {
+    "@nomicfoundation/hardhat-ignition": "^3.0.3",
+    "@nomicfoundation/hardhat-ignition-ethers": "^3.0.3",
     "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "@nomicfoundation/hardhat-verify": "^3.0.2",
     "@openzeppelin/community-contracts": "github:OpenZeppelin/openzeppelin-community-contracts#master",
     "@openzeppelin/contracts": "^5.4.0",
     "@openzeppelin/contracts-upgradeable": "^5.4.0",
@@ -47,18 +50,18 @@
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-promise": "^6.6.0",
-    "hardhat": "^2.26.3",
+    "hardhat": "^3.0.6",
     "solhint": "^5.2.0"
   },
   "dependencies": {
-    "@witnet/ethers": "^1.0.3",
-    "@witnet/sdk": "^1.0.14",
-    "cross-env": "^7.0.3",
+    "@witnet/ethers": "^1.1.0",
+    "@witnet/sdk": "^1.1.0",
+    "cross-env": "^10.0.0",
     "dotenv": "^16.6.1",
-    "ethrpc-gateway": "^2.2.8",
+    "ethrpc-gateway": "^2.2.9",
     "inquirer": "^8.2.7",
     "lodash.merge": "^4.6.2",
     "moment": "^2.30.1",
-    "witnet-solidity-bridge": "~2.1.11"
+    "witnet-solidity-bridge": "^2.2.1"
   }
 }

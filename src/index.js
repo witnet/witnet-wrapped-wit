@@ -1,3 +1,1 @@
-module.exports = {
-  WrappedWIT: require("./utils"),
-}
+export * as WrappedWIT from "./utils.js"
