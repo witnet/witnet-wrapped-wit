@@ -132,6 +132,7 @@ async function main () {
           ],
           options: [
             "limit",
+            "since",
           ],
           envars: [
             ...(WrappedWIT.isNetworkCanonical(ethRpcNetwork)
@@ -488,7 +489,7 @@ async function contract (flags = {}) {
 }
 
 async function supplies (flags = {}) {
-  let { network, provider, force, from, gasPrice, confirmations, verbose, limit } = flags
+  let { network, provider, force, from, gasPrice, confirmations, verbose, limit, since } = flags
   let contract = await WrappedWIT.fetchContractFromEthersProvider(provider)
 
   const records = []
@@ -668,24 +669,43 @@ async function supplies (flags = {}) {
     ],
   })
   if (verbose) {
-    let events = await contract.queryFilter("ReserveUpdate")
-    helpers.traceTable(
-      events.reverse().slice(0, limit || DEFAULT_LIMIT).map(event => [
-        event.blockNumber,
-        event.args[0], //Witnet.Coins.fromPedros(event.args[0]).wits.toFixed(2),
-        event.args[2].slice(2),
-        moment.unix(Number(event.args[1])),
-      ]), {
-        headlines: [
-          "EVM BLOCK",
-          `REPORTED SUPPLY (${colors.lwhite("$pedros")})`,
-          `PROOF-OF-RESERVE WITNESSING ACT ON ${colors.lwhite(`WITNET ${WrappedWIT.isNetworkMainnet(network) ? "MAINNET": "TESTNET"}`)}`,
-          "PROOF-OF-RESERVE TIMESTAMP",
-        ],
-        colors: [ , colors.myellow, colors.magenta, colors.mmagenta ],
-        humanizers: [ helpers.commas, helpers.commas ],
-      }
-    )
+    // determine current block number
+    const blockNumber = await provider.getBlockNumber()
+
+    // determine fromBlock
+    let fromBlock
+    if (since === undefined || since < 0) {
+      fromBlock = BigInt(blockNumber) + BigInt(since ?? DEFAULT_SINCE)
+    } else {
+      fromBlock = BigInt(since ?? 0n)
+    }
+
+    // fetch events since the specified block number
+    let events = await contract.queryFilter("ReserveUpdate", fromBlock)
+
+    if (events.length > 0) {
+      helpers.traceTable(
+        events.reverse().slice(0, limit || DEFAULT_LIMIT).map(event => [
+          event.blockNumber,
+          event.args[0], //Witnet.Coins.fromPedros(event.args[0]).wits.toFixed(2),
+          event.args[2].slice(2),
+          moment.unix(Number(event.args[1])),
+        ]), {
+          headlines: [
+            "EVM BLOCK",
+            `REPORTED SUPPLY (${colors.lwhite("$pedros")})`,
+            `PROOF-OF-RESERVE WITNESSING ACT ON ${colors.lwhite(`WITNET ${WrappedWIT.isNetworkMainnet(network) ? "MAINNET": "TESTNET"}`)}`,
+            "PROOF-OF-RESERVE TIMESTAMP",
+          ],
+          colors: [ , colors.myellow, colors.magenta, colors.mmagenta ],
+          humanizers: [ helpers.commas, helpers.commas ],
+        }
+      )
+      console.info(`^ Listed ${events.length} Proof-of-Reserve reports.`)
+    } else {
+      console.info(`> No Proof-of-Reserve reports after block #${helpers.colors.lwhite(helpers.commas(fromBlock))}.`)
+    }
+    
   }
   process.exit(0)
 }
