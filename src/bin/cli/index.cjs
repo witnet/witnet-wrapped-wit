@@ -10,7 +10,7 @@ const { ethers, utils, KermitClient, Witnet } = require("@witnet/ethers")
 
 const { WrappedWIT } = require("../..")
 
-const helpers = require("./helpers")
+const helpers = require("./helpers.cjs")
 const { colors } = helpers
 
 const DEFAULT_BATCH_SIZE = 32
@@ -105,25 +105,27 @@ async function main () {
   } catch (err) {
     ethRpcError = err
   }
-
+  const network = ethRpcNetwork.replaceAll(":", " ").toUpperCase()
   const router = {
     ...(WrappedWIT.isNetworkSupported(ethRpcNetwork)
       ? {
         accounts: {
           hint: `Show EVM native and Wrapped/WIT balances for all available signing accounts on ${
-            colors.mcyan(ethRpcNetwork.toUpperCase())
+            colors.mcyan(network)
           }.`,
           options: [],
           envars: [],
         },
         contract: {
-          hint: `Show Wrapped/WIT contract address on ${colors.mcyan(ethRpcNetwork.toUpperCase())}.`,
+          hint: `Show info about the Wrapped/WIT contract in ${colors.mcyan(network)}.`,
           flags: [
             "verbose",
           ],
         },
-        supply: {
-          hint: `Show wrapped $WIT supply information on ${colors.mcyan(ethRpcNetwork.toUpperCase())}.`,
+        supplies: {
+          hint: `Show $WIT supply information on both ${
+            colors.lwhite(`WITNET ${WrappedWIT.isNetworkMainnet(ethRpcNetwork) ? "MAINNET": "TESTNET"}`)
+            } and ${colors.mcyan(network)}.`,
           flags: [
             ...(WrappedWIT.isNetworkCanonical(ethRpcNetwork) ? ["force"] : []),
             "verbose",
@@ -139,7 +141,7 @@ async function main () {
           ],
         },
         transfers: {
-          hint: `Show transfers of Wrapped/WIT tokens on ${colors.mcyan(ethRpcNetwork.toUpperCase())}.`,
+          hint: `Show transfers of Wrapped/WIT tokens on ${colors.mcyan(network)}.`,
           flags: [
             "burns",
             "mints",
@@ -158,8 +160,9 @@ async function main () {
     ...(WrappedWIT.isNetworkCanonical(ethRpcNetwork)
       ? {
         wrappings: {
-          hint: `Show wrapping transactions into ${colors.mcyan(ethRpcNetwork.toUpperCase())}.`,
+          hint: `Show wrapping transactions into ${colors.mcyan(network)}.`,
           flags: [
+            "force",
             "trace-back",
           ],
           options: [
@@ -174,7 +177,7 @@ async function main () {
           envars: ["WITNET_SDK_WALLET_MASTER_KEY"],
         },
         unwrappings: {
-          hint: `Show unwrapping transactions from ${colors.mcyan(ethRpcNetwork.toUpperCase())}.`,
+          hint: `Show unwrapping transactions from ${colors.mcyan(network)}.`,
           flags: [
             "trace-back",
           ],
@@ -214,7 +217,7 @@ async function main () {
       contract,
       gateway,
       networks,
-      supply,
+      supplies,
       transfers,
       unwrappings,
       wrappings,
@@ -484,7 +487,7 @@ async function contract (flags = {}) {
   })
 }
 
-async function supply (flags = {}) {
+async function supplies (flags = {}) {
   let { network, provider, force, from, gasPrice, confirmations, verbose, limit } = flags
   let contract = await WrappedWIT.fetchContractFromEthersProvider(provider)
 
@@ -924,7 +927,7 @@ async function unwrappings (flags = {}) {
 }
 
 async function wrappings (flags = {}) {
-  let { provider, network, from, into, value, since, offset, limit, gasPrice, confirmations } = flags
+  let { provider, network, from, into, value, since, offset, limit, gasPrice, confirmations, force } = flags
 
   let contract = await WrappedWIT.fetchContractFromEthersProvider(provider)
   const witnet = await Witnet.JsonRpcProvider.fromEnv(flags?.witnet || (WrappedWIT.isNetworkMainnet(network) ? undefined : "https://rpc-testnet.witnet.io"))
@@ -966,14 +969,17 @@ async function wrappings (flags = {}) {
       throw new Error(`Insufficient funds on ${ledger.pkh}.`)
     }
 
-    const user = await prompt([{
-      message: `Transfer ${helpers.commas(value.wits.toFixed(2))} native WIT to the Wrapped/WIT's custodian address at ${witCustodianWrapper} ?`,
-      name: "continue",
-      type: "confirm",
-      default: false,
-    }])
+    let user
+    if (!force) {
+      user = await prompt([{
+        message: `Transfer ${helpers.commas(value.wits.toFixed(2))} native WIT to the Wrapped/WIT's custodian address at ${witCustodianWrapper} ?`,
+        name: "continue",
+        type: "confirm",
+        default: false,
+      }])
+    }
 
-    if (user.continue) {
+    if (force || user?.continue) {
       // create and send to Witnet a new value transfer transaction with metadata tag
       const VTTs = Witnet.ValueTransfers.from(ledger)
       const metadata = Witnet.PublicKeyHash.fromHexString(into).toBech32(witnet.network)
@@ -1044,13 +1050,13 @@ async function wrappings (flags = {}) {
         break
 
       case 1n: // Awaiting
-        user = await prompt([{
+        if (!force) user = await prompt([{
           message: "The specified VTT hash is currently being verified. Shall we retry, anyways ?",
           name: "continue",
           type: "confirm",
           default: false,
-        }])
-        proceed = user.continue
+        }]);
+        proceed = force || user.continue
         break
 
       default:
@@ -1068,13 +1074,13 @@ async function wrappings (flags = {}) {
       const fee = await contract.witOracleEstimateWrappingFee(gasPrice)
       const gas = await contract.wrap.estimateGas(`0x${vttHash}`, { value: fee, gasPrice })
       const cost = fee + gasPrice * gas
-      user = await prompt([{
+      if (!force) user = await prompt([{
         message: `Verification is expected to cost ${ethers.formatEther(cost)} ETH. Shall we proceed ?`,
         name: "continue",
         type: "confirm",
         default: true,
       }])
-      if (user.continue) {
+      if (force || user.continue) {
         // connect contract to the eth/rpc provider's default signer
         contract = contract.connect(await provider.getSigner())
 

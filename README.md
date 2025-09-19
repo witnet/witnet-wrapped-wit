@@ -91,8 +91,8 @@ Shows the address and other relevant data of the WrappedWIT contract that's avai
 - `--verbose`: Outputs extra information.
 
 ---
-#### `witwrap supply`
-Shows wrapped $WIT supply information on the connected EVM network. It also detects if the total reserve supply in Ethereum is outdated with respect the actual under-custody supply on Witnet, asking you whether you wish to permissionlessly contribute by notarizing (in Witnet) and pushing (in Ethereum) a fresh new **Proof-of-Reserve** report.
+#### `witwrap supplies`
+Shows wrapped $WIT supply information in both Witnet and the connected EVM network. It also detects if the total reserve supply in Ethereum is outdated with respect the actual under-custody supply on Witnet, asking you whether you wish to permissionlessly contribute by notarizing (in Witnet) and pushing (in Ethereum) a fresh new **Proof-of-Reserve** report.
 
 **Flags**:
 - `--verbose`: Outputs history of Proof-of-Reserve update reports.
