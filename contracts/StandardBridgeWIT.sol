@@ -8,7 +8,7 @@ import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20P
 
 import {IERC165, IOptimismMintableERC20} from "./interfaces/IOptimismMintableERC20.sol";
 
-contract StandardBridge is ERC20, ERC20Permit, IOptimismMintableERC20 {
+contract StandardBridgeWIT is ERC20, ERC20Permit, IOptimismMintableERC20 {
 
     error Unauthorized();
 
@@ -23,7 +23,7 @@ contract StandardBridge is ERC20, ERC20Permit, IOptimismMintableERC20 {
         require(
             msg.sender == __BRIDGE, 
             string(abi.encodePacked(
-                bytes(type(StandardBridge).name),
+                bytes(type(StandardBridgeWIT).name),
                 ": only the StandardBridge can mint and burn"
             ))
         ); _;

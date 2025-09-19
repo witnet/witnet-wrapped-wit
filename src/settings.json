@@ -15,12 +15,7 @@
     },
     "base:sepolia": {
         "contract": "StandardBridgeWIT",
-        "bridge": "0x",
-        "remote": "0x"
-    },
-    "optimism:sepolia": {
-        "contract": "StandardBridgeWIT",
-        "bridge": "0x",
-        "remote": "0x"
+        "bridge": "0x4200000000000000000000000000000000000010",
+        "remote": "0xc0AEaB81a4AAd04985030c1e06C29DDA473d161C"
     }
 }
