@@ -4,7 +4,7 @@ import { ethers, Witnet } from "@witnet/ethers"
 
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-const addresses = require("./addresses.json")
+const addresses = require("../addresses.json")
 
 export const ABI = require("../artifacts/contracts/WrappedWIT.sol/WrappedWIT.json").abi
 export const MIN_UNWRAPPABLE_NANOWITS = 3n; // 3 $pedros
@@ -90,7 +90,7 @@ export function getNetworkContractAddress (network) {
 }
 
 export function getNetworkSettings (network) {
-  return require("./settings.json")[network]
+  return require("../settings.json")[network]
 }
 
 export function getNetworkUnwrapTransactionDigest (network, evmBlockNumber, nonce, from, to, value) {

@@ -5,8 +5,7 @@ import { default as dotenv } from "dotenv"
 dotenv.config()
 
 export default {
-  // chainDescriptors,
-  paths: {
+    paths: {
     sources: "./contracts",
     cache: "./cache",
     artifacts: "./artifacts",

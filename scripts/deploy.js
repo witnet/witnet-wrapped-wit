@@ -3,8 +3,8 @@ import { default as framework } from "witnet-solidity-bridge"
 
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-const addresses = require("../src/addresses.json")
-const settings = require("../src/settings.json")
+const addresses = require("../addresses.json")
+const settings = require("../settings.json")
 
 async function main () {
   const connection = await network.connect()
