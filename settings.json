@@ -1,7 +1,7 @@
 {
     "default": {
         "curator": "0x06b5B7b1deaD1ade17C96fc2995Db93b82DeA970",
-        "salt": 1170033742
+        "salt": 1267226957
     },
     "ethereum:mainnet": {
         "contract": "WrappedWIT",
@@ -16,7 +16,7 @@
     "base:sepolia": {
         "contract": "StandardBridgeWIT",
         "bridge": "0x4200000000000000000000000000000000000010",
-        "remote": "0xACCEDE56d29371000aF1478Aa733d6Cb69bc1458"
+        "remote": "0xFABADA3D500B84B1AeD07b9B6d5651BA91a10beD"
     },
     "optimism:sepolia": {
         "contract": "SuperchainWIT"

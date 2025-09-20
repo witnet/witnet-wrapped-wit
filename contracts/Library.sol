@@ -23,13 +23,19 @@ library Library {
     uint16  internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_RESULT_SIZE = 256;
 
     struct Storage {
-        address evmCurator; uint32 _0; 
+        address evmCurator; uint96 _0; 
+        
         Witnet.Timestamp evmLastReserveTimestamp;
-        uint64  evmLastReserveNanowits; 
-        uint64  evmUnwraps; 
-        uint64  evmWraps;
+        uint64 evmLastReserveNanowits; 
+        uint96 evmWrappings;
+        uint32 evmWraps;
+
         Witnet.Address witCustodianUnwrapper;
+        uint64 evmUnwrappings;
+        uint32 evmUnwraps;
+        
         IWrappedWIT.WitOracleSettings witOracleQuerySettings;
+        
         string[] witOracleCrossChainRpcProviders;
         Witnet.RadonHash witOracleProofOfReserveRadonHash;
         
@@ -135,8 +141,9 @@ library Library {
         Witnet.Timestamp _valueTimestamp = Witnet.Timestamp.wrap(_metadata[4].readUint());
         _value = _metadata[5].readUint();
         
-        // Increase count of validated wrap transactions:
+        // Increase wrapping meters:
         data().evmWraps ++;
+        data().evmWrappings += uint96(_value);
         
         // Also increase the burnable supply, only if the VTT's inclusion timestamp is fresher than last PoR's timestamp:
         if (_valueTimestamp.gt(data().evmLastReserveTimestamp)) {

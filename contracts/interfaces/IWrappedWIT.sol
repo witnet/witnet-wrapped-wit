@@ -34,7 +34,9 @@ interface IWrappedWIT {
     function getWrapTransactionStatus(Witnet.TransactionHash) external view returns (WrappingStatus);
     function getWrapTransactionStatuses(Witnet.TransactionHash[] calldata) external view returns (WrappingStatus[] memory);
     function totalReserveSupply() external view returns (uint256);
+    function totalUnwrappings() external view returns (uint256);
     function totalUnwraps() external view returns (uint256);
+    function totalWrappings() external view returns (uint256);
     function totalWraps()   external view returns (uint256);
     
     function witCustodianWrapper() external view returns (string memory);

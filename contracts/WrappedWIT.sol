@@ -201,8 +201,16 @@ contract WrappedWIT
         return __storage().evmLastReserveNanowits;
     }
 
+    function totalUnwrappings() override external view returns (uint256) {
+        return __storage().evmUnwrappings;
+    }
+
     function totalUnwraps() override external view returns (uint256) {
         return __storage().evmUnwraps;
+    }
+
+    function totalWrappings() override external view returns (uint256) {
+        return __storage().evmWrappings;
     }
     
     function totalWraps() override external view returns (uint256) {
@@ -345,8 +353,9 @@ contract WrappedWIT
         // immediate burning of wrapped wit tokens:
         _burn(_msgSender(), value);
 
-        // increment unwrap id:
+        // increase unwrapping meters:
         evmUnwrapId = ++ __storage().evmUnwraps;
+        __storage().evmUnwrappings += value;
 
         // emit events
         emit Unwrapped(
