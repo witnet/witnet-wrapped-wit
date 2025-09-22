@@ -177,10 +177,10 @@ Contracts are located in the **contracts/** folder:
 Soon <sup>TM</sup>.
 ### Testnets
 | EVM Network | ERC-20 Contract | ERC-20 Address | Witnet Network |
-| :- | :- | :- | | :-: |
+| :- | :- | :- | :-: |
 | Ethereum Sepolia | `WrappedWIT` | [`0xFABADA3D500B84B1AeD07b9B6d5651BA91a10beD`](https://sepolia.etherscan.io/address/0xFABADA3D500B84B1AeD07b9B6d5651BA91a10beD#tokentxns) | Testnet 
-| Base Sepolia | `StandardBridgeWIT` | [`0x0xAbb15Ec7c50BA50661389cEb92FC9D72621E6950`](https://sepolia.basescan.org/address/0xAbb15Ec7c50BA50661389cEb92FC9D72621E6950#tokentxns) |
-| Optimism Sepolia | `SuperchainWIT` | [`0x0xFABADA3D500B84B1AeD07b9B6d5651BA91a10beD`](https://sepolia-optimism.etherscan.io/address/0xFABADA3D500B84B1AeD07b9B6d5651BA91a10beD#tokentxns) |
+| Base Sepolia | `StandardBridgeWIT` | [`0xAbb15Ec7c50BA50661389cEb92FC9D72621E6950`](https://sepolia.basescan.org/address/0xAbb15Ec7c50BA50661389cEb92FC9D72621E6950#tokentxns) |
+| Optimism Sepolia | `SuperchainWIT` | [`0xFABADA3D500B84B1AeD07b9B6d5651BA91a10beD`](https://sepolia-optimism.etherscan.io/address/0xFABADA3D500B84B1AeD07b9B6d5651BA91a10beD#tokentxns) |
 
 ## 🚀 Examples
 
