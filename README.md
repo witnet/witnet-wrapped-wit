@@ -165,8 +165,12 @@ Contracts are located in the **contracts/** folder:
 - **WrappedWIT.sol**
   > The canonical version of the ERC-20 token contract for $WIT on Ethereum. It relies on the Wit/Oracle contract framework for validating both Proof-of-Reserve reports and cross-chain wrapping and unwrapping transactions.
 
+- **StandardBridgeWIT.sol**
+  > The "bridged" version of the ERC-20 token contract compatible with compliant Superchain bridges. This version does not support wrapping nor unwrapping transactions with the Witnet network. 
+
+
 - **SuperchainWIT.sol**
-  > The "bridged" version of the ERC-20 token contract that allows wrapped $WIT tokens to be bridged out to a set of Superchain-compliant networks. This version does not support wrapping nor unwrapping transactions with the Witnet network. 
+  > The "bridged" version of the ERC-20 token contract compatible with the StandardBridge in Optimism-compliant networks. This version does not support wrapping nor unwrapping transactions with the Witnet network. 
 
 ## 🧪 Supported Networks
 ### Mainnets
@@ -174,9 +178,9 @@ Soon <sup>TM</sup>.
 ### Testnets
 | EVM Network | ERC-20 Contract | ERC-20 Address | Witnet Network |
 | :- | :- | :- | | :-: |
-| Ethereum Sepolia | `WrappedWIT` | [`0xFabadaC5963bdE1bCcCd560EA60e9928DC5dF014`](https://sepolia.etherscan.io/address/0xFabadaC5963bdE1bCcCd560EA60e9928DC5dF014#tokentxns) | Testnet 
-| Base Sepolia | `SuperchainWIT` | [`0xTBD`](https://sepolia.basescan.org/address/0xFabadaC5963bdE1bCcCd560EA60e9928DC5dF014#tokentxns) |
-| Optimism Sepolia | `SuperchainWIT` | [`0xTBD`](https://sepolia-optimism.etherscan.io/address/0xfabadac5963bde1bcccd560ea60e9928dc5df014#tokentxns) |
+| Ethereum Sepolia | `WrappedWIT` | [`0xFABADA3D500B84B1AeD07b9B6d5651BA91a10beD`](https://sepolia.etherscan.io/address/0xFABADA3D500B84B1AeD07b9B6d5651BA91a10beD#tokentxns) | Testnet 
+| Base Sepolia | `StandardBridgeWIT` | [`0x0xAbb15Ec7c50BA50661389cEb92FC9D72621E6950`](https://sepolia.basescan.org/address/0xAbb15Ec7c50BA50661389cEb92FC9D72621E6950#tokentxns) |
+| Optimism Sepolia | `SuperchainWIT` | [`0x0xFABADA3D500B84B1AeD07b9B6d5651BA91a10beD`](https://sepolia-optimism.etherscan.io/address/0xFABADA3D500B84B1AeD07b9B6d5651BA91a10beD#tokentxns) |
 
 ## 🚀 Examples
 
