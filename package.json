@@ -1,6 +1,6 @@
 {
   "name": "@witnet/wrapped-wit",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "author": "Witnet Foundation <info@witnet.foundation>",
   "description": "Wrapped/WIT Solidity contracts and CLI tools",
   "license": "MIT",
@@ -15,8 +15,10 @@
     "unwrapper": "src/bin/unwrapper.js"
   },
   "files": [
+    "addresses.json",
     "artifacts",
     "contracts",
+    "settings.json",
     "src"
   ],
   "scripts": {
