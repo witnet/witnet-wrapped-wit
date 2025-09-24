@@ -1,8 +1,8 @@
 import { network } from "hardhat"
 import { default as framework } from "witnet-solidity-bridge"
 
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
+import { createRequire } from "module"
+const require = createRequire(import.meta.url)
 const addresses = require("../addresses.json")
 const settings = require("../settings.json")
 
@@ -15,19 +15,19 @@ async function main () {
   }
   console.info("> Wrapped/WIT network:  ", connection.networkName)
   console.info("> Wrapped/WIT contract: ", `${contractName}`)
-  
+
   const { ethers, networkName } = connection
   const curator = await ethers.getSigner(settings[networkName]?.curator || settings?.default.curator)
   console.info("> Wrapped/WIT curator:  ", curator.address)
-  
+
   const Factory = await ethers.getContractFactory("Factory", curator)
   let factory
   if (
     !addresses.default.Factory ||
       (await ethers.provider.getCode(addresses.default.Factory)).length < 3
-  ) {  
+  ) {
     factory = await Factory.connect(curator).deploy()
-    addresses.default.Factory = await deployer.getAddress()
+    addresses.default.Factory = await factory.getAddress()
   } else {
     factory = Factory.attach(addresses.default.Factory).connect(curator)
   }
@@ -41,7 +41,7 @@ async function main () {
     console.info(`> Wit/Oracle Radon Request factory: ${witOracleRadonRequestFactoryAddr}`)
     console.info("> Wrapped/WIT custodian address:", tokenCustodianBech32)
     console.info("> Wrapped/WIT unwrapper address:", tokenUnwrapperBech32)
-    
+
     // deploy external library, if it exists
     const Library = await ethers.getContractFactory("Library")
     if (!addresses[networkName]?.Library) {
@@ -49,19 +49,19 @@ async function main () {
       addresses[networkName].Library = await library.getAddress()
     }
     console.info("> Wrapped/WIT library:  ", `${addresses[networkName].Library}`)
-  
+
     const authority = settings[networkName]?.authority || settings.default?.authority || curator.address
     console.info("> Wrapped/WIT authority:", authority)
     console.info("> Wrapped/WIT factory:  ", `${await factory.getAddress()}`)
     console.info("> Wrapped/WIT vanity:   ", tokenSalt)
-    
+
     let contractAddr = addresses[networkName][contractName]
     if (!contractAddr || (await ethers.provider.getCode(contractAddr)).length <= 2) {
       contractAddr = await factory.determineAddr.staticCall(tokenSalt)
-      const Token = await ethers.getContractFactory(contractName, { 
-        libraries: { 
-          Library: addresses[networkName].Library
-        } 
+      const Token = await ethers.getContractFactory(contractName, {
+        libraries: {
+          Library: addresses[networkName].Library,
+        },
       })
       await factory.connect(curator).deployCanonical.send(
         tokenSalt,
@@ -78,13 +78,12 @@ async function main () {
       })
     }
     console.info("> Wrapped/WIT address:  ", `${contractAddr}`)
-    
   } else if (contractName === "SuperchainWIT") {
     const tokenSalt = settings[networkName]?.salt || settings?.default.salt
 
     console.info("> Wrapped/WIT factory:  ", `${await factory.getAddress()}`)
     console.info("> Wrapped/WIT vanity:   ", tokenSalt)
-    
+
     let contractAddr = addresses[networkName][contractName]
     if (!contractAddr || (await ethers.provider.getCode(contractAddr)).length <= 2) {
       contractAddr = await factory.determineAddr.staticCall(tokenSalt)
@@ -97,7 +96,6 @@ async function main () {
       })
     }
     console.info("> Wrapped/WIT address:  ", `${contractAddr}`)
-  
   } else if (contractName === "StandardBridgeWIT") {
     const bridgeAddr = settings[networkName].bridge
     const remoteAddr = settings[networkName].remote

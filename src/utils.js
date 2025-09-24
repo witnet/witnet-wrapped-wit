@@ -2,13 +2,13 @@ import { default as merge } from "lodash.merge"
 import { default as WSB } from "witnet-solidity-bridge"
 import { ethers, Witnet } from "@witnet/ethers"
 
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
+import { createRequire } from "module"
+const require = createRequire(import.meta.url)
 const addresses = require("../addresses.json")
 
 export const ABI = require("../artifacts/contracts/WrappedWIT.sol/WrappedWIT.json").abi
-export const MIN_UNWRAPPABLE_NANOWITS = 3n; // 3 $pedros
-export const MIN_WRAPPABLE_NANOWITS = BigInt(10 ** 12);  // 1000.0 $WIT
+export const MIN_UNWRAPPABLE_NANOWITS = 3n // 3 $pedros
+export const MIN_WRAPPABLE_NANOWITS = BigInt(10 ** 12) // 1000.0 $WIT
 
 export default {
   ABI,
@@ -54,8 +54,8 @@ export async function findUnwrapTransactionFromWitnetProvider ({
   nonce,
   from,
   to,
-  value, 
-  signer
+  value,
+  signer,
 }) {
   const digest = getNetworkUnwrapTransactionDigest(evmNetwork, evmBlockNumber, nonce, from, to, value)
   const pkh = Witnet.PublicKeyHash.fromHexString(digest).toBech32(witJsonRpcProvider.network)

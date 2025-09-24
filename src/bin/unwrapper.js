@@ -1,9 +1,8 @@
-
 import * as dotenv from "dotenv"
-dotenv.config()
 import { existsSync, writeFileSync, readFileSync } from "fs"
 import { ethers, utils, Witnet } from "@witnet/ethers"
 import { WrappedWIT } from "../index.js"
+dotenv.config()
 
 const ETH_NETWORK = process.env.WRAPPED_WIT_UNWRAPPER_ETH_NETWORK
 const ETH_SKIP_BLOCKS = process.env.WRAPPED_WIT_UNWRAPPER_ETH_SKIP_BLOCKS || 1
@@ -162,11 +161,18 @@ async function main () {
         witJsonRpcProvider: wallet.provider,
         evmNetwork: ETH_NETWORK,
         evmBlockNumber: blockNumber,
-        nonce, from, to, value,
+        nonce,
+        from,
+        to,
+        value,
         signer: signer.pkh,
       })
       if (witUnwrapTx) {
-        console.info(`> Unwrapped  { block: ${blockNumber}, nonce: ${nonce}, from: ${from}, into: ${to}, value: ${ethers.formatUnits(value, 9)} WIT }`)
+        console.info(`> Unwrapped  { block: ${
+          blockNumber
+        }, nonce: ${nonce}, from: ${from}, into: ${to}, value: ${
+          ethers.formatUnits(value, 9)
+        } WIT }`)
       } else {
         const digest = WrappedWIT.getNetworkUnwrapTransactionDigest(ETH_NETWORK, blockNumber, nonce, from, to, value)
         inbound.push({
@@ -199,7 +205,10 @@ async function main () {
           witJsonRpcProvider: wallet.provider,
           evmNetwork: ETH_NETWORK,
           evmBlockNumber: blockNumber,
-          nonce, from, to, value,
+          nonce,
+          from,
+          to,
+          value,
           signer: signer.pkh,
         })
         if (witUnwrapTx) {
@@ -209,7 +218,7 @@ async function main () {
         } else {
           let vtt
           try {
-            // estimate vtt's fees ... 
+            // estimate vtt's fees ...
             vtt = await VTTs.signTransaction({
               recipients: [
                 [to, Witnet.Coins.fromPedros(value - 1n)], // `value` always greater than MIN_UNWRAPPABLE_NANOWITS

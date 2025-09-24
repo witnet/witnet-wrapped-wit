@@ -61,7 +61,7 @@ contract WrappedWIT
             IWitOracleRadonRequestFactory _witOracleRadonRequestFactory,
             string memory _witCustodianBech32
         )
-        ERC20("Wrapped WIT", "WIT")
+        ERC20("Witnet", "WIT")
         ERC20Permit("Wrapped/WIT")
     {
         // Settle immutable parameters --------------------------------------------------------------------------------

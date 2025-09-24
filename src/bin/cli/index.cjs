@@ -97,7 +97,10 @@ async function main () {
   if (process.argv.indexOf("--port") >= 0) {
     ethRpcPort = parseInt(process.argv[process.argv.indexOf("--port") + 1])
   }
-  let ethRpcProvider, ethRpcChainId, ethRpcNetwork, ethRpcError
+  let ethRpcProvider
+  let ethRpcChainId
+  let ethRpcNetwork = ""
+  let ethRpcError
   try {
     ethRpcProvider = new ethers.JsonRpcProvider(`http://127.0.0.1:${ethRpcPort}`)
     ethRpcChainId = (await ethRpcProvider.getNetwork()).chainId
@@ -124,8 +127,8 @@ async function main () {
         },
         supplies: {
           hint: `Show $WIT supply information on both ${
-            colors.lwhite(`WITNET ${WrappedWIT.isNetworkMainnet(ethRpcNetwork) ? "MAINNET": "TESTNET"}`)
-            } and ${colors.mcyan(network)}.`,
+            colors.lwhite(`WITNET ${WrappedWIT.isNetworkMainnet(ethRpcNetwork) ? "MAINNET" : "TESTNET"}`)
+          } and ${colors.mcyan(network)}.`,
           flags: [
             ...(WrappedWIT.isNetworkCanonical(ethRpcNetwork) ? ["force"] : []),
             "verbose",
@@ -466,7 +469,7 @@ async function contract (flags = {}) {
   const records = []
 
   records.push(["ERC-20 contract address", colors.lblue(await contract.getAddress())])
-  
+
   if (verbose && isCanonical) {
     records.push(["Wit/Oracle contract address", colors.mblue(await contract.witOracle())])
     records.push(["Wit/Oracle PoI's CCDR template", colors.mblue(await contract.witOracleCrossChainProofOfInclusionTemplate())])
@@ -477,8 +480,23 @@ async function contract (flags = {}) {
     records.push(["Wit/Custodian sender address", colors.mmagenta(await contract.witCustodianUnwrapper())])
   }
   if (isCanonical) {
-    records.push(["Verified wrap transactions", colors.white(helpers.commas(await contract.totalWraps()))])
-    records.push(["Requested unwrap transactions", colors.white(helpers.commas(await contract.totalUnwraps()))])
+    const [unwrappings, unwraps, wrappings, wraps] = await Promise.all([
+      contract.totalUnwrappings(),
+      contract.totalUnwraps(),
+      contract.totalWrappings(),
+      contract.totalWraps(),
+    ])
+    if (verbose) {
+      records.push(["Historically wrapped funds", `${
+        colors.yellow(helpers.commas(Witnet.Coins.fromPedros(wrappings).wits.toFixed(2)) + " WIT")
+      }`])
+      records.push(["Total unwrapped funds", `${
+        colors.yellow(helpers.commas(Witnet.Coins.fromPedros(unwrappings).wits.toFixed(2)) + " WIT")
+      }`])
+    } else {
+      records.push(["Verified wrapping transactions", `${colors.white(helpers.commas(wraps))}`])
+      records.push(["Processed unwrap transactions", `${colors.white(helpers.commas(unwraps))}`])
+    }
   }
   helpers.traceTable(records, {
     headlines: [
@@ -497,7 +515,9 @@ async function supplies (flags = {}) {
   const totalSupply = Witnet.Coins.fromPedros(await contract.totalSupply())
   if (WrappedWIT.isNetworkCanonical(network)) {
     // connect to Witnet
-    const witnet = await Witnet.JsonRpcProvider.fromEnv(flags?.witnet || (WrappedWIT.isNetworkMainnet(network) ? undefined : "https://rpc-testnet.witnet.io"))
+    const witnet = await Witnet.JsonRpcProvider.fromEnv(
+      flags?.witnet || (WrappedWIT.isNetworkMainnet(network) ? undefined : "https://rpc-testnet.witnet.io")
+    )
     const witnetSupply = await witnet.supplyInfo()
 
     const totalReserveSupply = Witnet.Coins.fromPedros(await contract.totalReserveSupply())
@@ -681,31 +701,30 @@ async function supplies (flags = {}) {
     }
 
     // fetch events since the specified block number
-    let events = await contract.queryFilter("ReserveUpdate", fromBlock)
+    const events = await contract.queryFilter("ReserveUpdate", fromBlock)
 
     if (events.length > 0) {
       helpers.traceTable(
         events.reverse().slice(0, limit || DEFAULT_LIMIT).map(event => [
           event.blockNumber,
-          event.args[0], //Witnet.Coins.fromPedros(event.args[0]).wits.toFixed(2),
+          event.args[0], // Witnet.Coins.fromPedros(event.args[0]).wits.toFixed(2),
           event.args[2].slice(2),
           moment.unix(Number(event.args[1])),
         ]), {
           headlines: [
             "EVM BLOCK",
             `REPORTED SUPPLY (${colors.lwhite("$pedros")})`,
-            `PROOF-OF-RESERVE WITNESSING ACT ON ${colors.lwhite(`WITNET ${WrappedWIT.isNetworkMainnet(network) ? "MAINNET": "TESTNET"}`)}`,
+            `PROOF-OF-RESERVE WITNESSING ACT ON ${colors.lwhite(`WITNET ${WrappedWIT.isNetworkMainnet(network) ? "MAINNET" : "TESTNET"}`)}`,
             "PROOF-OF-RESERVE TIMESTAMP",
           ],
-          colors: [ , colors.myellow, colors.magenta, colors.mmagenta ],
-          humanizers: [ helpers.commas, helpers.commas ],
+          colors: [, colors.myellow, colors.magenta, colors.mmagenta],
+          humanizers: [helpers.commas, helpers.commas],
         }
       )
       console.info(`^ Listed ${events.length} Proof-of-Reserve reports.`)
     } else {
       console.info(`> No Proof-of-Reserve reports after block #${helpers.colors.lwhite(helpers.commas(fromBlock))}.`)
     }
-    
   }
   process.exit(0)
 }
@@ -752,23 +771,23 @@ async function transfers (flags = {}) {
   } else {
     fromBlock = BigInt(since ?? 0n)
   }
-  
+
   // fetch events since specified block
   let events = await contract.queryFilter("Transfer", fromBlock)
 
   // filter out mints and burns, if not otherwise specified
-  if (!flags?.mints) events = events.filter(event => event.args[0] !== "0x0000000000000000000000000000000000000000");
-  if (!flags?.burns) events = events.filter(event => event.args[1] !== "0x0000000000000000000000000000000000000000");
+  if (!flags?.mints) events = events.filter(event => event.args[0] !== "0x0000000000000000000000000000000000000000")
+  if (!flags?.burns) events = events.filter(event => event.args[1] !== "0x0000000000000000000000000000000000000000")
 
   // apply --from filter
-  if (from) events = events.filter(event => event.args[0].toLowerCase().indexOf(from.toLowerCase()) > -1);
+  if (from) events = events.filter(event => event.args[0].toLowerCase().indexOf(from.toLowerCase()) > -1)
 
   // apply --into filter, only if no --value is specified
-  if (into && !value) events = events.filter(event => event.args[1].toLowerCase().indexOf(into.toLowerCase()) > -1);
+  if (into && !value) events = events.filter(event => event.args[1].toLowerCase().indexOf(into.toLowerCase()) > -1)
 
   // count records
   const totalTransfers = events.length
-  
+
   // apply limit/offset filter
   events = (!value && (!flags?.since || BigInt(flags.since) < 0n)
     ? events.slice(flags?.offset || 0).slice(0, flags?.limit || DEFAULT_LIMIT) // oldest first
@@ -802,7 +821,7 @@ async function transfers (flags = {}) {
 }
 
 async function unwrappings (flags = {}) {
-  let { provider, network, from, into, value, since, offset, limit, gasPrice, confirmations } = flags 
+  let { provider, network, from, into, value, since, offset, limit, gasPrice, confirmations } = flags
   let contract = await WrappedWIT.fetchContractFromEthersProvider(provider)
   helpers.traceHeader(network.toUpperCase(), colors.lcyan)
 
@@ -858,14 +877,14 @@ async function unwrappings (flags = {}) {
   let events = await contract.queryFilter("Unwrapped", fromBlock)
 
   // apply --from filter
-  if (from) events = events.filter(event => event.args[0].toLowerCase().indexOf(from.toLowerCase()) > -1);
+  if (from) events = events.filter(event => event.args[0].toLowerCase().indexOf(from.toLowerCase()) > -1)
 
   // apply --into filter, only if no --value is specified
-  if (into && !value) events = events.filter(event => event.args[1].toLowerCase().indexOf(into.toLowerCase()) > -1);
+  if (into && !value) events = events.filter(event => event.args[1].toLowerCase().indexOf(into.toLowerCase()) > -1)
 
   // count events
   const totalEvents = events.length
-  
+
   // apply limit/offset filter
   events = (!value && (!flags?.since || BigInt(flags.since) < 0n)
     ? events.slice(offset || 0).slice(0, limit || DEFAULT_LIMIT) // oldest first
@@ -873,7 +892,9 @@ async function unwrappings (flags = {}) {
   )
 
   if (flags["trace-back"]) {
-    const witnet = await Witnet.JsonRpcProvider.fromEnv(flags?.witnet || (WrappedWIT.isNetworkMainnet(network) ? undefined : "https://rpc-testnet.witnet.io"))
+    const witnet = await Witnet.JsonRpcProvider.fromEnv(
+      flags?.witnet || (WrappedWIT.isNetworkMainnet(network) ? undefined : "https://rpc-testnet.witnet.io")
+    )
     const records = await helpers.prompter(
       Promise.all(events.map(async event => {
         const ethBlock = await provider.getBlock(event.blockNumber)
@@ -883,7 +904,7 @@ async function unwrappings (flags = {}) {
           evmBlockNumber: event.blockNumber,
           nonce: event.args[3],
           from: event.args[0],
-          to: event.args[1], 
+          to: event.args[1],
           value: event.args[2],
         })
         return [
@@ -950,7 +971,9 @@ async function wrappings (flags = {}) {
   let { provider, network, from, into, value, since, offset, limit, gasPrice, confirmations, force } = flags
 
   let contract = await WrappedWIT.fetchContractFromEthersProvider(provider)
-  const witnet = await Witnet.JsonRpcProvider.fromEnv(flags?.witnet || (WrappedWIT.isNetworkMainnet(network) ? undefined : "https://rpc-testnet.witnet.io"))
+  const witnet = await Witnet.JsonRpcProvider.fromEnv(
+    flags?.witnet || (WrappedWIT.isNetworkMainnet(network) ? undefined : "https://rpc-testnet.witnet.io")
+  )
 
   helpers.traceHeader(network.toUpperCase(), colors.lcyan)
 
@@ -1070,12 +1093,14 @@ async function wrappings (flags = {}) {
         break
 
       case 1n: // Awaiting
-        if (!force) user = await prompt([{
-          message: "The specified VTT hash is currently being verified. Shall we retry, anyways ?",
-          name: "continue",
-          type: "confirm",
-          default: false,
-        }]);
+        if (!force) {
+          user = await prompt([{
+            message: "The specified VTT hash is currently being verified. Shall we retry, anyways ?",
+            name: "continue",
+            type: "confirm",
+            default: false,
+          }])
+        }
         proceed = force || user.continue
         break
 
@@ -1094,12 +1119,14 @@ async function wrappings (flags = {}) {
       const fee = await contract.witOracleEstimateWrappingFee(gasPrice)
       const gas = await contract.wrap.estimateGas(`0x${vttHash}`, { value: fee, gasPrice })
       const cost = fee + gasPrice * gas
-      if (!force) user = await prompt([{
-        message: `Verification is expected to cost ${ethers.formatEther(cost)} ETH. Shall we proceed ?`,
-        name: "continue",
-        type: "confirm",
-        default: true,
-      }])
+      if (!force) {
+        user = await prompt([{
+          message: `Verification is expected to cost ${ethers.formatEther(cost)} ETH. Shall we proceed ?`,
+          name: "continue",
+          type: "confirm",
+          default: true,
+        }])
+      }
       if (force || user.continue) {
         // connect contract to the eth/rpc provider's default signer
         contract = contract.connect(await provider.getSigner())
@@ -1147,10 +1174,10 @@ async function wrappings (flags = {}) {
   let events = await contract.queryFilter("Wrapped", fromBlock)
 
   // apply --from filter
-  if (from) events = events.filter(event => event.args[0].toLowerCase().indexOf(from.toLowerCase()) > -1);
+  if (from) events = events.filter(event => event.args[0].toLowerCase().indexOf(from.toLowerCase()) > -1)
 
   // apply --into filter
-  if (into) events = events.filter(event => event.args[1].toLowerCase().indexOf(into.toLowerCase()) > -1);
+  if (into) events = events.filter(event => event.args[1].toLowerCase().indexOf(into.toLowerCase()) > -1)
 
   // apply limit/offset filter
   events = (!value && (!flags?.since || BigInt(flags.since) < 0n)
@@ -1166,11 +1193,11 @@ async function wrappings (flags = {}) {
       Promise.all([...helpers.chunks(hashes, DEFAULT_BATCH_SIZE)]
         .map(vttHashes => contract.getWrapTransactionStatuses(vttHashes.map(hash => `0x${hash}`)))
       )
-      .then(statuses => statuses.flat())
+        .then(statuses => statuses.flat())
     )
     hashes = hashes.filter((_, index) => statuses[index] !== 3n)
     statuses = statuses.filter(status => status !== 3n)
-    for (let index = 0; index < hashes.length; index ++) {
+    for (let index = 0; index < hashes.length; index++) {
       const vtt = await witnet.getValueTransfer(hashes[index], "ethereal")
       if (vtt?.metadata && (!from || from.toLowerCase() === vtt.sender) && (!into || into.toLowerCase() === `0x${vtt.metadata}`)) {
         let caption
@@ -1267,7 +1294,7 @@ async function wrappings (flags = {}) {
     }
   }
   if (events.length > 0) {
-    console.info(`^ Liste ${events.length} out of ${totalEvents} wrappings${
+    console.info(`^ List ${events.length} out of ${totalEvents} wrappings${
       fromBlock ? ` since block #${helpers.commas(fromBlock)}.` : ` up until current block #${helpers.colors.lwhite(helpers.commas(blockNumber))}.`
     }`)
   } else {

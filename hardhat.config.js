@@ -5,7 +5,7 @@ import { default as dotenv } from "dotenv"
 dotenv.config()
 
 export default {
-    paths: {
+  paths: {
     sources: "./contracts",
     cache: "./cache",
     artifacts: "./artifacts",
@@ -55,5 +55,5 @@ export default {
       apiUrl: "https://sourcify.dev/server",
       browserUrl: "https://repo.sourcify.dev",
     },
-  }
+  },
 }

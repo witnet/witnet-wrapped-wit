@@ -3,7 +3,6 @@
 pragma solidity >=0.8.20 <0.9.0;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {ERC20Bridgeable} from "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Bridgeable.sol";
 import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 
 import {IERC165, IOptimismMintableERC20} from "./interfaces/IOptimismMintableERC20.sol";
@@ -30,7 +29,7 @@ contract StandardBridgeWIT is ERC20, ERC20Permit, IOptimismMintableERC20 {
     }
     
     constructor(address _bridge, address _remoteToken)
-        ERC20("Wrapped WIT", "WIT") ERC20Permit("Wrapped/WIT")
+        ERC20("Witnet", "WIT") ERC20Permit("Wrapped/WIT")
     {
         __BRIDGE = _bridge;
         __REMOTE_TOKEN = _remoteToken;
