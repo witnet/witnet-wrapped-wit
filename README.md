@@ -21,21 +21,16 @@ This repository contains:
 
 ## 📦 Installation
 
-### CLI binary
-Install the `witwrap` binary:
+- Install the `@witnet/wrapped-wit` package into your project:
 ```bash
-$ npm install -g @witnet/wrapped-wit
+  $ npm install --save @witnet/wrapped-wit
 ```
 
-### NPM module
-- Add the `@witnet/wrapped-wit` module to your Github project:
-```bash
-  $ npm install --save-dev @witnet/wrapped-wit
-```
-- Import from Javascript:
+- Import from CommonJS:
 ```javascript
   const { WrappedWIT } = require("@witnet/wrapped-wit")
  ```
+
 - Import from Typescript:
 ```typescript
   import { WrappedWIT } from "@witnet/wrapped-wit"

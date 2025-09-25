@@ -1,6 +1,6 @@
 {
   "name": "@witnet/wrapped-wit",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "author": "Witnet Foundation <info@witnet.foundation>",
   "description": "Wrapped/WIT Solidity contracts and CLI tools",
   "license": "MIT",
@@ -56,8 +56,8 @@
     "solhint": "^5.2.0"
   },
   "dependencies": {
-    "@witnet/ethers": "^1.1.0",
-    "@witnet/sdk": "^1.1.0",
+    "@witnet/ethers": "^1.1.1",
+    "@witnet/sdk": "^1.1.1",
     "cross-env": "^10.0.0",
     "dotenv": "^16.6.1",
     "ethrpc-gateway": "^2.2.9",

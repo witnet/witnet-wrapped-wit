@@ -1,6 +1,8 @@
+import { Witnet } from "@witnet/sdk"
+import { ethers } from "@witnet/ethers"
+
 import { default as merge } from "lodash.merge"
 import { default as WSB } from "witnet-solidity-bridge"
-import { ethers, Witnet } from "@witnet/ethers"
 
 import { createRequire } from "module"
 const require = createRequire(import.meta.url)

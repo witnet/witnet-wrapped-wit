@@ -1,6 +1,8 @@
+import { ethers, utils } from "@witnet/ethers"
+import { Witnet } from "@witnet/sdk"
+
 import * as dotenv from "dotenv"
 import { existsSync, writeFileSync, readFileSync } from "fs"
-import { ethers, utils, Witnet } from "@witnet/ethers"
 import { WrappedWIT } from "../index.js"
 dotenv.config()
 
