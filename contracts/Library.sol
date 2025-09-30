@@ -17,7 +17,6 @@ library Library {
         /* keccak256("io.witnet.tokens.WIT") & ~bytes32(uint256(0xff) */
         0x6116473658e87b023e7f215d122c0048f3d7a669d8df94a5565f0c95871c5800;
 
-    uint256 internal constant _PERCENT_FACTOR = 100;
     uint24  internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_GAS_LIMIT = 220_000; 
     uint256 internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED = type(uint256).max;
     uint16  internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_RESULT_SIZE = 256;
@@ -201,11 +200,11 @@ library Library {
 
     function witOracleEstimateWrappingFee(WitOracle witOracle, uint256 evmGasPrice) internal view returns (uint256) {
         return (
-            (_PERCENT_FACTOR + data().witOracleQuerySettings.baseFeeOverhead100)
+            (100 + data().witOracleQuerySettings.extraFeePercentage)
                 * witOracle.estimateBaseFeeWithCallback(
                     evmGasPrice, 
                     _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_GAS_LIMIT
                 )
-        ) / _PERCENT_FACTOR;
+        ) / 100;
     }
 }

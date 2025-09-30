@@ -16,7 +16,7 @@ interface IWrappedWIT {
 
     struct WitOracleSettings {
         uint16 minWitnesses;
-        uint16 baseFeeOverhead100;
+        uint16 extraFeePercentage;
         uint64 unitaryRewardNanowits;
         uint24 responseCallbackGasLimit;
     }
