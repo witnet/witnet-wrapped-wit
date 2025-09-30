@@ -102,6 +102,10 @@ contract WrappedWIT
                 filters: new Witnet.RadonFilter[](0)
             })
         );
+
+        // Note: this contract is to be proxified from the Factory following a Create-3 pattern,
+        //       implying that even though iniatilizers are not disabled in the constructor
+        //       no body but the Factory will ultimately intialize the Create-3 proxy.
     }
 
     function initialize(
