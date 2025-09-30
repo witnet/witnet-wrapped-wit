@@ -11,7 +11,7 @@ contract SuperchainWIT is ERC20, ERC20Bridgeable, ERC20Permit {
     address internal constant SUPERCHAIN_TOKEN_BRIDGE = 0x4200000000000000000000000000000000000028;
     error Unauthorized();
 
-    constructor() ERC20("Witnet", "WIT") ERC20Permit("Wrapped/WIT") {}
+    constructor() ERC20("Witnet", "WIT") ERC20Permit("Witnet") {}
 
     /**
      * @dev Checks if the caller is the predeployed SuperchainTokenBridge. Reverts otherwise.

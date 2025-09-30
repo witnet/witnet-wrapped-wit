@@ -62,7 +62,7 @@ contract WrappedWIT
             string memory _witCustodianBech32
         )
         ERC20("Witnet", "WIT")
-        ERC20Permit("Wrapped/WIT")
+        ERC20Permit("Witnet")
     {
         // Settle immutable parameters --------------------------------------------------------------------------------
         __witCustodianWrapper = Witnet.fromBech32(_witCustodianBech32, block.chainid == _CANONICAL_CHAIN_ID);
