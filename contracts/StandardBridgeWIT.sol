@@ -31,6 +31,7 @@ contract StandardBridgeWIT is ERC20, ERC20Permit, IOptimismMintableERC20 {
     constructor(address _bridge, address _remoteToken)
         ERC20("Witnet", "WIT") ERC20Permit("Wrapped/WIT")
     {
+        require(_bridge != address(0), "invalid bridge address");
         __BRIDGE = _bridge;
         __REMOTE_TOKEN = _remoteToken;
     }
