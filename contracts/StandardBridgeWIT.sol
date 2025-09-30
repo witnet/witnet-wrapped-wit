@@ -10,7 +10,7 @@ import {IERC165, IOptimismMintableERC20} from "./interfaces/IOptimismMintableERC
 contract StandardBridgeWIT is ERC20, ERC20Permit, IOptimismMintableERC20 {
 
     /// @notice Address of the StandardBridge on this network.
-    address internal __BRIDGE;
+    address internal immutable __BRIDGE;
 
     /// @notice Address of the corresponding token on the remote chain.
     address internal immutable __REMOTE_TOKEN;
