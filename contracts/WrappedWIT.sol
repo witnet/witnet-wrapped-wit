@@ -268,7 +268,7 @@ contract WrappedWIT
         external
         onlyCurator
     {
-        assert(_witRpcProviders.length > 0);
+        _require(_witRpcProviders.length > 0, "empty rpc providers");
         __storage().witOracleCrossChainRpcProviders = _witRpcProviders;
         __formallyVerifyRadonAssets(
             _witRpcProviders, 
@@ -280,11 +280,12 @@ contract WrappedWIT
         external
         onlyCurator
     {
-        assert(
+        _require(
             _settings.minWitnesses >= _WIT_ORACLE_REPORTS_MIN_MIN_WITNESSES
                 && _settings.baseFeeOverhead100 <= _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_BASE_FEE_OVERHEAD
                 && _settings.unitaryRewardNanowits >= _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_UNITARY_REWARD
-                && _settings.responseCallbackGasLimit >= _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_RESPONSE_CALLBACK_GAS
+                && _settings.responseCallbackGasLimit >= _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_RESPONSE_CALLBACK_GAS,
+            "invalid settings"
         );
         __storage().witOracleQuerySettings = _settings;
     }
@@ -300,7 +301,7 @@ contract WrappedWIT
         external 
         onlyCurator
     {
-        assert(_newCurator != address(0));
+        _require(_newCurator != address(0), "zero curator");
         emit CuratorshipTransferred(__storage().evmCurator, _newCurator);
         __storage().evmCurator = _newCurator;
     }
