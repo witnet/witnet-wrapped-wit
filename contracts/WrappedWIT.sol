@@ -68,6 +68,8 @@ contract WrappedWIT
         __witCustodianWrapper = Witnet.fromBech32(_witCustodianBech32, block.chainid == _CANONICAL_CHAIN_ID);
         __witCustodianWrapperBech32Hash = keccak256(bytes(_witCustodianBech32));
 
+        witOracle = WitOracle(IWitOracleAppliance(address(_witOracleRadonRequestFactory)).witOracle());
+
         string[2][] memory _httpRequestHeaders = new string[2][](1);
         _httpRequestHeaders[0] = [ "Content-Type", "application/json;charset=UTF-8" ];
         witOracleCrossChainProofOfReserveTemplate = _witOracleRadonRequestFactory.buildRadonRequestModal(
@@ -100,8 +102,6 @@ contract WrappedWIT
                 filters: new Witnet.RadonFilter[](0)
             })
         );
-
-        witOracle = WitOracle(IWitOracleAppliance(address(_witOracleRadonRequestFactory)).witOracle());
     }
 
     function initialize(
