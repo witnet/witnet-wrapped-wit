@@ -1,8 +1,9 @@
 {
     "default": {
-        "bridge": "0x4200000000000000000000000000000000000010",
+        "address": "0x30F942d8bcD4fC8DF123C3aF0358A87FbD5466DA",
+        "bridge":  "0x4200000000000000000000000000000000000010",
         "curator": "0x2eBC52C9cA769fBF1FA68153Ac055D25e25fd1dd",
-        "salt": 0
+        "salt": 17758219
     },
     "ethereum:mainnet": {
         "contract": "WitnetERC20",
@@ -15,13 +16,11 @@
         "unwrapper": "twit19rnvq8yjrmpa6tjdahct4pd49ha5lmvxjeyfha"
     },
     "base:sepolia": {
-        "contract": "WitnetL2ERC20",
-        "remote": ""
+        "contract": "WitnetL2ERC20"
     },
     "optimism:sepolia": {
         "bridge": "0x4200000000000000000000000000000000000028",
         "contract": "WitnetL2ERC20",
-        "remote": "",
         "superchained": true
     }
 }

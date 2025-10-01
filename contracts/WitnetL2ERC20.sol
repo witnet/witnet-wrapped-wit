@@ -45,10 +45,7 @@ contract WitnetL2ERC20
     constructor()
         ERC20("Witnet", "WIT") 
         ERC20Permit("Witnet")
-    {
-        // Prevent rogue init on the implementation
-        _disableInitializers();
-    }
+    {}
 
     function initialize(address _curator, address _remoteToken)
         external 
