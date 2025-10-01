@@ -41,7 +41,7 @@ interface IWitnetMintableERC20 {
 
     function minUnwrappableNanowits() external view returns (uint256);
 
-    function paused() external view returns (bool superchain, bool witnetBurns, bool witnetMints);
+    function paused() external view returns (bool bridge, bool witnetBurns, bool witnetMints);
     
     function totalReserveNanowits() external view returns (uint256);
     function totalUnwrappings() external view returns (uint256);

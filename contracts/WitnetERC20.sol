@@ -386,8 +386,8 @@ contract WitnetERC20
         returns (uint256 _witOracleQueryId)
     {
         // Fee sanity checks are perfomed by the underlying WitOracle contract, so providing
-        // a `msg.value` smaller than by `estimateWitOraclewitOracleEstimateWrappingFee(tx.gasprice)`,
-        // or 10x greater than, would make this transaction revert.
+        // a `msg.value` smaller than by `witOracleEstimateWrappingFee(tx.gasprice)`,
+        // or 10x greater than, would make this transaction to revert.
 
         _witOracleQueryId = WitnetERC20Lib.witOracleQueryWitnetValueTransferProofOfInclusion(
             witOracle,

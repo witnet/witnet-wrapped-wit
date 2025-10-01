@@ -24,6 +24,7 @@ contract WitnetL2ERC20
 
     address public curator;
     address public override bridge;
+    address public override remoteToken;
     bool public superchained;
 
     modifier onlyStandardBridge {
@@ -49,15 +50,21 @@ contract WitnetL2ERC20
         _disableInitializers();
     }
 
-    function initialize(address _curator)
+    function initialize(address _curator, address _remoteToken)
         external 
         initializer
     {
-        // Initialize curatorship:
+        require(_curator != address(0), "zero curator");
+        require(_remoteToken != address(0), "zero token");
+        
+        // Initialize curator:
         curator = _curator;
-        emit CuratorshipTransferred(msg.sender, tx.origin);
+        emit CuratorshipTransferred(address(0), tx.origin);
 
-        // Settle the default StandardBridge until the `cruator` eventually determines otherwise:
+        // Settle remote token address in stone:
+        remoteToken = _remoteToken;
+
+        // Settle the default StandardBridge until the cruator eventually determines otherwise:
         bridge = 0x4200000000000000000000000000000000000010;
         superchained = false;
     }
@@ -105,10 +112,9 @@ contract WitnetL2ERC20
 
     /**
      * @dev Checks if the caller is the predeployed SuperchainTokenBridge. Reverts otherwise.
-     *
-     * IMPORTANT: The predeployed SuperchainTokenBridge is only available on chains in the Superchain.
      */
     function _checkTokenBridge(address caller) internal view override {
+        // Only allow the configured Superchain bridge when `superchained == true`
         if (!superchained || caller != bridge) revert Unauthorized();
     }
 
@@ -165,11 +171,4 @@ contract WitnetL2ERC20
         _mint(_to, _amount);
         emit Mint(_to, _amount);
     }
-
-    function remoteToken() override external view returns (address) {
-        // Note: This contract is expected to be deployed in exactly the 
-        //       same address as the canonical Witnet token in Ethereum.
-        return address(this);
-    }
-
 }

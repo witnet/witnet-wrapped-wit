@@ -111,12 +111,10 @@ library WitnetERC20Lib {
             _witOracleQueryResult.dataType == Witnet.RadonDataTypes.Array, 
             "invalid query result"
         );
-            
-        // Avoid double-spending by marking the Witnet value transfer hash as already parsed and processed:
-        data().witOracleWrappingTransactionLastQueryId[_witValueTransferTransactionHash] = _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED;
 
         // Try to parse Witnet Value Transfer metadata being reported:
         WitnetCBOR.CBOR[] memory _metadata = _witOracleQueryResult.fetchCborArray();
+        require(_metadata.length >= 6, "invalid query result shape");
         /**
          * [
          *   0 -> finalized: uint8,
@@ -150,6 +148,9 @@ library WitnetERC20Lib {
         if (_valueTimestamp.gt(data().evmLastReserveTimestamp)) {
             data().evmLastReserveNanowits += _value;
         }
+
+        // Mark as processed only after all validations succeeded
+        data().witOracleWrappingTransactionLastQueryId[_witValueTransferTransactionHash] = _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED;
     }
 
     function witOracleQueryWitnetValueTransferProofOfInclusion(
