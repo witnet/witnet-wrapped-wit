@@ -118,9 +118,6 @@ contract WitnetERC20
                 filters: new Witnet.RadonFilter[](0)
             })
         );
-
-        // prevent rogue init on the implementation
-        _disableInitializers();
     }
 
     function initialize(
@@ -133,9 +130,6 @@ contract WitnetERC20
         // Initialize curatorship:
         __storage().curator = _curator;
         emit CuratorshipTransferred(address(0), _curator);
-
-        // Settle Wit/ Unwrapper address and formally verify parameterized Radon assets:
-        __settleWitCustodianUnwrapper(_witCustodianUnwrapperBech32);
         
         // Initialize default parameters:
         __storage().bridge = _SUPERCHAIN_TOKEN_BRIDGE;
@@ -152,6 +146,9 @@ contract WitnetERC20
                 : "https://rpc-testnet.witnet.io"
         );
         __storage().witOracleCrossChainRpcProviders = _witOracleRpcProviders;
+
+        // Settle Wit/ Unwrapper address and formally verify parameterized Radon assets:
+        __settleWitCustodianUnwrapper(_witCustodianUnwrapperBech32);
     }
 
  

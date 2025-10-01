@@ -64,7 +64,7 @@ async function main () {
         tokenSalt,
         Token.bytecode,
         witOracleRadonRequestFactoryAddr,
-        curator,
+        curator.address,
         tokenCustodianBech32,
         tokenUnwrapperBech32,
       ).then(response => {
@@ -95,7 +95,7 @@ async function main () {
       await factory.connect(curator).deployBridged.send(
         tokenSalt,
         Token.bytecode,
-        curator,
+        curator.address,
         remoteToken
       ).then(response => {
         console.info("> Wrapped/WIT deploy tx:", response.hash)
