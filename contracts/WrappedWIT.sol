@@ -6,6 +6,7 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {ERC20Bridgeable} from "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Bridgeable.sol";
 import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 import "witnet-solidity-bridge/contracts/WitOracle.sol";
 
@@ -28,7 +29,8 @@ contract WrappedWIT
         Initializable,
         IWitOracleConsumer,
         IWitOracleQueriableConsumer,
-        IWrappedWIT
+        IWrappedWIT,
+        ReentrancyGuard
 {
     using Witnet for Witnet.Address;
     using Witnet for Witnet.RadonHash;
@@ -363,6 +365,7 @@ contract WrappedWIT
 
     function wrap(Witnet.TransactionHash _witnetValueTransferTransactionHash)
         override public payable
+        nonReentrant
         whenWitnetMintsNotPaused
         returns (uint256 _witOracleQueryId)
     {
@@ -439,8 +442,9 @@ contract WrappedWIT
     function reportWitOracleQueryResult(
             uint256 queryId,
             bytes calldata queryResult
-        ) 
+        )
         override external 
+        nonReentrant
     {
         _require(reportableFrom(msg.sender), "invalid oracle");
 
