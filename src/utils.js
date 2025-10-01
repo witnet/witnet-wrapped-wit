@@ -9,8 +9,8 @@ const require = createRequire(import.meta.url)
 const addresses = require("../addresses.json")
 
 export const ABI = require("../artifacts/contracts/WrappedWIT.sol/WrappedWIT.json").abi
-export const MIN_UNWRAPPABLE_NANOWITS = 3n // 3 $pedros
-export const MIN_WRAPPABLE_NANOWITS = BigInt(10 ** 12) // 1000.0 $WIT
+export const MIN_UNWRAPPABLE_NANOWITS = BigInt(10 ** 9) // 1.0 $WIT
+export const MIN_WRAPPABLE_NANOWITS = BigInt(10 ** 12)  // 1000.0 $WIT
 
 export default {
   ABI,

@@ -35,7 +35,7 @@ contract WrappedWIT
 
     uint256 internal constant _CANONICAL_CHAIN_ID = 1; // Ethereum Mainnet
     uint8   internal constant _DECIMALS = 9;
-    uint256 internal constant _MIN_UNWRAPPABLE_NANOWITS = 3; // 3 $nanowits
+    uint256 internal constant _MIN_UNWRAPPABLE_NANOWITS = 1_000_000_000; // 1.0 $WIT
     address internal constant _SUPERCHAIN_TOKEN_BRIDGE = 0x4200000000000000000000000000000000000028; // Superchain default bridge
     
     uint16 internal constant _WIT_ORACLE_REPORTS_MIN_MIN_WITNESSES = 3;
