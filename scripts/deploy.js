@@ -78,7 +78,8 @@ async function main () {
       })
     }
     console.info("> Wrapped/WIT address:  ", `${contractAddr}`)
-  } else if (contractName === "SuperchainWIT") {
+  
+  } else if (contractName === "WitnetL2ERC20") {
     const tokenSalt = settings[networkName]?.salt || settings?.default.salt
 
     console.info("> Wrapped/WIT factory:  ", `${await factory.getAddress()}`)
@@ -96,14 +97,9 @@ async function main () {
       })
     }
     console.info("> Wrapped/WIT address:  ", `${contractAddr}`)
-  } else if (contractName === "StandardBridgeWIT") {
-    const bridgeAddr = settings[networkName].bridge
-    const remoteAddr = settings[networkName].remote
-    console.info("> Wrapped/WIT bridge:   ", bridgeAddr)
-    console.info("> Wrapped/WIT remote:   ", remoteAddr)
-    const Token = await ethers.getContractFactory(contractName)
-    const token = await Token.deploy(bridgeAddr, remoteAddr)
-    console.info("> Wrapped/WIT address:  ", await token.getAddress())
+  
+  } else {
+    console.error(`> Unsupported contract ${contractName}.`)
   }
 }
 
