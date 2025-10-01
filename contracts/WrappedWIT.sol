@@ -121,7 +121,7 @@ contract WrappedWIT
 
         // Note: This contract is to be proxified from the Factory following a Create-3 pattern,
         //       implying that even though iniatilizers are not disabled in the constructor
-        //       no body but the Factory will ultimately intialize the Create-3 proxy.
+        //       nobody but the Factory will ultimately intialize the instance being created here.
     }
 
     function initialize(
@@ -304,17 +304,25 @@ contract WrappedWIT
     /// --- Wrapped/WIT authoritative methods -------------------------------------------------------------------------
 
     function crosschainPause(
-            bool _bridge,
+            bool _bridging,
             bool _witnetBurns,
             bool _witnetMints
         )
         external
         onlyCurator
     {
-        __storage().pausedBridge = _bridge;
+        __storage().pausedBridge = _bridging;
         __storage().pausedWitnetBurns = _witnetBurns;
         __storage().pausedWitnetMints = _witnetMints;
-        emit PauseFlags(msg.sender, _bridge, _witnetBurns, _witnetMints);
+        emit PauseFlags(msg.sender, _bridging, _witnetBurns, _witnetMints);
+    }
+
+    function settleBridge(address _newBridge)
+        external
+        onlyCurator
+    {
+        emit SettledBridge(msg.sender, __storage().bridge, _newBridge);
+        __storage().bridge = _newBridge;
     }
 
     function settleWitOracleCrossChainRpcProviders(string[] memory _witRpcProviders)

@@ -8,8 +8,9 @@ interface IWrappedWIT {
 
     event CuratorshipTransferred(address indexed evmPrevCurator, address indexed evmNewCurator);
     event NewCustodianUnwrapper(address curator, string witCustodianUnwrapper);
-    event PauseFlags(address curator, bool superchain, bool witnetBurns, bool witnetMints);
+    event PauseFlags(address curator, bool bridging, bool witnetBurns, bool witnetMints);
     event ReserveUpdate(uint256 value, Witnet.Timestamp timestamp, Witnet.TransactionHash indexed witDrTxHash);
+    event SettledBridge(address curator, address from, address into);
     event Wrapped(string indexed witSender, address indexed evmRecipient, uint256 value, Witnet.TransactionHash witVttHash);
     event Unwrapped(address indexed evmSender, string indexed witRecipient, uint256 value, uint256 nonce);
 
@@ -59,11 +60,10 @@ interface IWrappedWIT {
     /// --- Authoritative methods -----------------------------------------------------------------------------------------
     
     function crosschainPause(bool superchain, bool witnetBurns, bool witnetMints) external;
-    
+    function settleBridge(address) external;
+    function settleWitCustodianUnwrapper(string calldata) external;
     function settleWitOracleCrossChainRpcProviders(string[] memory) external;
     function settleWitOracleSettings(WitOracleSettings calldata) external;
-    function settleWitCustodianUnwrapper(string calldata) external;
-    
     function transferCuratorship(address) external;
 
     /// ====================================================================================================================
