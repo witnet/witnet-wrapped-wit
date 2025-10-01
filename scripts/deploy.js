@@ -97,6 +97,21 @@ async function main () {
       })
     }
     console.info("> Wrapped/WIT address:  ", `${contractAddr}`)
+    const tokenBridge = settings[network]?.bridge || settings?.default.bridge
+    if (tokenBridge) {
+      let contract = await WrappedWIT.fetchContractFromEthersProviders(ethers.provider)
+      contract = connect.connect(await provider.getSigner(curator))
+      const superchained = settings[network]?.superchained 
+      const promise = (
+        superchained
+          ? contract.connect(curator).settleSuperchainBridge.send(tokenBridge)
+          : contract.connect(curator).settleStandardBridge.send(tokenBridge)
+      )
+      await promise.then(receipt => {
+        console.info(`> Settling ${superchained ? "SuperchainBridge" : "StandardBridge"} tx:`, receipt.hash)
+      });
+    }
+    console.info("> Wrapped/WIT bridge:   ", `${await factory.getAddress()} ${superchained ? "(superchained)" : ""}`)
   
   } else {
     console.error(`> Unsupported contract ${contractName}.`)
