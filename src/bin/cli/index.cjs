@@ -28,9 +28,9 @@ const settings = {
     burns: "Include burn transactions, if any.",
     mainnets: "Only list supported EVM mainnets.",
     pause: "Pause crosschain activity (requires curatorship).",
+    resume: "Resume crosschain activity (requires curatorship)",
     testnets: "Only list suppoered EVM testnets.",
     "trace-back": "See if cross-chain transactions have been consolidated.",
-    unpause: "Unpause crosschain activity (requires curatorship)",
     verbose: "Outputs detailed information.",
     version: "Print the CLI name and version.",
   },
@@ -1001,7 +1001,7 @@ async function unwrappings (flags = {}) {
 }
 
 async function wrappings (flags = {}) {
-  let { provider, network, from, into, value, since, offset, limit, gasPrice, confirmations, force, pause, unpause } = flags
+  let { provider, network, from, into, value, since, offset, limit, gasPrice, confirmations, force, pause, resume } = flags
 
   let contract = await WrappedWIT.fetchContractFromEthersProvider(provider)
   const witnet = await Witnet.JsonRpcProvider.fromEnv(
@@ -1037,7 +1037,7 @@ async function wrappings (flags = {}) {
   }
 
   // pause / unpause witnet mints ...
-  if ((pause && !unpause) || (!pause && unpause) ) {
+  if ((pause ^ resume) ) {
     const [ pausedBridge, pausedWitnetBurns ] = await contract.paused()
     contract = contract.connect(await provider.getSigner())
     let promise
