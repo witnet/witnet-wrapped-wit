@@ -525,7 +525,7 @@ async function supplies (flags = {}) {
     )
     const witnetSupply = await witnet.supplyInfo()
 
-    const totalReserveSupply = Witnet.Coins.fromPedros(await contract.totalReserveSupply())
+    const totalReserveSupply = Witnet.Coins.fromPedros(await contract.totalReserveNanowits())
     records.push([
       "Currently tradeable token supply",
       totalReserveSupply.pedros <= totalSupply.pedros

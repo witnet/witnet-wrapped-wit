@@ -238,7 +238,7 @@ contract WrappedWIT
         );
     }
 
-    function totalReserveSupply() override external view returns (uint256) {
+    function totalReserveNanowits() override external view returns (uint256) {
         return __storage().evmLastReserveNanowits;
     }
 

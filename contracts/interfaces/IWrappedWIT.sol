@@ -39,7 +39,7 @@ interface IWrappedWIT {
 
     function paused() external view returns (bool superchain, bool witnetBurns, bool witnetMints);
     
-    function totalReserveSupply() external view returns (uint256);
+    function totalReserveNanowits() external view returns (uint256);
     function totalUnwrappings() external view returns (uint256);
     function totalUnwraps() external view returns (uint256);
     function totalWrappings() external view returns (uint256);
