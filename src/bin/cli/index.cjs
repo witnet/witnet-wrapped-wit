@@ -27,8 +27,10 @@ const settings = {
     mints: "Include mint transactions, if any.",
     burns: "Include burn transactions, if any.",
     mainnets: "Only list supported EVM mainnets.",
+    pause: "Pause crosschain activity (requires curatorship).",
     testnets: "Only list suppoered EVM testnets.",
     "trace-back": "See if cross-chain transactions have been consolidated.",
+    unpause: "Unpause crosschain activity (requires curatorship)",
     verbose: "Outputs detailed information.",
     version: "Print the CLI name and version.",
   },
@@ -93,16 +95,19 @@ const settings = {
 main()
 
 async function main () {
-  let ethRpcPort = 8545
+  let ethRpcPort = 8545, ethSigner
   if (process.argv.indexOf("--port") >= 0) {
     ethRpcPort = parseInt(process.argv[process.argv.indexOf("--port") + 1])
+  }
+  if (process.argv.indexOf("--signer") >= 0) {
+    ethSigner = process.argv[process.argv.indexOf("--signer") + 1]
   }
   let ethRpcProvider
   let ethRpcChainId
   let ethRpcNetwork = ""
   let ethRpcError
   try {
-    ethRpcProvider = new ethers.JsonRpcProvider(`http://127.0.0.1:${ethRpcPort}`)
+    ethRpcProvider = new ethers.JsonRpcProvider(`http://127.0.0.1:${ethRpcPort}`, ethSigner)
     ethRpcChainId = (await ethRpcProvider.getNetwork()).chainId
     ethRpcNetwork = utils.getEvmNetworkByChainId(ethRpcChainId)
   } catch (err) {
@@ -821,7 +826,7 @@ async function transfers (flags = {}) {
 }
 
 async function unwrappings (flags = {}) {
-  let { provider, network, from, into, value, since, offset, limit, gasPrice, confirmations } = flags
+  let { provider, network, from, into, value, since, offset, limit, gasPrice, confirmations, pause, unpause} = flags
   let contract = await WrappedWIT.fetchContractFromEthersProvider(provider)
   helpers.traceHeader(network.toUpperCase(), colors.lcyan)
 
@@ -833,6 +838,34 @@ async function unwrappings (flags = {}) {
     } catch {
       throw new Error("--into must specify some valid <WIT_ADDRESS>.")
     }
+  }
+
+  // pause / unpause witnet mints ...
+  if ((pause && !unpause) || (!pause && unpause) ) {
+    const [ pausedBridge,, pausedWitnetMints ] = await contract.paused()
+    contract = contract.connect(await provider.getSigner())
+    let promise
+    if (pause) {
+      console.info(colors.lwhite(`> Pausing unwraps ...`))
+      promise = contract.crosschainPause(pausedBridge, true, pausedWitnetMints)
+    } else {
+      console.info(colors.lwhite(`> Unpausing unwraps ...`))
+      promise = contract.crosschainPause(pausedBridge, false, pausedWitnetMints)
+    }
+    console.info(`  - EVM signer:     ${(await provider.getSigner()).address}`)    
+
+    await promise
+      .then(async (tx) => {
+        console.info(`  - EVM tx hash:    ${tx.hash}`)
+        return await helpers.prompter(tx.wait(confirmations || 1))
+      })
+      .then(receipt => {
+        console.info(`  - EVM tx cost:    ${ethers.formatEther(receipt.gasPrice * receipt.gasUsed)} ETH`)
+        console.info(`  - Gas price:      ${helpers.commas(receipt.gasPrice)}`)
+        console.info(`  - Gas used:       ${helpers.commas(receipt.gasUsed)}`)
+        console.info(`  - Block number:   ${helpers.commas(receipt.blockNumber)}`)
+        return receipt
+      });
   }
 
   if (value) {
@@ -968,7 +1001,7 @@ async function unwrappings (flags = {}) {
 }
 
 async function wrappings (flags = {}) {
-  let { provider, network, from, into, value, since, offset, limit, gasPrice, confirmations, force } = flags
+  let { provider, network, from, into, value, since, offset, limit, gasPrice, confirmations, force, pause, unpause } = flags
 
   let contract = await WrappedWIT.fetchContractFromEthersProvider(provider)
   const witnet = await Witnet.JsonRpcProvider.fromEnv(
@@ -1001,6 +1034,34 @@ async function wrappings (flags = {}) {
     if (!ledger) {
       throw new Error("--from <WIT_ADDRESS> not found in self-custody wallet.")
     }
+  }
+
+  // pause / unpause witnet mints ...
+  if ((pause && !unpause) || (!pause && unpause) ) {
+    const [ pausedBridge, pausedWitnetBurns ] = await contract.paused()
+    contract = contract.connect(await provider.getSigner())
+    let promise
+    if (pause) {
+      console.info(colors.lwhite(`> Pausing wraps ...`))
+      promise = contract.crosschainPause(pausedBridge, pausedWitnetBurns, true)
+    } else {
+      console.info(colors.lwhite(`> Unpausing wraps ...`))
+      promise = contract.crosschainPause(pausedBridge, pausedWitnetBurns, false)
+    }
+    console.info(`  - EVM signer:     ${(await provider.getSigner()).address}`)    
+
+    await promise
+      .then(async (tx) => {
+        console.info(`  - EVM tx hash:    ${tx.hash}`)
+        return await helpers.prompter(tx.wait(confirmations || 1))
+      })
+      .then(receipt => {
+        console.info(`  - EVM tx cost:    ${ethers.formatEther(receipt.gasPrice * receipt.gasUsed)} ETH`)
+        console.info(`  - Gas price:      ${helpers.commas(receipt.gasPrice)}`)
+        console.info(`  - Gas used:       ${helpers.commas(receipt.gasUsed)}`)
+        console.info(`  - Block number:   ${helpers.commas(receipt.blockNumber)}`)
+        return receipt
+      });
   }
 
   // read Wit/ custodian address from token contract

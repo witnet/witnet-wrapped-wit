@@ -22,16 +22,19 @@ library Library {
     uint16  internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_RESULT_SIZE = 256;
 
     struct Storage {
-        address curator; uint96 _0;
+        address bridge; bool pausedBridge; uint88 _0;
+        address curator; uint96 _1;
         
         Witnet.Timestamp evmLastReserveTimestamp;
         uint64 evmLastReserveNanowits; 
         uint96 evmWrappings;
-        uint32 evmWraps;
+        uint24 evmWraps;
+        bool   pausedWitnetMints;
 
         Witnet.Address witCustodianUnwrapper;
         uint64 evmUnwrappings;
-        uint32 evmUnwraps;
+        uint24 evmUnwraps;
+        bool   pausedWitnetBurns;
         
         IWrappedWIT.WitOracleSettings witOracleQuerySettings;
         

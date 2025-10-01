@@ -36,7 +36,7 @@ contract WrappedWIT
     uint256 internal constant _CANONICAL_CHAIN_ID = 1; // Ethereum Mainnet
     uint8   internal constant _DECIMALS = 9;
     uint256 internal constant _MIN_UNWRAPPABLE_NANOWITS = 3; // 3 $nanowits
-    address internal constant _SUPERCHAIN_TOKEN_BRIDGE = 0x4200000000000000000000000000000000000028; // Superchain bridge
+    address internal constant _SUPERCHAIN_TOKEN_BRIDGE = 0x4200000000000000000000000000000000000028; // Superchain default bridge
     
     uint16 internal constant _WIT_ORACLE_REPORTS_MIN_MIN_WITNESSES = 3;
     uint16 internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_EXTRA_FEE_PERCENTAGE = 50;
@@ -51,9 +51,23 @@ contract WrappedWIT
     bytes32 internal immutable __witCustodianWrapperBech32Hash;
 
     modifier onlyCurator {
-        require(
+        _require(
             _msgSender() == __storage().curator, 
-            Unauthorized()
+            "unauthorized"
+        ); _;
+    }
+
+    modifier whenWitnetBurnsNotPaused {
+        _require(
+            !__storage().pausedWitnetBurns,
+            "paused burns"
+        ); _;
+    }
+
+    modifier whenWitnetMintsNotPaused {
+        _require(
+            !__storage().pausedWitnetMints,
+            "paused mints"
         ); _;
     }
 
@@ -103,7 +117,7 @@ contract WrappedWIT
             })
         );
 
-        // Note: this contract is to be proxified from the Factory following a Create-3 pattern,
+        // Note: This contract is to be proxified from the Factory following a Create-3 pattern,
         //       implying that even though iniatilizers are not disabled in the constructor
         //       no body but the Factory will ultimately intialize the Create-3 proxy.
     }
@@ -115,11 +129,15 @@ contract WrappedWIT
         external 
         initializer
     {
-        // Initialize authority --------
+        // Initialize curatorship:
         __storage().curator = _curator;
         emit CuratorshipTransferred(address(0), _curator);
+
+        // Settle Wit/ Unwrapper address and formally verify parameterized Radon assets:
+        __settleWitCustodianUnwrapper(_witCustodianUnwrapperBech32);
         
-        // Initialize authoritative parameters -------------------------------------------------------------
+        // Initialize default parameters:
+        __storage().bridge = _SUPERCHAIN_TOKEN_BRIDGE;
         __storage().witOracleQuerySettings = WitOracleSettings({
             minWitnesses: block.chainid == _CANONICAL_CHAIN_ID ? 12 : _WIT_ORACLE_REPORTS_MIN_MIN_WITNESSES,
             extraFeePercentage: 5, // 5 %
@@ -133,9 +151,6 @@ contract WrappedWIT
                 : "https://rpc-testnet.witnet.io"
         );
         __storage().witOracleCrossChainRpcProviders = _witOracleRpcProviders;
-
-        // Settle Wit/ Unwrapper address and formally verify parameterized Radon assets:
-        __settleWitCustodianUnwrapper(_witCustodianUnwrapperBech32);
     }
 
  
@@ -150,16 +165,27 @@ contract WrappedWIT
     /// ===============================================================================================================
     /// --- ERC20Bridgeable -------------------------------------------------------------------------------------------
 
-    function _checkTokenBridge(address caller) override internal pure {
-        if (caller != _SUPERCHAIN_TOKEN_BRIDGE) revert Unauthorized();
+    function _checkTokenBridge(address caller) override internal view {
+        _require(
+            caller == __storage().bridge,
+            "unauthorized bridge"
+        );
+        _require(
+            !__storage().pausedBridge,
+            "paused bridge"
+        );
     }
 
 
     /// ===============================================================================================================
     /// --- Wrapped/WIT read-only methods -----------------------------------------------------------------------------
     
-    function evmCurator() override external view returns (address) {
-        return __storage().evmCurator;
+    function bridge() override external view returns (address) {
+        return __storage().bridge;
+    }
+
+    function curator() override external view returns (address) {
+        return __storage().curator;
     }
 
     function getWrapTransactionLastQueryId(Witnet.TransactionHash _witnetValueTransferTransactionHash)
@@ -199,6 +225,17 @@ contract WrappedWIT
         for (uint256 _ix = 0; _ix < _hashes.length; ++ _ix) {
             _statuses[_ix] = getWrapTransactionStatus(_hashes[_ix]);
         }
+    }
+
+    function paused()
+        override external view
+        returns (bool, bool, bool)
+    {
+        return (
+            __storage().pausedBridge,
+            __storage().pausedWitnetBurns,
+            __storage().pausedWitnetMints
+        );
     }
 
     function totalReserveSupply() override external view returns (uint256) {
@@ -264,6 +301,20 @@ contract WrappedWIT
     /// ===============================================================================================================
     /// --- Wrapped/WIT authoritative methods -------------------------------------------------------------------------
 
+    function crosschainPause(
+            bool _bridge,
+            bool _witnetBurns,
+            bool _witnetMints
+        )
+        external
+        onlyCurator
+    {
+        __storage().pausedBridge = _bridge;
+        __storage().pausedWitnetBurns = _witnetBurns;
+        __storage().pausedWitnetMints = _witnetMints;
+        emit PauseFlags(msg.sender, _bridge, _witnetBurns, _witnetMints);
+    }
+
     function settleWitOracleCrossChainRpcProviders(string[] memory _witRpcProviders)
         external
         onlyCurator
@@ -312,6 +363,7 @@ contract WrappedWIT
 
     function wrap(Witnet.TransactionHash _witnetValueTransferTransactionHash)
         override public payable
+        whenWitnetMintsNotPaused
         returns (uint256 _witOracleQueryId)
     {
         _witOracleQueryId = Library.witOracleQueryWitnetValueTransferProofOfInclusion(
@@ -327,6 +379,7 @@ contract WrappedWIT
 
     function unwrap(uint64 value, string calldata witRecipientBech32)
         override external
+        whenWitnetBurnsNotPaused
         returns (uint256 evmUnwrapId)
     {
         _require(
@@ -525,7 +578,7 @@ contract WrappedWIT
             keccak256(bytes(_witCustodianUnwrapperBech32)) != __witCustodianWrapperBech32Hash,
             "unacceptable unwrapper"
         );
-        emit NewCustodianUnwrapper(_witCustodianUnwrapperBech32);
+        emit NewCustodianUnwrapper(msg.sender, _witCustodianUnwrapperBech32);
         __storage().witCustodianUnwrapper = Witnet.fromBech32(_witCustodianUnwrapperBech32, block.chainid == _CANONICAL_CHAIN_ID);
         __formallyVerifyRadonAssets(
             __storage().witOracleCrossChainRpcProviders,

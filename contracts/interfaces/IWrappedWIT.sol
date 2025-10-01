@@ -6,10 +6,9 @@ import "witnet-solidity-bridge/contracts/WitOracle.sol";
 
 interface IWrappedWIT {
 
-    error Unauthorized();
-
     event CuratorshipTransferred(address indexed evmPrevCurator, address indexed evmNewCurator);
-    event NewCustodianUnwrapper(string witCustodianUnwrapper);
+    event NewCustodianUnwrapper(address curator, string witCustodianUnwrapper);
+    event PauseFlags(address curator, bool superchain, bool witnetBurns, bool witnetMints);
     event ReserveUpdate(uint256 value, Witnet.Timestamp timestamp, Witnet.TransactionHash witDrtHash);
     event Wrapped(string witSender, address evmRecipient, uint256 value, Witnet.TransactionHash witVttHash);
     event Unwrapped(address evmSender, string witRecipient, uint256 value, uint256 nonce);
@@ -28,10 +27,18 @@ interface IWrappedWIT {
         Done
     }
 
+    // ====================================================================================================================
+    /// --- Read-only methods ---------------------------------------------------------------------------------------------
+    
+    function bridge() external view returns (address);
     function curator() external view returns (address);
+    
     function getWrapTransactionLastQueryId(Witnet.TransactionHash) external view returns (uint256);
     function getWrapTransactionStatus(Witnet.TransactionHash) external view returns (WrappingStatus);
     function getWrapTransactionStatuses(Witnet.TransactionHash[] calldata) external view returns (WrappingStatus[] memory);
+
+    function paused() external view returns (bool superchain, bool witnetBurns, bool witnetMints);
+    
     function totalReserveSupply() external view returns (uint256);
     function totalUnwrappings() external view returns (uint256);
     function totalUnwraps() external view returns (uint256);
@@ -48,13 +55,20 @@ interface IWrappedWIT {
     function witOracleProofOfReserveRadonHash() external view returns (Witnet.RadonHash);
     function witOracleQuerySettings() external view returns (WitOracleSettings memory);
     
-    /// --- Authoritative methods -------------------------------------------------------------------------------------
+    /// ===================================================================================================================    
+    /// --- Authoritative methods -----------------------------------------------------------------------------------------
+    
+    function crosschainPause(bool superchain, bool witnetBurns, bool witnetMints) external;
+    
     function settleWitOracleCrossChainRpcProviders(string[] calldata) external;
     function settleWitOracleSettings(WitOracleSettings calldata) external;
     function settleWitCustodianUnwrapper(string calldata) external;
+    
     function transferCuratorship(address) external;
 
-    // --- Permissionless state-modifying methods ---------------------------------------------------------------------
+    /// ====================================================================================================================
+    // --- Permissionless state-modifying methods --------------------------------------------------------------------------
+    
     function wrap(Witnet.TransactionHash witTxHash) external payable returns (uint256 witOracleQueryId);
     function unwrap(uint64, string calldata) external returns (uint256 evmUnwrapId);
 }
