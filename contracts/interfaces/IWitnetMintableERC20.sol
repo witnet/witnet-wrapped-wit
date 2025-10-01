@@ -4,7 +4,7 @@ pragma solidity >=0.8.20 <0.9.0;
 
 import "witnet-solidity-bridge/contracts/WitOracle.sol";
 
-interface IWrappedWIT {
+interface IWitnetMintableERC20 {
 
     event CuratorshipTransferred(address indexed evmPrevCurator, address indexed evmNewCurator);
     event NewCustodianUnwrapper(address curator, string witCustodianUnwrapper);
