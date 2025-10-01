@@ -8,9 +8,10 @@ interface IWitnetMintableERC20 {
 
     event CuratorshipTransferred(address indexed evmPrevCurator, address indexed evmNewCurator);
     event NewCustodianUnwrapper(address curator, string witCustodianUnwrapper);
-    event PauseFlags(address curator, bool bridging, bool witnetBurns, bool witnetMints);
+    event PauseFlags(address curator, bool erc7802, bool witnetBurns, bool witnetMints);
     event ReserveUpdate(uint256 value, Witnet.Timestamp timestamp, Witnet.TransactionHash indexed witDrTxHash);
     event SettledBridge(address curator, address from, address into);
+    event WitRpcProvidersChanged(address curator, string[] witRpcProviders);
     event Wrapped(string indexed witSender, address indexed evmRecipient, uint256 value, Witnet.TransactionHash witVttHash);
     event Unwrapped(address indexed evmSender, string indexed witRecipient, uint256 value, uint256 nonce);
 
@@ -38,6 +39,8 @@ interface IWitnetMintableERC20 {
     function getWrapTransactionStatus(Witnet.TransactionHash) external view returns (WrappingStatus);
     function getWrapTransactionStatuses(Witnet.TransactionHash[] calldata) external view returns (WrappingStatus[] memory);
 
+    function minUnwrappableNanowits() external view returns (uint256);
+
     function paused() external view returns (bool superchain, bool witnetBurns, bool witnetMints);
     
     function totalReserveNanowits() external view returns (uint256);
@@ -59,7 +62,7 @@ interface IWitnetMintableERC20 {
     /// ===================================================================================================================    
     /// --- Authoritative methods -----------------------------------------------------------------------------------------
     
-    function crosschainPause(bool superchain, bool witnetBurns, bool witnetMints) external;
+    function crosschainPause(bool erc7802, bool witnetBurns, bool witnetMints) external;
     function settleBridge(address) external;
     function settleWitCustodianUnwrapper(string calldata) external;
     function settleWitOracleCrossChainRpcProviders(string[] memory) external;

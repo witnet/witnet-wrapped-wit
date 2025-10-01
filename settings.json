@@ -1,8 +1,8 @@
 {
     "default": {
         "bridge": "0x4200000000000000000000000000000000000010",
-        "curator": "0x06b5B7b1deaD1ade17C96fc2995Db93b82DeA970",
-        "salt": 1267226958
+        "curator": "0x2eBC52C9cA769fBF1FA68153Ac055D25e25fd1dd",
+        "salt": 0
     },
     "ethereum:mainnet": {
         "contract": "WitnetERC20",

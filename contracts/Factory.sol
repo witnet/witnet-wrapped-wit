@@ -16,21 +16,23 @@ contract Factory is Ownable2Step {
     /// @param salt Salt that determines the address of the new contract.
     /// @param creationCode Creation bytecode of the canonical implementation of the Wrapped/WIT token.
     /// @param evmRadonRequestFactory Radon Request Factory artifact address (bound to the Wit/Oracle bridge contract).
-    /// @param evmAuthority EVM address that will be granted permissions for altering authoritative settings.
+    /// @param evmCurator EVM address that will be granted permissions for altering authoritative settings.
     /// @param witCustodianBech32 Immutable WIT/ Custodian cold wallet address. 
     /// @param witUnwrapperBech32 WIT/ Custodian hot wallet address. 
     function deployCanonical(
             uint256 salt, 
             bytes calldata creationCode,
             address evmRadonRequestFactory,
-            address evmAuthority,
-            string memory witCustodianBech32,
-            string memory witUnwrapperBech32
+            address evmCurator,
+            string calldata witCustodianBech32,
+            string calldata witUnwrapperBech32
         )
         virtual public
         onlyOwner
         returns (address _deployed)
     {
+        require(evmRadonRequestFactory != address(0), "Factory: zero radon factory");
+        require(evmCurator != address(0), "Factory: zero curator");
         _deployed = Create3.deploy(
             bytes32(salt),
             abi.encodePacked(
@@ -41,12 +43,15 @@ contract Factory is Ownable2Step {
                 )
             )
         );
-        (bool _success,) = _deployed.call(abi.encodeWithSignature(
-            "initialize(address,string)",
-            evmAuthority,
-            witUnwrapperBech32
-        ));
-        require(_success, "initialization failed");
+        (bool ok, bytes memory ret) = _deployed.call(
+            abi.encodeWithSignature("initialize(address,string)", evmCurator, witUnwrapperBech32)
+        );
+        if (!ok) {
+            // bubble up reason if present
+            assembly {
+                revert(add(ret, 0x20), mload(ret))
+            }
+        }
     }
 
     /// @notice Deploy immutable bridged version of the WitnetERC20 token.
@@ -54,16 +59,27 @@ contract Factory is Ownable2Step {
     /// @param creationCode Creation bytecode of some bridged implementation of the Wrapped/WIT token. 
     function deployBridged(
             uint256 salt,
-            bytes calldata creationCode
+            bytes calldata creationCode,
+            address evmCurator
         )
         virtual public
         onlyOwner
-        returns (address)
+        returns (address _deployed)
     {
-        return Create3.deploy(
+        require(evmCurator != address(0), "Factory: zero curator");
+        _deployed = Create3.deploy(
             bytes32(salt),
             creationCode
         );
+        (bool ok, bytes memory ret) = _deployed.call(
+            abi.encodeWithSignature("initialize(address,string)", evmCurator)
+        );
+        if (!ok) {
+            // bubble up reason if present
+            assembly {
+                revert(add(ret, 0x20), mload(ret))
+            }
+        }
     }
 
     /// @notice Computes the resulting address of a contract deployed using address(this) and the given `salt`.

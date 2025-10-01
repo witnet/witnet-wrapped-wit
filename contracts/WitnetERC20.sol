@@ -119,9 +119,8 @@ contract WitnetERC20
             })
         );
 
-        // Note: This contract is to be proxified from the Factory following a Create-3 pattern,
-        //       implying that even though iniatilizers are not disabled in the constructor
-        //       nobody but the Factory will ultimately intialize the instance being created here.
+        // prevent rogue init on the implementation
+        _disableInitializers();
     }
 
     function initialize(
@@ -229,6 +228,13 @@ contract WitnetERC20
         }
     }
 
+    function minUnwrappableNanowits()
+        override external pure
+        returns (uint256)
+    {
+        return _MIN_UNWRAPPABLE_NANOWITS;
+    }
+
     function paused()
         override external view
         returns (bool, bool, bool)
@@ -304,23 +310,24 @@ contract WitnetERC20
     /// --- Wrapped/WIT authoritative methods -------------------------------------------------------------------------
 
     function crosschainPause(
-            bool _bridging,
+            bool _erc7802,
             bool _witnetBurns,
             bool _witnetMints
         )
         external
         onlyCurator
     {
-        __storage().pausedBridge = _bridging;
+        __storage().pausedBridge = _erc7802;
         __storage().pausedWitnetBurns = _witnetBurns;
         __storage().pausedWitnetMints = _witnetMints;
-        emit PauseFlags(msg.sender, _bridging, _witnetBurns, _witnetMints);
+        emit PauseFlags(msg.sender, _erc7802, _witnetBurns, _witnetMints);
     }
 
     function settleBridge(address _newBridge)
         external
         onlyCurator
     {
+        _require(_newBridge != address(0), "zero bridge");
         emit SettledBridge(msg.sender, __storage().bridge, _newBridge);
         __storage().bridge = _newBridge;
     }
@@ -335,6 +342,7 @@ contract WitnetERC20
             _witRpcProviders, 
             __storage().witCustodianUnwrapper.toBech32(block.chainid == _CANONICAL_CHAIN_ID)
         );
+        emit WitRpcProvidersChanged(msg.sender, _witRpcProviders);
     }
 
     function settleWitOracleSettings(WitOracleSettings calldata _settings)
@@ -377,6 +385,10 @@ contract WitnetERC20
         whenWitnetMintsNotPaused
         returns (uint256 _witOracleQueryId)
     {
+        // Fee sanity checks are perfomed by the underlying WitOracle contract, so providing
+        // a `msg.value` smaller than by `estimateWitOraclewitOracleEstimateWrappingFee(tx.gasprice)`,
+        // or 10x greater than, would make this transaction revert.
+
         _witOracleQueryId = WitnetERC20Lib.witOracleQueryWitnetValueTransferProofOfInclusion(
             witOracle,
             witOracleCrossChainProofOfInclusionTemplate,

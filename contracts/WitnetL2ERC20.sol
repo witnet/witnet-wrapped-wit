@@ -6,12 +6,14 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {ERC20Bridgeable, IERC7802} from "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Bridgeable.sol";
 import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import {IERC165, IOptimismMintableERC20} from "./interfaces/IOptimismMintableERC20.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 contract WitnetL2ERC20
     is
         ERC20, 
         ERC20Bridgeable, 
         ERC20Permit,
+        Initializable,
         IOptimismMintableERC20
 {
     error Unauthorized();
@@ -26,43 +28,45 @@ contract WitnetL2ERC20
 
     modifier onlyStandardBridge {
         require(
-            superchained == true
+            superchained == false
                 && msg.sender == bridge, 
             Unauthorized()
         ); _;
     }
 
     modifier onlyCurator {
-        require(msg.sender == curator, Unauthorized());
-        _;
+        require(
+            msg.sender == curator, 
+            Unauthorized()
+        ); _;
     }
 
     constructor()
         ERC20("Witnet", "WIT") 
         ERC20Permit("Witnet")
     {
-        // Settle the default StandardBridge until the `curator` eventually determines otherwise:
-        bridge = 0x4200000000000000000000000000000000000010;
-        superchained = false;
-        
-        // Settle initial curatorship:
-        // Note: This contract is expected to be created from Factory.deployBridged(...)
-        curator = tx.origin;
-        emit CuratorshipTransferred(msg.sender, tx.origin);
+        // Prevent rogue init on the implementation
+        _disableInitializers();
     }
 
-    function renounceCuratorship()
-        external
-        onlyCurator
+    function initialize(address _curator)
+        external 
+        initializer
     {
-        curator = address(0);
-        emit CuratorshipRenounced(msg.sender);
+        // Initialize curatorship:
+        curator = _curator;
+        emit CuratorshipTransferred(msg.sender, tx.origin);
+
+        // Settle the default StandardBridge until the `cruator` eventually determines otherwise:
+        bridge = 0x4200000000000000000000000000000000000010;
+        superchained = false;
     }
 
     function settleStandardBridge(address _newBridge)
         external
         onlyCurator
     {
+        require(_newBridge != address(0), "zero bridge");
         emit SettledBridge(msg.sender, bridge, _newBridge, false);
         bridge = _newBridge;
         superchained = false;
@@ -72,6 +76,7 @@ contract WitnetL2ERC20
         external
         onlyCurator
     {
+        require(_newBridge != address(0), "zero bridge");
         emit SettledBridge(msg.sender, bridge, _newBridge, true);
         bridge = _newBridge;
         superchained = true;
@@ -131,7 +136,7 @@ contract WitnetL2ERC20
     /// --- IOptimismMintableERC20 ------------------------------------------------------------------------------------
 
     /// @notice Burns tokens from an account.
-    /// @dev This function always reverts to prevent withdrawals to L1.
+    /// @dev Bridge-gated burn used by the bridge for withdrawals.
     /// @param _from   Address to burn tokens from.
     /// @param _amount Amount of tokens to burn.
     function burn(

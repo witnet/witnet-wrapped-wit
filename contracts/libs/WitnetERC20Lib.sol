@@ -59,7 +59,7 @@ library WitnetERC20Lib {
         require(
             witOracleProofOfReserve.status == Witnet.ResultStatus.NoErrors
                 && witOracleProofOfReserve.timestamp.gt(data().evmLastReserveTimestamp)
-                && _witBalance.length == 3,
+                && _witBalance.length >= 3,
             "invalid report"
         );
         return (
@@ -164,6 +164,8 @@ library WitnetERC20Lib {
         if (
             _witQueryId != _WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED
         ) {
+            // Redundant re-queries when a query is already “Posted” are allowed on purpose,
+            // as to overcome past queries that could eventually take longer than usual to resolve.
             string[] memory _commonArgs = new string[](1);
             _commonArgs[0] = Witnet.toHexString(Witnet.TransactionHash.unwrap(witValueTransferTransactionHash));
             Witnet.RadonHash _radonHash = witOracleCrossChainProofOfInclusionTemplate
@@ -201,12 +203,10 @@ library WitnetERC20Lib {
     }
 
     function witOracleEstimateWrappingFee(WitOracle witOracle, uint256 evmGasPrice) internal view returns (uint256) {
-        return (
-            (100 + data().witOracleQuerySettings.extraFeePercentage)
-                * witOracle.estimateBaseFeeWithCallback(
-                    evmGasPrice, 
-                    data().witOracleQuerySettings.responseCallbackGasLimit
-                )
-        ) / 100;
+        uint256 _baseFee = witOracle.estimateBaseFeeWithCallback(
+            evmGasPrice, 
+            data().witOracleQuerySettings.responseCallbackGasLimit
+        );
+        return _baseFee * (100 + data().witOracleQuerySettings.extraFeePercentage) / 100;
     }
 }
