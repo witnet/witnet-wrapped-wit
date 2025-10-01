@@ -28,8 +28,7 @@ interface IWrappedWIT {
         Done
     }
 
-    /// --- Read-only methods -----------------------------------------------------------------------------------------
-    function evmCurator() external view returns (address);
+    function curator() external view returns (address);
     function getWrapTransactionLastQueryId(Witnet.TransactionHash) external view returns (uint256);
     function getWrapTransactionStatus(Witnet.TransactionHash) external view returns (WrappingStatus);
     function getWrapTransactionStatuses(Witnet.TransactionHash[] calldata) external view returns (WrappingStatus[] memory);

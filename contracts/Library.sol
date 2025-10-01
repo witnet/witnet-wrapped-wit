@@ -22,7 +22,7 @@ library Library {
     uint16  internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_MAX_RESULT_SIZE = 256;
 
     struct Storage {
-        address evmCurator; uint96 _0; 
+        address curator; uint96 _0;
         
         Witnet.Timestamp evmLastReserveTimestamp;
         uint64 evmLastReserveNanowits; 

@@ -52,7 +52,7 @@ contract WrappedWIT
 
     modifier onlyCurator {
         require(
-            _msgSender() == __storage().evmCurator, 
+            _msgSender() == __storage().curator, 
             Unauthorized()
         ); _;
     }
@@ -109,15 +109,15 @@ contract WrappedWIT
     }
 
     function initialize(
-            address _evmCurator,
+            address _curator,
             string calldata _witCustodianUnwrapperBech32
         ) 
         external 
         initializer
     {
         // Initialize authority --------
-        __storage().evmCurator = _evmCurator;
-        emit CuratorshipTransferred(address(0), _evmCurator);
+        __storage().curator = _curator;
+        emit CuratorshipTransferred(address(0), _curator);
         
         // Initialize authoritative parameters -------------------------------------------------------------
         __storage().witOracleQuerySettings = WitOracleSettings({
@@ -302,8 +302,8 @@ contract WrappedWIT
         onlyCurator
     {
         _require(_newCurator != address(0), "zero curator");
-        emit CuratorshipTransferred(__storage().evmCurator, _newCurator);
-        __storage().evmCurator = _newCurator;
+        emit CuratorshipTransferred(__storage().curator, _newCurator);
+        __storage().curator = _newCurator;
     }
 
     
