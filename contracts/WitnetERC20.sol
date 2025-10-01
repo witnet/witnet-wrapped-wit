@@ -18,18 +18,18 @@ import {
 import {IWitOracleConsumer} from "witnet-solidity-bridge/contracts/interfaces/IWitOracleConsumer.sol";
 import {IWitOracleQueriableConsumer} from "witnet-solidity-bridge/contracts/interfaces/IWitOracleQueriableConsumer.sol";
 
-import {IWrappedWIT, Library} from "./Library.sol";
+import {IWitnetMintableERC20, WitnetERC20Lib} from "./libs/WitnetERC20Lib.sol";
 
 /// @custom:security-contact info@witnet.foundation
-contract WrappedWIT
+contract WitnetERC20
     is 
         ERC20,
         ERC20Bridgeable,
         ERC20Permit,
         Initializable,
+        IWitnetMintableERC20,
         IWitOracleConsumer,
         IWitOracleQueriableConsumer,
-        IWrappedWIT,
         ReentrancyGuard
 {
     using Witnet for Witnet.Address;
@@ -207,7 +207,7 @@ contract WrappedWIT
         if (_witOracleLastQueryId == 0) {
             return WrappingStatus.Unknown;
         
-        } else if (_witOracleLastQueryId == Library._WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED) {
+        } else if (_witOracleLastQueryId == WitnetERC20Lib._WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED) {
             return WrappingStatus.Done;
         
         } else {
@@ -273,7 +273,7 @@ contract WrappedWIT
     }
 
     function witOracleEstimateWrappingFee(uint256 evmGasPrice) override external view returns (uint256) {
-        return Library.witOracleEstimateWrappingFee(
+        return WitnetERC20Lib.witOracleEstimateWrappingFee(
             witOracle, 
             evmGasPrice
         );
@@ -377,13 +377,13 @@ contract WrappedWIT
         whenWitnetMintsNotPaused
         returns (uint256 _witOracleQueryId)
     {
-        _witOracleQueryId = Library.witOracleQueryWitnetValueTransferProofOfInclusion(
+        _witOracleQueryId = WitnetERC20Lib.witOracleQueryWitnetValueTransferProofOfInclusion(
             witOracle,
             witOracleCrossChainProofOfInclusionTemplate,
             _witnetValueTransferTransactionHash
         );
         _require(
-            _witOracleQueryId != Library._WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED, 
+            _witOracleQueryId != WitnetERC20Lib._WIT_ORACLE_QUERIABLE_CONSUMER_CALLBACK_PROCESSED, 
             "already minted"
         );
     }
@@ -456,7 +456,7 @@ contract WrappedWIT
     {
         _require(reportableFrom(msg.sender), "invalid oracle");
 
-        try Library.processWitOracleQueryResult(
+        try WitnetERC20Lib.processWitOracleQueryResult(
             queryId, 
             queryResult
         
@@ -521,7 +521,7 @@ contract WrappedWIT
             );
 
         // Parse expected integer from the posted query's result:
-        try Library.parseWitOracleProofOfReserve(
+        try WitnetERC20Lib.parseWitOracleProofOfReserve(
             _witOracleProofOfReserve
         
         ) returns (
@@ -574,7 +574,7 @@ contract WrappedWIT
     function _revert(string memory reason) internal pure {
         revert(
             string(abi.encodePacked(
-                "WrappedWIT: ",
+                "WitnetERC20: ",
                 reason
             ))
         );
@@ -599,7 +599,7 @@ contract WrappedWIT
         );
     }
 
-    function __storage() internal pure returns (Library.Storage storage) {
-        return Library.data();
+    function __storage() internal pure returns (WitnetERC20Lib.Storage storage) {
+        return WitnetERC20Lib.data();
     }
 }

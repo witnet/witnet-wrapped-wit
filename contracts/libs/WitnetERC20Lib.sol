@@ -2,12 +2,12 @@
 
 pragma solidity >=0.8.20 <0.9.0;
 
-import "./interfaces/IWrappedWIT.sol";
+import "../interfaces/IWitnetMintableERC20.sol";
 import {IWitOracleRadonRequestModal} from "witnet-solidity-bridge/contracts/WitOracleRadonRequestFactory.sol";
 
 /// @title Witnet Request Board base data model library
 /// @author The Witnet Foundation.
-library Library {  
+library WitnetERC20Lib {  
 
     using Witnet for Witnet.DataResult;
     using Witnet for Witnet.Timestamp;
@@ -35,7 +35,7 @@ library Library {
         uint24 evmUnwraps;
         bool   pausedWitnetBurns;
         
-        IWrappedWIT.WitOracleSettings witOracleQuerySettings;
+        IWitnetMintableERC20.WitOracleSettings witOracleQuerySettings;
         
         string[] witOracleCrossChainRpcProviders;
         Witnet.RadonHash witOracleProofOfReserveRadonHash;

@@ -8,7 +8,7 @@ import { createRequire } from "module"
 const require = createRequire(import.meta.url)
 const addresses = require("../addresses.json")
 
-export const ABI = require("../artifacts/contracts/WrappedWIT.sol/WrappedWIT.json").abi
+export const ABI = require("../artifacts/contracts/WitnetERC20.sol/WitnetERC20.json").abi
 export const MIN_UNWRAPPABLE_NANOWITS = BigInt(10 ** 9) // 1.0 $WIT
 export const MIN_WRAPPABLE_NANOWITS = BigInt(10 ** 12)  // 1000.0 $WIT
 
@@ -34,7 +34,7 @@ export async function fetchContractFromEthersProvider (ethersProvider) {
   const chainId = (await ethersProvider.getNetwork()).chainId
   const network = findNetworkByChainId(chainId)
   if (!network) {
-    throw new Error(`WrappedWIT token contract not available on this EVM chain (${chainId})`)
+    throw new Error(`WitnetERC20 token contract not available on this EVM chain (${chainId})`)
   }
   return new ethers.Contract(
     getNetworkContractAddress(network),
@@ -108,7 +108,7 @@ export function getSupportedNetworks () {
 }
 
 export function isNetworkCanonical (network) {
-  return getNetworkSettings(network)?.contract === "WrappedWIT"
+  return getNetworkSettings(network)?.contract === "WitnetERC20"
 }
 
 export function isNetworkMainnet (network) {

@@ -32,7 +32,7 @@ async function main () {
     factory = Factory.attach(addresses.default.Factory).connect(curator)
   }
 
-  if (contractName === "WrappedWIT") {
+  if (contractName === "WitnetERC20") {
     const tokenCustodianBech32 = settings[networkName].custodian
     const tokenUnwrapperBech32 = settings[networkName].unwrapper
     const tokenSalt = settings[networkName]?.salt || settings?.default.salt
@@ -43,12 +43,12 @@ async function main () {
     console.info("> Wrapped/WIT unwrapper address:", tokenUnwrapperBech32)
 
     // deploy external library, if it exists
-    const Library = await ethers.getContractFactory("Library")
-    if (!addresses[networkName]?.Library) {
-      const library = await Library.connect(curator).deploy()
-      addresses[networkName].Library = await library.getAddress()
+    const WitnetERC20Lib = await ethers.getContractFactory("WitnetERC20Lib")
+    if (!addresses[networkName]?.WitnetERC20Lib) {
+      const library = await WitnetERC20Lib.connect(curator).deploy()
+      addresses[networkName].WitnetERC20Lib = await library.getAddress()
     }
-    console.info("> Wrapped/WIT library:  ", `${addresses[networkName].Library}`)
+    console.info("> Wrapped/WIT library:  ", `${addresses[networkName].WitnetERC20Lib}`)
 
     const authority = settings[networkName]?.authority || settings.default?.authority || curator.address
     console.info("> Wrapped/WIT authority:", authority)
@@ -60,7 +60,7 @@ async function main () {
       contractAddr = await factory.determineAddr.staticCall(tokenSalt)
       const Token = await ethers.getContractFactory(contractName, {
         libraries: {
-          Library: addresses[networkName].Library,
+          WitnetERC20Lib: addresses[networkName].WitnetERC20Lib,
         },
       })
       await factory.connect(curator).deployCanonical.send(

@@ -80,7 +80,7 @@ Launches a local ETH/RPC signing gateway to the specified `evm_network`, listeni
 
 ---
 #### `witwrap contract`
-Shows the address and other relevant data of the WrappedWIT contract that's available on the connected EVM network. 
+Shows the address and other relevant data of the Witnet token contract that's available on the connected EVM network. 
 
 **Flags**:
 - `--verbose`: Outputs extra information.
@@ -157,8 +157,8 @@ This repository includes the Solidity contracts that power the Ethereum side of 
 
 Contracts are located in the **contracts/** folder:
 
-- **WrappedWIT.sol**
-  > The canonical version of the ERC-20 token contract for $WIT on Ethereum. It relies on the Wit/Oracle contract framework for validating both Proof-of-Reserve reports and cross-chain wrapping and unwrapping transactions.
+- **WitnetERC20.sol**
+  > The "canonical" version of the ERC-20 token contract capable of holding wrapped $WIT in Ethereum. It relies on the Wit/Oracle contract framework for validating both Proof-of-Reserve reports and cross-chain wrapping and unwrapping transactions from Witnet.
 
 - **StandardBridgeWIT.sol**
   > The "bridged" version of the ERC-20 token contract compatible with compliant Superchain bridges. This version does not support wrapping nor unwrapping transactions with the Witnet network. 
@@ -173,7 +173,7 @@ Soon <sup>TM</sup>.
 ### Testnets
 | EVM Network | ERC-20 Contract | ERC-20 Address | Witnet Network |
 | :- | :- | :- | :-: |
-| Ethereum Sepolia | `WrappedWIT` | [`0xFABADA3D500B84B1AeD07b9B6d5651BA91a10beD`](https://sepolia.etherscan.io/address/0xFABADA3D500B84B1AeD07b9B6d5651BA91a10beD#tokentxns) | Testnet 
+| Sepolia | `WitnetERC20` | [``](https://sepolia.etherscan.io/address/#tokentxns) | Testnet 
 | Base Sepolia | `StandardBridgeWIT` | [`0xAbb15Ec7c50BA50661389cEb92FC9D72621E6950`](https://sepolia.basescan.org/address/0xAbb15Ec7c50BA50661389cEb92FC9D72621E6950#tokentxns) |
 | Optimism Sepolia | `SuperchainWIT` | [`0xFABADA3D500B84B1AeD07b9B6d5651BA91a10beD`](https://sepolia-optimism.etherscan.io/address/0xFABADA3D500B84B1AeD07b9B6d5651BA91a10beD#tokentxns) |
 

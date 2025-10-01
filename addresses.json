@@ -6,8 +6,8 @@
         "StandardBridgeWIT": "0xAbb15Ec7c50BA50661389cEb92FC9D72621E6950"
     },
     "ethereum:sepolia": {
-        "Library": "0xceF715Bd2cF57B76E2E17a90dA098FC67a39745B",
-        "WrappedWIT": "0xFABADA3D500B84B1AeD07b9B6d5651BA91a10beD"
+        "WitnetERC20Lib": "0xceF715Bd2cF57B76E2E17a90dA098FC67a39745B",
+        "WitnetERC20": "0xFABADA3D500B84B1AeD07b9B6d5651BA91a10beD"
     },
     "optimism:sepolia": {
         "SuperchainWIT": "0xFABADA3D500B84B1AeD07b9B6d5651BA91a10beD"

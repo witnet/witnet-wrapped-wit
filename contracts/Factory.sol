@@ -4,7 +4,7 @@ pragma solidity >=0.8.20 <0.9.0;
 
 import "@openzeppelin/contracts/access/Ownable2Step.sol";
 
-import {Create3} from "./Create3.sol";
+import {Create3} from "./libs/Create3.sol";
 
 /// @notice CREATE3 (EIP-3171) contract factory for deploying both canonical 
 /// @notice and bridged versions of the Wrapped/WIT ERC-20 token.
@@ -12,7 +12,7 @@ contract Factory is Ownable2Step {
 
     constructor() Ownable(msg.sender) {}
 
-    /// @notice Deploy canonical version of the WrappedWIT token.
+    /// @notice Deploy canonical version of the WitnetERC20 token.
     /// @param salt Salt that determines the address of the new contract.
     /// @param creationCode Creation bytecode of the canonical implementation of the Wrapped/WIT token.
     /// @param evmRadonRequestFactory Radon Request Factory artifact address (bound to the Wit/Oracle bridge contract).
@@ -49,7 +49,7 @@ contract Factory is Ownable2Step {
         require(_success, "initialization failed");
     }
 
-    /// @notice Deploy immutable bridged version of the WrappedWIT token.
+    /// @notice Deploy immutable bridged version of the WitnetERC20 token.
     /// @param salt Salt that determines the address of the new contract.
     /// @param creationCode Creation bytecode of some bridged implementation of the Wrapped/WIT token. 
     function deployBridged(
