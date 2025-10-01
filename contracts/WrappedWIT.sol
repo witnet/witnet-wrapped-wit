@@ -493,6 +493,7 @@ contract WrappedWIT
             bytes calldata proof
         )
         override external
+        nonReentrant
     {
         _require(
             report.queryParams.witCommitteeSize >= __storage().witOracleQuerySettings.minWitnesses,
