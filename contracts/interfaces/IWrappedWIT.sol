@@ -9,9 +9,9 @@ interface IWrappedWIT {
     event CuratorshipTransferred(address indexed evmPrevCurator, address indexed evmNewCurator);
     event NewCustodianUnwrapper(address curator, string witCustodianUnwrapper);
     event PauseFlags(address curator, bool superchain, bool witnetBurns, bool witnetMints);
-    event ReserveUpdate(uint256 value, Witnet.Timestamp timestamp, Witnet.TransactionHash witDrTxHash);
-    event Wrapped(string witSender, address evmRecipient, uint256 value, Witnet.TransactionHash witVttHash);
-    event Unwrapped(address evmSender, string witRecipient, uint256 value, uint256 nonce);
+    event ReserveUpdate(uint256 value, Witnet.Timestamp timestamp, Witnet.TransactionHash indexed witDrTxHash);
+    event Wrapped(string indexed witSender, address indexed evmRecipient, uint256 value, Witnet.TransactionHash witVttHash);
+    event Unwrapped(address indexed evmSender, string indexed witRecipient, uint256 value, uint256 nonce);
 
     struct WitOracleSettings {
         uint16 minWitnesses;
