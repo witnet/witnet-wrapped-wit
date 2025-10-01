@@ -455,7 +455,7 @@ contract WrappedWIT
         ) returns (
             Witnet.TransactionHash _witValueTransferTransactionHash,
             string memory _witRecipientBech32,
-            string memory _witWrapperBech32,
+            string memory _witSenderBech32,
             address _evmRecipient,
             uint64 _value
         ) {
@@ -469,7 +469,7 @@ contract WrappedWIT
 
             // emit events:
             emit Wrapped(
-                _witWrapperBech32, 
+                _witSenderBech32, 
                 _evmRecipient, 
                 _value, 
                 _witValueTransferTransactionHash

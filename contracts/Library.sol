@@ -77,7 +77,7 @@ library Library {
         returns (
             Witnet.TransactionHash _witValueTransferTransactionHash,
             string memory _witRecipientBech32,
-            string memory _witWrapperBech32,
+            string memory _witSenderBech32,
             address _evmRecipient,
             uint64 _value
         )
@@ -133,7 +133,7 @@ library Library {
         
         // Parse data result:
         _witRecipientBech32 = _metadata[2].readString();
-        _witWrapperBech32 = _metadata[3].readString();
+        _witSenderBech32 = _metadata[3].readString();
         _evmRecipient = Witnet.toAddress(
             Witnet.parseHexString(
                 _metadata[1].readString()
