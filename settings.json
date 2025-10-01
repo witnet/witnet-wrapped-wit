@@ -15,11 +15,13 @@
         "unwrapper": "twit19rnvq8yjrmpa6tjdahct4pd49ha5lmvxjeyfha"
     },
     "base:sepolia": {
-        "contract": "WitnetL2ERC20"
+        "contract": "WitnetL2ERC20",
+        "remote": ""
     },
     "optimism:sepolia": {
         "bridge": "0x4200000000000000000000000000000000000028",
         "contract": "WitnetL2ERC20",
+        "remote": "",
         "superchained": true
     }
 }

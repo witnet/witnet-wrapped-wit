@@ -49,9 +49,6 @@ async function main () {
       addresses[networkName].WitnetERC20Lib = await library.getAddress()
     }
     console.info("> Wrapped/WIT library:  ", `${addresses[networkName].WitnetERC20Lib}`)
-
-    const authority = settings[networkName]?.authority || settings.default?.authority || curator.address
-    console.info("> Wrapped/WIT authority:", authority)
     console.info("> Wrapped/WIT factory:  ", `${await factory.getAddress()}`)
     console.info("> Wrapped/WIT vanity:   ", tokenSalt)
 
@@ -67,7 +64,7 @@ async function main () {
         tokenSalt,
         Token.bytecode,
         witOracleRadonRequestFactoryAddr,
-        authority,
+        curator,
         tokenCustodianBech32,
         tokenUnwrapperBech32,
       ).then(response => {
@@ -81,9 +78,15 @@ async function main () {
   
   } else if (contractName === "WitnetL2ERC20") {
     const tokenSalt = settings[networkName]?.salt || settings?.default.salt
+    const remoteToken = settings[networkName]?.remoteToken
+    if (!remoteToken) {
+      console.error("The `remote` token address must be specified in settings.json");
+      process.exit(1)
+    }
 
     console.info("> Wrapped/WIT factory:  ", `${await factory.getAddress()}`)
     console.info("> Wrapped/WIT vanity:   ", tokenSalt)
+    console.info("> Wrapped/WIT remote:   ", tokenSalt, remoteToken)
 
     let contractAddr = addresses[networkName][contractName]
     if (!contractAddr || (await ethers.provider.getCode(contractAddr)).length <= 2) {
@@ -91,7 +94,9 @@ async function main () {
       const Token = await ethers.getContractFactory(contractName)
       await factory.connect(curator).deployBridged.send(
         tokenSalt,
-        Token.bytecode
+        Token.bytecode,
+        curator,
+        remoteToken
       ).then(response => {
         console.info("> Wrapped/WIT deploy tx:", response.hash)
       })
