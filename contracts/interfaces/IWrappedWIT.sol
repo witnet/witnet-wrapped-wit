@@ -60,7 +60,7 @@ interface IWrappedWIT {
     
     function crosschainPause(bool superchain, bool witnetBurns, bool witnetMints) external;
     
-    function settleWitOracleCrossChainRpcProviders(string[] calldata) external;
+    function settleWitOracleCrossChainRpcProviders(string[] memory) external;
     function settleWitOracleSettings(WitOracleSettings calldata) external;
     function settleWitCustodianUnwrapper(string calldata) external;
     
