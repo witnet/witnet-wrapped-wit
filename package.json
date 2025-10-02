@@ -1,6 +1,6 @@
 {
   "name": "@witnet/wrapped-wit",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "author": "Witnet Foundation <info@witnet.foundation>",
   "description": "Wrapped/WIT Solidity contracts and CLI tools",
   "license": "MIT",
@@ -40,6 +40,7 @@
     "ERC-20"
   ],
   "devDependencies": {
+    "@nomicfoundation/hardhat-ethers": "^4.0.1",
     "@nomicfoundation/hardhat-ignition": "^3.0.3",
     "@nomicfoundation/hardhat-ignition-ethers": "^3.0.3",
     "@nomicfoundation/hardhat-toolbox": "^6.1.0",
@@ -47,16 +48,10 @@
     "@openzeppelin/community-contracts": "github:OpenZeppelin/openzeppelin-community-contracts#master",
     "@openzeppelin/contracts": "^5.4.0",
     "@openzeppelin/contracts-upgradeable": "^5.4.0",
-    "eslint": "^8.57.1",
-    "eslint-config-standard": "^17.1.0",
-    "eslint-plugin-import": "^2.32.0",
-    "eslint-plugin-n": "^16.6.2",
-    "eslint-plugin-promise": "^6.6.0",
-    "hardhat": "^3.0.6",
-    "solhint": "^5.2.0"
+    "hardhat": "^3.0.6"
   },
   "dependencies": {
-    "@witnet/ethers": "^1.1.1",
+    "@witnet/ethers": "^1.1.2",
     "@witnet/sdk": "^1.1.1",
     "cross-env": "^10.0.0",
     "dotenv": "^16.6.1",

@@ -42,6 +42,10 @@ async function main () {
 
   await wallet.getAccount(WIT_SIGNER_PKH || wallet.coinbase.pkh)
   const signer = wallet.getSigner(WIT_SIGNER_PKH || wallet.coinbase.pkh)
+  if (!signer) {
+    console.error(`❌ Fatal: hot wallet address ${WIT_SIGNER_PKH} not found in wallet!`)
+    process.exit(0)
+  }
 
   console.info(`Wit/RPC provider:  ${WIT_RPC_PROVIDER}`)
   console.info(`Witnet network:    WITNET:${wallet.provider.network.toUpperCase()} (${wallet.provider.networkId.toString(16)})`)
