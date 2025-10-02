@@ -6,7 +6,8 @@ const { execSync, spawn } = require("node:child_process")
 const os = require("os")
 const prompt = require("inquirer").createPromptModule()
 
-const { ethers, utils, KermitClient, Witnet } = require("@witnet/ethers")
+const { Witnet } = require("@witnet/sdk")
+const { ethers, utils, KermitClient } = require("@witnet/ethers")
 
 const { WrappedWIT } = require("../..")
 
