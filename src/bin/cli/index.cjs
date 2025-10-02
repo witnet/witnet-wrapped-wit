@@ -1082,8 +1082,8 @@ async function wrappings (flags = {}) {
     if ((await ledger.getBalance()).unlocked < value.pedros) {
       throw new Error(`Insufficient funds on wallet account ${ledger.pkh}.`)
     }
-    if (value.wits < WrappedWIT.MIN_WRAPPABLE_NANOWITS) {
-      throw new Error(`--value must be greater than ${Number(WrappedWIT.MIN_WRAPPABLE_NANOWITS / 10 ** 9).toFixed(1)} $WIT.`)
+    if (value.nanowits < WrappedWIT.MIN_WRAPPABLE_NANOWITS) {
+      throw new Error(`--value must be greater than ${ethers.formatUnits(WrappedWIT.MIN_WRAPPABLE_NANOWITS, 9)} $WIT.`)
     }
 
     let user
