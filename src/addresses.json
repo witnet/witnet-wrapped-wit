@@ -2,14 +2,15 @@
     "default": {
         "Factory": "0x735530FdC2B7c93078c639Ba57604bf3233cA1Ab"
     },
-    "base:sepolia": {
-        "WitnetL2ERC20": ""
-    },
     "ethereum:sepolia": {
-        "WitnetERC20": "",
+        "WitnetERC20": "0xcebada5B9a5F3663a346c51b3588A2Fcb81eB23D",
         "WitnetERC20Lib": "0xf2FCC072100Fd06e1dA66999807924D8590266c3"
     },
+    "base:sepolia": {
+        "WitnetL2ERC20": "0xcebada5B9a5F3663a346c51b3588A2Fcb81eB23D"
+    },
     "optimism:sepolia": {
-        "WitnetL2ERC20": ""
-    }
+        "WitnetL2ERC20": "0xcebada5B9a5F3663a346c51b3588A2Fcb81eB23D"
+    },
+    "ethereum:mainnet": {}
 }

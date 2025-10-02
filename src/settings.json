@@ -5,15 +5,10 @@
         "curator": "0x2eBC52C9cA769fBF1FA68153Ac055D25e25fd1dd",
         "salt": 51641617
     },
-    "ethereum:mainnet": {
-        "contract": "WitnetERC20",
-        "custodian": "wit1wrappedl0fth3lm6xjhyp6vjnwcfjv9nwc40pa",
-        "unwrapper": "wit1unwrapy58eevv520r4hpmwsjvw2dkx093z3dys"
-    },
     "ethereum:sepolia": {
         "contract": "WitnetERC20",
-        "custodian": "twit120x84rx5l0kmhl89kpezd69pnlxd8rzmjxq3lz",
-        "unwrapper": "twit19rnvq8yjrmpa6tjdahct4pd49ha5lmvxjeyfha"
+        "custodian": "twit1wrappedl0fth3lm6xjhyp6vjnwcfjv9nqdutpv",
+        "unwrapper": "twit1unwrapy58eevv520r4hpmwsjvw2dkx09lhcfyp"
     },
     "base:sepolia": {
         "contract": "WitnetL2ERC20"
@@ -22,5 +17,13 @@
         "bridge": "0x4200000000000000000000000000000000000028",
         "contract": "WitnetL2ERC20",
         "superchained": true
+    },
+    "ethereum:mainnet": {
+        "contract": "WitnetERC20",
+        "custodian": "wit1wrappedl0fth3lm6xjhyp6vjnwcfjv9nwc40pa",
+        "unwrapper": "wit1unwrapy58eevv520r4hpmwsjvw2dkx093z3dys"
+    },
+    "base:mainnet": {
+        "contract": "WitnetL2ERC20"
     }
 }

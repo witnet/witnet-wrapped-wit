@@ -21,6 +21,12 @@ export default {
       type: "http",
       url: "http://127.0.0.1:8502",
     },
+    "ethereum:mainnet": {
+      chainId: 1,
+      confirmations: 2,
+      type: "http",
+      url: "http://127.0.0.1:9545"
+    },
     "ethereum:sepolia": {
       chainId: 11155111,
       confirmations: 2,

@@ -9,11 +9,11 @@ importers:
   .:
     dependencies:
       '@witnet/ethers':
-        specifier: ^1.1.0
-        version: 1.1.0(@types/node@24.5.2)(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+        specifier: ^1.1.1
+        version: 1.1.1(@types/node@24.5.2)(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@witnet/sdk':
-        specifier: ^1.1.0
-        version: 1.1.0(@types/node@24.5.2)(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+        specifier: ^1.1.1
+        version: 1.1.1(@types/node@24.5.2)(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       cross-env:
         specifier: ^10.0.0
         version: 10.0.0
@@ -932,12 +932,12 @@ packages:
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
 
-  '@witnet/ethers@1.1.0':
-    resolution: {integrity: sha512-VP7T8bxmYJHNy6PrHYC1Vh0UytT3+xDY5s95clgRX//m6WJSe/7+TSsoFxF1nxib0ikjYEjernwLrd29krmqvQ==}
+  '@witnet/ethers@1.1.1':
+    resolution: {integrity: sha512-TEul4lPYhPrMZEtiz9y9FQi+cHyvY3o6kxngjEI+reHyQMN1FPi1TshItpJy6qhSBdrHqOR2tT7fYa3315FpkQ==}
     hasBin: true
 
-  '@witnet/sdk@1.1.0':
-    resolution: {integrity: sha512-hnGK/uzmYqlNPN076WtodynTenIpGYGYiBeVex4jBA6EWLkF9sCpq4cF6bU3Y0R/wG/TcoGDOKTF8UXAlDNnnw==}
+  '@witnet/sdk@1.1.1':
+    resolution: {integrity: sha512-jImNUtjRjwk+VAm1fb3UYUi2nPksXX0n+Q4/zSpKXpU/W/gazxOjBBHwrh2deuIyUubB6fjG1YdmcCKouRykTg==}
     hasBin: true
 
   abbrev@1.0.9:
@@ -3606,6 +3606,9 @@ packages:
   witnet-solidity-bridge@2.2.1:
     resolution: {integrity: sha512-E0AKHsD0sb0+lJZyQOU9t5OMo3w90BuUd4mmIIsupETEDzPIV0KNJHku30oHBUbfwc8tmbGb23FBo2mI7+1A0w==}
 
+  witnet-solidity-bridge@2.2.2:
+    resolution: {integrity: sha512-RS8WVo05yglmd9Q97w4qeh4S7S3KbNbe2sppQJQBRvgXalkmjmtat77z1gphquVWfjgxt6utR3zytnmccGDMHw==}
+
   word-wrap@1.2.5:
     resolution: {integrity: sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==}
     engines: {node: '>=0.10.0'}
@@ -4683,9 +4686,9 @@ snapshots:
 
   '@ungap/structured-clone@1.3.0': {}
 
-  '@witnet/ethers@1.1.0(@types/node@24.5.2)(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
+  '@witnet/ethers@1.1.1(@types/node@24.5.2)(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
     dependencies:
-      '@witnet/sdk': 1.1.0(@types/node@24.5.2)(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@witnet/sdk': 1.1.1(@types/node@24.5.2)(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       axios: 1.12.2
       cbor: 10.0.11
       cross-env: 10.0.0
@@ -4696,7 +4699,7 @@ snapshots:
       json-bigint: 1.0.0
       lodash.merge: 4.6.2
       moment: 2.30.1
-      witnet-solidity-bridge: 2.2.1
+      witnet-solidity-bridge: 2.2.2
     transitivePeerDependencies:
       - '@types/node'
       - bufferutil
@@ -4704,7 +4707,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@witnet/sdk@1.1.0(@types/node@24.5.2)(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
+  '@witnet/sdk@1.1.1(@types/node@24.5.2)(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
     dependencies:
       axios: 1.12.2
       bech32: 2.0.0
@@ -5252,7 +5255,7 @@ snapshots:
     dependencies:
       cipher-base: 1.0.6
       inherits: 2.0.4
-      ripemd160: 2.0.1
+      ripemd160: 2.0.2
       sha.js: 2.4.12
 
   create-hash@1.2.0:
@@ -7964,6 +7967,11 @@ snapshots:
       winston-transport: 4.9.0
 
   witnet-solidity-bridge@2.2.1:
+    dependencies:
+      dotenv: 16.6.1
+      lodash.merge: 4.6.2
+
+  witnet-solidity-bridge@2.2.2:
     dependencies:
       dotenv: 16.6.1
       lodash.merge: 4.6.2
