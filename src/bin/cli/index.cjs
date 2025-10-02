@@ -75,6 +75,9 @@ const settings = {
       hint: "Remote ETH/RPC provider to connect to, other than default's",
       param: "URL",
     },
+    signer: {
+      hint: "Authorative address other than default for pausing or resuming cross-chain swaps."
+    },
     witnet: {
       hint: "Wit/Oracle RPC provider to connect to, other than default's.",
       param: "URL",
@@ -107,7 +110,7 @@ async function main () {
   let ethRpcNetwork = ""
   let ethRpcError
   try {
-    ethRpcProvider = new ethers.JsonRpcProvider(`http://127.0.0.1:${ethRpcPort}`, ethSigner)
+    ethRpcProvider = new ethers.JsonRpcProvider(`http://127.0.0.1:${ethRpcPort}`)
     ethRpcChainId = (await ethRpcProvider.getNetwork()).chainId
     ethRpcNetwork = utils.getEvmNetworkByChainId(ethRpcChainId)
   } catch (err) {
@@ -180,6 +183,7 @@ async function main () {
             "limit",
             "offset",
             "since",
+            "signer",
             "value",
             "vtt-hash",
           ],
@@ -196,6 +200,7 @@ async function main () {
             "limit",
             "offset",
             "since",
+            "signer",
             "value",
           ],
           envars: [],
@@ -826,7 +831,7 @@ async function transfers (flags = {}) {
 }
 
 async function unwrappings (flags = {}) {
-  let { provider, network, from, into, value, since, offset, limit, gasPrice, confirmations, pause, unpause} = flags
+  let { provider, network, from, into, value, since, offset, limit, gasPrice, confirmations, pause, resume, signer } = flags
   let contract = await WrappedWIT.fetchContractFromEthersProvider(provider)
   helpers.traceHeader(network.toUpperCase(), colors.lcyan)
 
@@ -841,9 +846,10 @@ async function unwrappings (flags = {}) {
   }
 
   // pause / unpause witnet mints ...
-  if ((pause && !unpause) || (!pause && unpause) ) {
+  if (pause ^ resume) {
     const [ pausedBridge,, pausedWitnetMints ] = await contract.paused()
-    contract = contract.connect(await provider.getSigner())
+    const curator = await provider.getSigner(signer)
+    contract = contract.connect(curator)
     let promise
     if (pause) {
       console.info(colors.lwhite(`> Pausing unwraps ...`))
@@ -852,8 +858,7 @@ async function unwrappings (flags = {}) {
       console.info(colors.lwhite(`> Unpausing unwraps ...`))
       promise = contract.crosschainPause(pausedBridge, false, pausedWitnetMints)
     }
-    console.info(`  - EVM signer:     ${(await provider.getSigner()).address}`)    
-
+    console.info(`  - EVM curator:    ${curator.address}`)    
     await promise
       .then(async (tx) => {
         console.info(`  - EVM tx hash:    ${tx.hash}`)
@@ -874,6 +879,9 @@ async function unwrappings (flags = {}) {
       throw new Error("--into <WIT_ADDRESS> must be specified.")
     } else if (!from) {
       from = (await provider.listAccounts())[0].address
+    }
+    if (value.nanowits < WrappedWIT.MIN_UNWRAPPABLE_NANOWITS) {
+      throw new Error(`--value must be greater than ${ethers.formatUnits(WrappedWIT.MIN_UNWRAPPABLE_NANOWITS, 9)} WIT.`)
     }
     contract = contract.connect(await provider.getSigner(from))
     console.info(colors.lwhite(`> Unwrapping ${ethers.formatUnits(value.pedros, 9)} WIT ...`))
@@ -1001,7 +1009,7 @@ async function unwrappings (flags = {}) {
 }
 
 async function wrappings (flags = {}) {
-  let { provider, network, from, into, value, since, offset, limit, gasPrice, confirmations, force, pause, resume } = flags
+  let { provider, network, from, into, value, since, offset, limit, gasPrice, confirmations, force, signer, pause, resume } = flags
 
   let contract = await WrappedWIT.fetchContractFromEthersProvider(provider)
   const witnet = await Witnet.JsonRpcProvider.fromEnv(
@@ -1021,7 +1029,7 @@ async function wrappings (flags = {}) {
   }
 
   if (value && Witnet.Coins.fromWits(value).pedros < WrappedWIT.MIN_WRAPPABLE_NANOWITS) {
-    throw new Error(`Minimum wrappable amount: ${ethers.formatUnits(WrappedWIT.MIN_WRAPPABLE_NANOWITS, 9)} WIT`)
+    throw new Error(`--value must be greater than ${ethers.formatUnits(WrappedWIT.MIN_WRAPPABLE_NANOWITS, 9)} WIT.`)
   }
 
   let wallet, ledger
@@ -1039,7 +1047,8 @@ async function wrappings (flags = {}) {
   // pause / unpause witnet mints ...
   if ((pause ^ resume) ) {
     const [ pausedBridge, pausedWitnetBurns ] = await contract.paused()
-    contract = contract.connect(await provider.getSigner())
+    const curator = await provider.getSigner(signer)
+    contract = contract.connect(curator)
     let promise
     if (pause) {
       console.info(colors.lwhite(`> Pausing wraps ...`))
@@ -1048,7 +1057,7 @@ async function wrappings (flags = {}) {
       console.info(colors.lwhite(`> Unpausing wraps ...`))
       promise = contract.crosschainPause(pausedBridge, pausedWitnetBurns, false)
     }
-    console.info(`  - EVM signer:     ${(await provider.getSigner()).address}`)    
+    console.info(`  - EVM curator:     ${curator.address}`)    
 
     await promise
       .then(async (tx) => {
@@ -1070,7 +1079,10 @@ async function wrappings (flags = {}) {
   if (value && witnet) {
     value = Witnet.Coins.fromWits(value)
     if ((await ledger.getBalance()).unlocked < value.pedros) {
-      throw new Error(`Insufficient funds on ${ledger.pkh}.`)
+      throw new Error(`Insufficient funds on wallet account ${ledger.pkh}.`)
+    }
+    if (value.wits < WrappedWIT.MIN_WRAPPABLE_NANOWITS) {
+      throw new Error(`--value must be greater than ${Number(WrappedWIT.MIN_WRAPPABLE_NANOWITS / 10 ** 9).toFixed(1)} $WIT.`)
     }
 
     let user
@@ -1144,7 +1156,7 @@ async function wrappings (flags = {}) {
         if (wrapEvent) {
           since = wrapEvent.blockNumber; offset = 0; limit = 1
           from = wrapEvent.args[0]; into = wrapEvent.args[1]
-          console.info(colors.mgreen(" => This Witnet wrap transaction has already been verified and minted:"))
+          console.info(colors.mgreen(" => This Witnet wrap transaction has already been verified and minted"))
         }
         break
 

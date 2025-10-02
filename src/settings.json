@@ -1,14 +1,14 @@
 {
     "default": {
-        "address": "0x30F942d8bcD4fC8DF123C3aF0358A87FbD5466DA",
+        "address": "0xcebada5B9a5F3663a346c51b3588A2Fcb81eB23D",
         "bridge":  "0x4200000000000000000000000000000000000010",
         "curator": "0x2eBC52C9cA769fBF1FA68153Ac055D25e25fd1dd",
-        "salt": 17758219
+        "salt": 51641617
     },
     "ethereum:mainnet": {
         "contract": "WitnetERC20",
         "custodian": "wit1wrappedl0fth3lm6xjhyp6vjnwcfjv9nwc40pa",
-        "unwrapper": "tbd"
+        "unwrapper": "wit1unwrapy58eevv520r4hpmwsjvw2dkx093z3dys"
     },
     "ethereum:sepolia": {
         "contract": "WitnetERC20",

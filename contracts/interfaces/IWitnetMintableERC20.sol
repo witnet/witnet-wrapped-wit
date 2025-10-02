@@ -12,8 +12,8 @@ interface IWitnetMintableERC20 {
     event ReserveUpdate(uint256 value, Witnet.Timestamp timestamp, Witnet.TransactionHash indexed witDrTxHash);
     event SettledBridge(address curator, address from, address into);
     event WitRpcProvidersChanged(address curator, string[] witRpcProviders);
-    event Wrapped(string indexed witSender, address indexed evmRecipient, uint256 value, Witnet.TransactionHash witVttHash);
-    event Unwrapped(address indexed evmSender, string indexed witRecipient, uint256 value, uint256 nonce);
+    event Wrapped(string witSender, address indexed evmRecipient, uint256 value, Witnet.TransactionHash witVttHash);
+    event Unwrapped(address indexed evmSender, string witRecipient, uint256 value, uint256 nonce);
 
     struct WitOracleSettings {
         uint16 minWitnesses;

@@ -6,7 +6,7 @@ import { default as WSB } from "witnet-solidity-bridge"
 
 import { createRequire } from "module"
 const require = createRequire(import.meta.url)
-const addresses = require("../addresses.json")
+const addresses = require("./addresses.json")
 
 export const ABI = require("../artifacts/contracts/WitnetERC20.sol/WitnetERC20.json").abi
 export const MIN_UNWRAPPABLE_NANOWITS = BigInt(10 ** 9) // 1.0 $WIT
@@ -92,7 +92,7 @@ export function getNetworkContractAddress (network) {
 }
 
 export function getNetworkSettings (network) {
-  return require("../settings.json")[network]
+  return require("./settings.json")[network]
 }
 
 export function getNetworkUnwrapTransactionDigest (network, evmBlockNumber, nonce, from, to, value) {

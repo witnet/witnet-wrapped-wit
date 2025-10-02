@@ -3,13 +3,13 @@
         "Factory": "0x735530FdC2B7c93078c639Ba57604bf3233cA1Ab"
     },
     "base:sepolia": {
-        "WitnetL2ERC20": "0x7C5ebA3D22c1f88a21BE2132323E39b277000000"
+        "WitnetL2ERC20": ""
     },
     "ethereum:sepolia": {
-        "WitnetERC20": "0x7C5ebA3D22c1f88a21BE2132323E39b277000000",
+        "WitnetERC20": "",
         "WitnetERC20Lib": "0xf2FCC072100Fd06e1dA66999807924D8590266c3"
     },
     "optimism:sepolia": {
-        "WitnetL2ERC20": "0x7C5ebA3D22c1f88a21BE2132323E39b277000000"
+        "WitnetL2ERC20": ""
     }
 }
