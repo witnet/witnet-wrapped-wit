@@ -169,9 +169,9 @@ Soon <sup>TM</sup>.
 ### Testnets
 | EVM Network | ERC-20 Contract | ERC-20 Address | Witnet Network |
 | :- | :- | :- | :-: |
-| Sepolia | `WitnetERC20` | [``](https://sepolia.etherscan.io/address/#tokentxns) | Testnet 
-| Base Sepolia | `WitnetL2ERC20` | [``](https://sepolia.basescan.org/address/#tokentxns) |
-| OP Sepolia | `WitnetL2ERC20` | [``](https://sepolia-optimism.etherscan.io/address/#tokentxns) |
+| Sepolia | `WitnetERC20` | [`0xceba...B23D`](https://sepolia.etherscan.io/address/0xcebada5B9a5F3663a346c51b3588A2Fcb81eB23D#tokentxns) | Testnet 
+| Base Sepolia | `WitnetL2ERC20` | [`0xceba...B23D`](https://sepolia.basescan.org/address/0xcebada5B9a5F3663a346c51b3588A2Fcb81eB23D#tokentxns) |
+| OP Sepolia | `WitnetL2ERC20` | [`0xceba...B23D`](https://sepolia-optimism.etherscan.io/address/0xcebada5B9a5F3663a346c51b3588A2Fcb81eB23D#tokentxns) |
 
 ## 🚀 Examples
 
