@@ -37,7 +37,7 @@ This repository contains:
 ```
 
 ## ⚙️ Requirements
-- Node.js >= 20
+- Node.js >= 22.19.0
 - Wallets with sufficient **$ETH** and **$WIT** for transacting on both Ethereum and Witnet networks.
 
 ## 🔧 Configuration
