@@ -15,6 +15,12 @@ export default {
     hardhatVerify,
   ],
   networks: {
+    "base:mainnet": {
+      chainId: 8453,
+      confirmations: 2,
+      type: "http",
+      url: "http://127.0.0.1:9502",
+    },
     "base:sepolia": {
       chainId: 84532,
       confirmations: 2,
