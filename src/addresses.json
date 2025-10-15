@@ -9,8 +9,11 @@
     "base:sepolia": {
         "WitnetL2ERC20": "0xcebada5B9a5F3663a346c51b3588A2Fcb81eB23D"
     },
-    "optimism:sepolia": {
-        "WitnetL2ERC20": "0xcebada5B9a5F3663a346c51b3588A2Fcb81eB23D"
+    "ethereum:mainnet": {
+        "WitnetERC20": "0xcafe5De18756817D98F4603F6828397406D4CaFE",
+        "WitnetERC20Lib": "0xeCCc198b53AFEcb007234d5344E9B965D180c63c"
     },
-    "ethereum:mainnet": {}
+    "base:mainnet": {
+        "WitnetL2ERC20": "0xcafe5De18756817D98F4603F6828397406D4CaFE"
+    }
 }

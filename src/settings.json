@@ -1,9 +1,9 @@
 {
     "default": {
-        "address": "0xcebada5B9a5F3663a346c51b3588A2Fcb81eB23D",
+        "address": "0xcafe5De18756817D98F4603F6828397406D4CaFE",
         "bridge":  "0x4200000000000000000000000000000000000010",
         "curator": "0x2eBC52C9cA769fBF1FA68153Ac055D25e25fd1dd",
-        "salt": 51641617
+        "salt": 130816351495
     },
     "ethereum:sepolia": {
         "contract": "WitnetERC20",

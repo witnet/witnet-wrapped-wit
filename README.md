@@ -165,7 +165,11 @@ Contracts are located in the **contracts/** folder:
 
 ## 🧪 Supported Networks
 ### Mainnets
-Soon <sup>TM</sup>.
+| EVM Network | ERC-20 Contract | ERC-20 Address | Witnet Network |
+| :- | :- | :- | :-: |
+| Ethereum | `WitnetERC20` | [`0xcafe...CaFE`](https://etherscan.io/address/0xcafe5De18756817D98F4603F6828397406D4CaFE#tokentxns) | Testnet 
+| Base | `WitnetL2ERC20` | [`0xcafe...CaFE`](https://basescan.org/address/0xcafe5De18756817D98F4603F6828397406D4CaFE#tokentxns) |
+
 ### Testnets
 | EVM Network | ERC-20 Contract | ERC-20 Address | Witnet Network |
 | :- | :- | :- | :-: |
