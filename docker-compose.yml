@@ -30,25 +30,25 @@ services:
       - ./unwrapper_testnet:/home/ubuntu/.unwrapper
     logging: *default-loki
 
-  # unwrapper_mainnet:
-  #   image: witnet/wrap-wit-unwrapper:latest
-  #   container_name: unwrapper_mainnet
-  #   restart: always
-  #   env_file:
-  #     - .env.mainnet
-  #   environment:
-  #     WRAPPED_WIT_UNWRAPPER_ETH_NETWORK: ethereum:sepolia
-  #     WRAPPED_WIT_UNWRAPPER_ETH_SKIP_BLOCKS: 1
-  #     WRAPPED_WIT_UNWRAPPER_ETH_WSS_RECONNECT_MSECS: 5000
-  #     # This path is added as a volume to persist the unwrapper state
-  #     WRAPPED_WIT_UNWRAPPER_STORAGE_PATH: .unwrapper
-  #     WRAPPED_WIT_UNWRAPPER_WIT_MIN_BALANCE_WITS: 1000.0
-  #     WRAPPED_WIT_UNWRAPPER_WIT_MIN_UTXOS: 16
-  #     WRAPPED_WIT_UNWRAPPER_WIT_RPC_PROVIDER: https://rpc-mainnet.witnet.io/
-  #     WRAPPED_WIT_UNWRAPPER_WIT_SIGNER_PKH: twit19rnvq8yjrmpa6tjdahct4pd49ha5lmvxjeyfha
-  #     WRAPPED_WIT_UNWRAPPER_WIT_UTXOS_STRATEGY: slim-first
-  #     WRAPPED_WIT_UNWRAPPER_WIT_VTT_CONFIRMATIONS: 3
-  #     WRAPPED_WIT_UNWRAPPER_WIT_VTT_PRIORITY: opulent
-  #   volumes:
-  #     - ./unwrapper_mainnet:/home/ubuntu/.unwrapper
-  #   logging: *default-loki
+  unwrapper_mainnet:
+    image: witnet/wrap-wit-unwrapper:latest
+    container_name: unwrapper_mainnet
+    restart: always
+    env_file:
+      - .env.mainnet
+    environment:
+      WRAPPED_WIT_UNWRAPPER_ETH_NETWORK: ethereum:mainnet
+      WRAPPED_WIT_UNWRAPPER_ETH_SKIP_BLOCKS: 1
+      WRAPPED_WIT_UNWRAPPER_ETH_WSS_RECONNECT_MSECS: 5000
+      # This path is added as a volume to persist the unwrapper state
+      WRAPPED_WIT_UNWRAPPER_STORAGE_PATH: .unwrapper
+      WRAPPED_WIT_UNWRAPPER_WIT_MIN_BALANCE_WITS: 1000.0
+      WRAPPED_WIT_UNWRAPPER_WIT_MIN_UTXOS: 16
+      WRAPPED_WIT_UNWRAPPER_WIT_RPC_PROVIDER: https://rpc-mainnet.witnet.io/
+      WRAPPED_WIT_UNWRAPPER_WIT_SIGNER_PKH: wit1unwrapy58eevv520r4hpmwsjvw2dkx093z3dys 
+      WRAPPED_WIT_UNWRAPPER_WIT_UTXOS_STRATEGY: slim-first
+      WRAPPED_WIT_UNWRAPPER_WIT_VTT_CONFIRMATIONS: 3
+      WRAPPED_WIT_UNWRAPPER_WIT_VTT_PRIORITY: opulent
+    volumes:
+      - ./unwrapper_mainnet:/home/ubuntu/.unwrapper
+    logging: *default-loki

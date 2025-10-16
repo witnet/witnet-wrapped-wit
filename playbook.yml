@@ -10,14 +10,14 @@
           WRAPPED_WIT_UNWRAPPER_ETH_WSS_PROVIDER={{ lookup('env','WRAPPED_WIT_UNWRAPPER_ETH_WSS_PROVIDER_TESTNET') }}
       no_log: true
 
-    # - name: Create .env.mainnet file from GitHub secrets
-    #   copy:
-    #     dest: "/home/ubuntu/.env.mainnet"
-    #     mode: '777'
-    #     content: |
-    #       WRAPPED_WIT_UNWRAPPER_ETH_NETWORK={{ lookup('env','WRAPPED_WIT_UNWRAPPER_ETH_NETWORK_MAINNET') }}
-    #       WRAPPED_WIT_UNWRAPPER_ETH_WSS_PROVIDER={{ lookup('env','WRAPPED_WIT_UNWRAPPER_ETH_WSS_PROVIDER_MAINNET') }}
-    #   no_log: true
+    - name: Create .env.mainnet file from GitHub secrets
+      copy:
+        dest: "/home/ubuntu/.env.mainnet"
+        mode: '777'
+        content: |
+          WRAPPED_WIT_UNWRAPPER_WIT_MASTER_KEY={{ lookup('env','WRAPPED_WIT_UNWRAPPER_WIT_MASTER_KEY_MAINNET') }}
+          WRAPPED_WIT_UNWRAPPER_ETH_WSS_PROVIDER={{ lookup('env','WRAPPED_WIT_UNWRAPPER_ETH_WSS_PROVIDER_MAINNET') }}
+      no_log: true
 
     - name: Copy Docker Compose File
       copy:
