@@ -594,7 +594,7 @@ async function supplies (flags = {}) {
         helpers.traceHeader(network.toUpperCase(), colors.lcyan)
 
         // create Witnet Wallet
-        const wallet = await Witnet.Wallet.fromEnv({ provider: witnet, strategy: "slim-fit" })
+        const wallet = await _loadWitnetWalletFromEnv({ provider: witnet, strategy: "slim-fit" })
 
         // fetch proof-of-reserve radon bytecode from the token contract
         const bytecode = await contract.witOracleProofOfReserveRadonBytecode()
@@ -1036,7 +1036,7 @@ async function wrappings (flags = {}) {
   let wallet, ledger
   if (value || flags["vtt-hash"]) {
     // create local wallet
-    wallet = await Witnet.Wallet.fromEnv({ provider: witnet, strategy: "slim-fit", onlyWithFunds: false })
+    wallet = await _loadWitnetWalletFromEnv({ provider: witnet, strategy: "slim-fit", onlyWithFunds: false })
 
     // select account/signer address from witnet wallet
     ledger = from ? (wallet.getAccount(from) ?? wallet.getSigner(from)) : wallet
@@ -1195,7 +1195,7 @@ async function wrappings (flags = {}) {
       const cost = fee + gasPrice * gas
       if (!force) {
         user = await prompt([{
-          message: `Verification is expected to cost ${ethers.formatEther(cost)} ETH. Shall we proceed ?`,
+          message: `Verification is expected to cost around ${ethers.formatEther(cost)} ETH. Shall we proceed ?`,
           name: "continue",
           type: "confirm",
           default: true,
@@ -1376,3 +1376,17 @@ async function wrappings (flags = {}) {
   }
   process.exit(0)
 }
+
+async function _loadWitnetWalletFromEnv(options) {
+    if (options?.xprv || process.env.WITNET_SDK_WALLET_MASTER_KEY) {
+      const xprv = options?.xprv ?? process.env.WITNET_SDK_WALLET_MASTER_KEY
+      if (xprv.length === 293) {
+        const user = await prompt([{ type: "password", mask: "*", message: "Enter password:", name: "passwd" }])
+        return Witnet.Wallet.fromEncryptedXprv(xprv, user.passwd, { ...options })
+      } else {
+        return Witnet.Wallet.fromXprv(xprv, { ...options })
+      }
+    } else {
+      throw Error("No WITNET_SDK_WALLET_MASTER_KEY envar is settled.")
+    }
+  }
