@@ -145,6 +145,7 @@ async function main () {
           options: [
             "limit",
             "since",
+            "signer",
           ],
           envars: [
             ...(WrappedWIT.isNetworkCanonical(ethRpcNetwork)
@@ -518,7 +519,7 @@ async function contract (flags = {}) {
 }
 
 async function supplies (flags = {}) {
-  let { network, provider, force, from, gasPrice, confirmations, verbose, limit, since } = flags
+  let { network, provider, force, from, gasPrice, confirmations, verbose, limit, since, signer } = flags
   let contract = await WrappedWIT.fetchContractFromEthersProvider(provider)
 
   const records = []
@@ -595,7 +596,7 @@ async function supplies (flags = {}) {
 
         // create Witnet Wallet
         const wallet = await _loadWitnetWalletFromEnv({ provider: witnet, strategy: "slim-fit" })
-        const ledger = (utils.totalCoins(await wallet.getBalance()).nanowits === 0) ? wallet.coinbase : wallet
+        const ledger = signer ? wallet.getSigner(signer) : wallet
           
         // fetch proof-of-reserve radon bytecode from the token contract
         const bytecode = await contract.witOracleProofOfReserveRadonBytecode()
