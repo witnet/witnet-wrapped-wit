@@ -595,7 +595,8 @@ async function supplies (flags = {}) {
 
         // create Witnet Wallet
         const wallet = await _loadWitnetWalletFromEnv({ provider: witnet, strategy: "slim-fit" })
-
+        const ledger = (utils.totalCoins(await wallet.getBalance()).nanowits === 0) ? wallet.coinbase : wallet
+          
         // fetch proof-of-reserve radon bytecode from the token contract
         const bytecode = await contract.witOracleProofOfReserveRadonBytecode()
 
@@ -614,7 +615,7 @@ async function supplies (flags = {}) {
         console.info()
 
         // create and transmit Witnet Data Request Transaction (DRT)
-        const PoRs = Witnet.DataRequests.from(wallet, request)
+        const PoRs = Witnet.DataRequests.from(ledger, request)
         let tx = await PoRs.sendTransaction({
           fees: Witnet.TransactionPriority.Medium,
           witnesses: querySettings.minWitnesses,
