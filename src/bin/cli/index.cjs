@@ -1274,25 +1274,29 @@ async function wrappings (flags = {}) {
     hashes = hashes.filter((_, index) => statuses[index] !== 3n)
     statuses = statuses.filter(status => status !== 3n)
     for (let index = 0; index < hashes.length; index++) {
-      const vtt = await witnet.getValueTransfer(hashes[index], "ethereal")
-      if (vtt?.metadata && (!from || from.toLowerCase() === vtt.sender) && (!into || into.toLowerCase() === `0x${vtt.metadata}`)) {
-        let caption
-        switch (statuses[index]) {
-          case 0n:
-            caption = (vtt.finalized === 1) ? "(finalized on Witnet)" : "(awaiting finalization on Witnet)"
-            break
-          case 1n:
-            caption = "(awaiting cross-chain verification)"
-            break
-          case 2n:
-            caption = "(cross-chain verification failed)"
-            break
+      try {
+        const vtt = await witnet.getValueTransfer(hashes[index], "ethereal")
+        if (vtt?.metadata && (!from || from.toLowerCase() === vtt.sender) && (!into || into.toLowerCase() === `0x${vtt.metadata}`)) {
+          let caption
+          switch (statuses[index]) {
+            case 0n:
+              caption = (vtt.finalized === 1) ? "(finalized on Witnet)" : "(awaiting finalization on Witnet)"
+              break
+            case 1n:
+              caption = "(awaiting cross-chain verification)"
+              break
+            case 2n:
+              caption = "(cross-chain verification failed)"
+              break
+          }
+          events.push({
+            blockNumber: undefined,
+            transactionHash: caption,
+            args: [vtt.sender, ethers.getAddress(`0x${vtt.metadata}`), vtt.value, `0x${hashes[index]}`],
+          })
         }
-        events.push({
-          blockNumber: undefined,
-          transactionHash: caption,
-          args: [vtt.sender, ethers.getAddress(`0x${vtt.metadata}`), vtt.value, `0x${hashes[index]}`],
-        })
+      } catch {
+        // skip txs not being VTTs
       }
     }
   }
