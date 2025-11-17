@@ -2,20 +2,23 @@
     "default": {
         "address": "0xcafe5De18756817D98F4603F6828397406D4CaFE",
         "bridge":  "0x4200000000000000000000000000000000000010",
-        "curator": "0x2eBC52C9cA769fBF1FA68153Ac055D25e25fd1dd",
+        "curator": "0xdde37114971423be2497D190346AE57d82c5EbB7",
         "salt": 130816351495
     },
     "ethereum:sepolia": {
         "contract": "WitnetERC20",
+        "curator": "0x2eBC52C9cA769fBF1FA68153Ac055D25e25fd1dd",
         "custodian": "twit1wrappedl0fth3lm6xjhyp6vjnwcfjv9nqdutpv",
         "unwrapper": "twit1unwrapy58eevv520r4hpmwsjvw2dkx09lhcfyp"
     },
     "base:sepolia": {
-        "contract": "WitnetL2ERC20"
+        "contract": "WitnetL2ERC20",
+        "curator": "0x2eBC52C9cA769fBF1FA68153Ac055D25e25fd1dd"
     },
     "optimism:sepolia": {
         "bridge": "0x4200000000000000000000000000000000000028",
         "contract": "WitnetL2ERC20",
+        "curator": "0x2eBC52C9cA769fBF1FA68153Ac055D25e25fd1dd",
         "superchained": true
     },
     "ethereum:mainnet": {
