@@ -77,7 +77,8 @@ const settings = {
       param: "URL",
     },
     signer: {
-      hint: "Authorative address other than default for pausing or resuming cross-chain swaps."
+      hint: "Authoritative address that will pay for network transactions.",
+      param: "CURATOR",
     },
     witnet: {
       hint: "Wit/Oracle RPC provider to connect to, other than default's.",
