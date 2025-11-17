@@ -7,7 +7,7 @@ const os = require("os")
 const prompt = require("inquirer").createPromptModule()
 
 const { Witnet } = require("@witnet/sdk")
-const { ethers, utils, KermitClient } = require("@witnet/ethers")
+const { ethers, utils } = require("@witnet/solidity")
 
 const { WrappedWIT } = require("../..")
 
@@ -655,7 +655,7 @@ async function supplies (flags = {}) {
           colors.mblue(WrappedWIT.getNetworkContractAddress(network)) +
           colors.lwhite(" ...")
         )
-        const kermit = await KermitClient.fromEnv(flags?.kermit)
+        const kermit = await Witnet.KermitClient.fromEnv(flags?.kermit)
         console.info(`  - Wit/Kermit provider: ${kermit.url}`)
         const report = await kermit.getDataPushReport(tx.hash, network)
         const message = utils.abiEncodeDataPushReportMessage(report)

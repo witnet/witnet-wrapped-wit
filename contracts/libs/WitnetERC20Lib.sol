@@ -3,7 +3,7 @@
 pragma solidity >=0.8.20 <0.9.0;
 
 import "../interfaces/IWitnetMintableERC20.sol";
-import {IWitOracleRadonRequestModal} from "witnet-solidity-bridge/contracts/WitOracleRadonRequestFactory.sol";
+import {IWitOracleRadonRequestModal} from "@witnet/solidity/contracts/WitOracleRadonRequestFactory.sol";
 
 /// @title Witnet Request Board base data model library
 /// @author The Witnet Foundation.

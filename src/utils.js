@@ -1,8 +1,7 @@
-import { Witnet } from "@witnet/sdk"
-import { ethers } from "@witnet/ethers"
+import { Witnet, utils as _utils } from "@witnet/sdk"
+import { ethers, utils } from "@witnet/solidity"
 
 import { default as merge } from "lodash.merge"
-import { default as WSB } from "witnet-solidity-bridge"
 
 import { createRequire } from "module"
 const require = createRequire(import.meta.url)
@@ -44,9 +43,7 @@ export async function fetchContractFromEthersProvider (ethersProvider) {
 }
 
 export function findNetworkByChainId (evmChainId) {
-  const found = Object.entries(WSB.supportedNetworks()).find(([, config]) => config.network_id.toString() === evmChainId.toString())
-  if (found && BigInt(getNetworkChainId(found[0])) === BigInt(evmChainId)) return found[0]
-  else return undefined
+  return utils.getEvmNetworks().find(network => utils.getEvmNetworkId(network) === Number(evmChainId));
 }
 
 export async function findUnwrapTransactionFromWitnetProvider ({
@@ -83,7 +80,7 @@ export function getNetworkAddresses (network) {
 }
 
 export function getNetworkChainId (network) {
-  return WSB.settings.getNetworks()[network].network_id
+  return utils.getEvmNetworkId(network)
 }
 
 export function getNetworkContractAddress (network) {
@@ -112,7 +109,7 @@ export function isNetworkCanonical (network) {
 }
 
 export function isNetworkMainnet (network) {
-  return !!WSB.settings.getNetworks()[network]?.mainnet
+  return utils.isEvmNetworkMainnet(network)
 }
 
 export function isNetworkSupported (network) {

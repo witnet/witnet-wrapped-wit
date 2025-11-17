@@ -8,15 +8,15 @@ import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20P
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-import "witnet-solidity-bridge/contracts/WitOracle.sol";
+import "@witnet/solidity/contracts/WitOracle.sol";
 
 import {
     IWitOracleRadonRequestModal,
     IWitOracleRadonRequestFactory
-} from "witnet-solidity-bridge/contracts/WitOracleRadonRequestFactory.sol";
+} from "@witnet/solidity/contracts/WitOracleRadonRequestFactory.sol";
 
-import {IWitOracleConsumer} from "witnet-solidity-bridge/contracts/interfaces/IWitOracleConsumer.sol";
-import {IWitOracleQueriableConsumer} from "witnet-solidity-bridge/contracts/interfaces/IWitOracleQueriableConsumer.sol";
+import {IWitOracleConsumer} from "@witnet/solidity/contracts/interfaces/IWitOracleConsumer.sol";
+import {IWitOracleQueriableConsumer} from "@witnet/solidity/contracts/interfaces/IWitOracleQueriableConsumer.sol";
 
 import {IWitnetMintableERC20, WitnetERC20Lib} from "./libs/WitnetERC20Lib.sol";
 
@@ -45,7 +45,7 @@ contract WitnetERC20
     uint64 internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_UNITARY_REWARD = 200_000_000; // 0.2 $WIT
     uint24 internal constant _WIT_ORACLE_QUERIABLE_CONSUMER_MIN_RESPONSE_CALLBACK_GAS = 210_000;
     
-    WitOracle public immutable witOracle;
+    address public immutable witOracle;
     IWitOracleRadonRequestModal public immutable witOracleCrossChainProofOfReserveTemplate;
     IWitOracleRadonRequestModal public immutable witOracleCrossChainProofOfInclusionTemplate;
     
@@ -84,7 +84,7 @@ contract WitnetERC20
         __witCustodianWrapper = Witnet.fromBech32(_witCustodianBech32, block.chainid == _CANONICAL_CHAIN_ID);
         __witCustodianWrapperBech32Hash = keccak256(bytes(_witCustodianBech32));
 
-        witOracle = WitOracle(IWitOracleAppliance(address(_witOracleRadonRequestFactory)).witOracle());
+        witOracle = IWitOracleAppliance(address(_witOracleRadonRequestFactory)).witOracle();
 
         string[2][] memory _httpRequestHeaders = new string[2][](1);
         _httpRequestHeaders[0] = [ "Content-Type", "application/json;charset=UTF-8" ];
@@ -208,7 +208,7 @@ contract WitnetERC20
         
         } else {
             return (
-                witOracle.getQueryStatus(_witOracleLastQueryId) == Witnet.QueryStatus.Posted
+                IWitOracleQueriable(witOracle).getQueryStatus(_witOracleLastQueryId) == Witnet.QueryStatus.Posted
                 ? WrappingStatus.Awaiting
                 : WrappingStatus.Retry
             );
@@ -277,7 +277,7 @@ contract WitnetERC20
 
     function witOracleEstimateWrappingFee(uint256 evmGasPrice) override external view returns (uint256) {
         return WitnetERC20Lib.witOracleEstimateWrappingFee(
-            witOracle, 
+            WitOracle(witOracle), 
             evmGasPrice
         );
     }
@@ -287,7 +287,7 @@ contract WitnetERC20
     }
 
     function witOracleProofOfReserveRadonBytecode() override external view returns (bytes memory) {
-        return witOracle
+        return IWitOracle(witOracle)
             .registry()
             .lookupRadonRequestBytecode(
                 __storage().witOracleProofOfReserveRadonHash
@@ -387,7 +387,7 @@ contract WitnetERC20
         // or 10x greater than, would make this transaction to revert.
 
         _witOracleQueryId = WitnetERC20Lib.witOracleQueryWitnetValueTransferProofOfInclusion(
-            witOracle,
+            WitOracle(witOracle),
             witOracleCrossChainProofOfInclusionTemplate,
             _witnetValueTransferTransactionHash
         );
@@ -523,7 +523,7 @@ contract WitnetERC20
         );
 
         // Ask the Wit/Oracle to validate and parse the posted query's result: 
-        Witnet.DataResult memory _witOracleProofOfReserve = witOracle
+        Witnet.DataResult memory _witOracleProofOfReserve = IWitOracle(witOracle)
             .pushDataReport(
                 report,
                 proof

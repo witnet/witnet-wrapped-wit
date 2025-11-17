@@ -2,7 +2,7 @@
 
 pragma solidity >=0.8.20 <0.9.0;
 
-import "witnet-solidity-bridge/contracts/WitOracle.sol";
+import "@witnet/solidity/contracts/WitOracle.sol";
 
 interface IWitnetMintableERC20 {
 

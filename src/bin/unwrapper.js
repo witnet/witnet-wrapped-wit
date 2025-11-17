@@ -1,4 +1,4 @@
-import { ethers, utils } from "@witnet/ethers"
+import { ethers, utils } from "@witnet/solidity"
 import { Witnet } from "@witnet/sdk"
 
 import * as dotenv from "dotenv"
