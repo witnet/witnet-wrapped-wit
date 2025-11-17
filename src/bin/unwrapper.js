@@ -93,7 +93,7 @@ async function main () {
     }
     console.info(`> Ethereum network:  ${ETH_NETWORK.toUpperCase()} (${network.chainId})`)
 
-    if (WrappedWIT.isNetworkMainnet() && signer.provider.network !== "mainnet") {
+    if (ETH_NETWORK && WrappedWIT.isNetworkMainnet(ETH_NETWORK) && signer.provider.network !== "mainnet") {
       console.error("> Fatal: EVM mainnets must be bridged to Witnet Mainnet network.")
       process.exit(0)
     }
