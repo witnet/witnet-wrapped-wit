@@ -40,7 +40,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./Dockerfile
+          file: ./docker/unwrapper/Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
